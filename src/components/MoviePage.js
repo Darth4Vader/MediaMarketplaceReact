@@ -1,7 +1,7 @@
 import React, {useState, useEffect, use, Suspense} from 'react';
 import {get} from '../http/requests';
 import MovieGrid from "./MovieGrid";
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import AppBar from "./AppBar";
 import {getMovie, getActorsMovie, getDirectorsMovie, getReviewsOfMovie} from "../http/api";
 import './MoviePage.css';
@@ -11,7 +11,6 @@ export default function LoadMoviePage() {
     console.log(id);
     return (
         <Suspense fallback={<div>Loading...</div>}>
-            <AppBar />
             <MoviePage moviePromise={getMovie(id)} />
         </Suspense>
     );
@@ -45,9 +44,11 @@ const MoviePage = ({ moviePromise }) => {
                 </Suspense>
             </div>
             <div className="movie-reviews">
-                <h2>Reviews</h2>
+                <Link to="./reviews">
+                    <h2>Reviews</h2>
+                </Link>
                 <Suspense fallback={<div>Loading Reviews...</div>}>
-                    <ReviewsList reviewsPromise={getReviewsOfMovie(movie.id)} />
+                    <PagesList pagePromise={getReviewsOfMovie(movie.id)} />
                 </Suspense>
             </div>
         </div>
@@ -124,6 +125,117 @@ const DirectorCell = ({ castMember }) => {
                 <p>{castMember?.person?.name}</p>
             </div>
         </li>
+    );
+};
+
+
+export function LoadReviewsPage() {
+    const { id } = useParams();
+    console.log(id);
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <AppBar />
+            <MoviePage moviePromise={getReviewsOfMovie(id)} />
+        </Suspense>
+    );
+}
+
+const ReviewsPage = ({ reviewsPromise }) => {
+    //const movie = use(reviewsPromise);
+    return (
+        /*
+        <div className="movie-page">
+            <div className="movie-header">
+                <img src={movie?.posterPath} alt={`${movie?.name} Poster`} className="movie-poster" />
+                <div className="movie-details">
+                    <h1>{movie?.name}</h1>
+                    <p><strong>Year:</strong> {movie?.year}</p>
+                    <p><strong>Runtime:</strong> {movie?.runtime} minutes</p>
+                    <p><strong>Rating:</strong> {movie?.rating}/100</p>
+                </div>
+            </div>
+            <div className="movie-synopsis">
+                <h2>Synopsis</h2>
+                <p>{movie?.synopsis || 'To Be Determined'}</p>
+            </div>
+            <div className="movie-cast">
+                <h2>Directors</h2>
+                <Suspense fallback={<div>Loading Directors...</div>}>
+                    <DirectorList directorsPromise={getDirectorsMovie(movie.id)} />
+                </Suspense>
+                <h2>Actors</h2>
+                <Suspense fallback={<div>Loading Actors...</div>}>
+                    <ActorList actorsPromise={getActorsMovie(movie.id)} />
+                </Suspense>
+            </div>
+            <div className="movie-reviews">
+                <h2>Reviews</h2>
+                <Suspense fallback={<div>Loading Reviews...</div>}>
+                    <ReviewsList reviewsPromise={getReviewsOfMovie(movie.id)} />
+                </Suspense>
+            </div>
+        </div>
+
+         */
+        <PagesList pagePromise={reviewsPromise}/>
+
+    );
+};
+
+const PagesList = ({ pagePromise }) => {
+    const pageResult = use(pagePromise);
+    console.log(pageResult);
+    return (
+        <div>
+            {!pageResult?.first ? (
+                <div>
+                    <a>1</a>
+                    <a>Previous</a>
+                </div>
+            ) : null}
+            <a>{pageResult?.number != null ? pageResult.number+1 : null}</a>
+            {!pageResult?.last ? (
+                <div>
+                    <a>{pageResult?.totalPages}</a>
+                    <a>Next</a>
+                </div>
+            ) : null}
+        </div>
+        /*
+        <div className="movie-page">
+            <div className="movie-header">
+                <img src={movie?.posterPath} alt={`${movie?.name} Poster`} className="movie-poster" />
+                <div className="movie-details">
+                    <h1>{movie?.name}</h1>
+                    <p><strong>Year:</strong> {movie?.year}</p>
+                    <p><strong>Runtime:</strong> {movie?.runtime} minutes</p>
+                    <p><strong>Rating:</strong> {movie?.rating}/100</p>
+                </div>
+            </div>
+            <div className="movie-synopsis">
+                <h2>Synopsis</h2>
+                <p>{movie?.synopsis || 'To Be Determined'}</p>
+            </div>
+            <div className="movie-cast">
+                <h2>Directors</h2>
+                <Suspense fallback={<div>Loading Directors...</div>}>
+                    <DirectorList directorsPromise={getDirectorsMovie(movie.id)} />
+                </Suspense>
+                <h2>Actors</h2>
+                <Suspense fallback={<div>Loading Actors...</div>}>
+                    <ActorList actorsPromise={getActorsMovie(movie.id)} />
+                </Suspense>
+            </div>
+            <div className="movie-reviews">
+                <h2>Reviews</h2>
+                <Suspense fallback={<div>Loading Reviews...</div>}>
+                    <ReviewsList reviewsPromise={getReviewsOfMovie(movie.id)} />
+                </Suspense>
+            </div>
+        </div>
+
+         */
+
     );
 };
 

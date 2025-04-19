@@ -13,7 +13,7 @@ export default function MovieGrid({ movies }) {
         <div
             style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(min(30%,180px), 1fr))',
                 gap: '16px',
                 padding: '20px',
             }}

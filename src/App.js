@@ -1,20 +1,25 @@
 import logo from './logo.svg';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './App.css';
 import HomePage from "./components/HomePage";
 import LoadMoviePage from "./components/MoviePage";
+import Movie from "./components/Movie";
+import LoadReviewPage from "./components/ReviewPage";
+import AppBar from "./components/AppBar";
 
 
 function App() {
   return (
       <div className="App">
         <header className="App-header">
-          <Router>
+          <BrowserRouter>
+              <AppBar />
             <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/movie/:id" element={<LoadMoviePage />} />
+                <Route path="/" element={<HomePage />} />
+                <Route path="/movie/:id" element={<LoadMoviePage />} />
+                <Route path="/movie/:id/reviews" element={<LoadReviewPage />} />
             </Routes>
-          </Router>
+          </BrowserRouter>
         </header>
       </div>
   );

@@ -1,7 +1,7 @@
 import { reject } from "react";
 
 
-const apiBaseUrl = 'http://localhost:8080';
+const apiBaseUrl = 'http://192.168.1.237:8080';
 
 export async function getData(uri) {
     const settings = {

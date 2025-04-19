@@ -26,7 +26,7 @@ function LoadHomePage({dataPromise}) {
 
     const products = use(dataPromise);
     return (
-        <div>
+        <div style={{width: '100%'}}>
             <h1 style={{ textAlign: 'center', fontSize: '48px', margin: '20px 0' }}>
                 Welcome
             </h1>
@@ -38,7 +38,6 @@ function LoadHomePage({dataPromise}) {
 export default function HomePage() {
     return (
         <Suspense fallback={<div>Loading...</div>}>
-            <AppBar />
             <LoadHomePage dataPromise={getAllMovies()} />
         </Suspense>
     );

@@ -2,6 +2,7 @@ import {ComponentPreview, Previews} from '@react-buddy/ide-toolbox'
 import {PaletteTree} from './palette'
 import App from "../App";
 import LoginPage from "../LoginPage";
+import LoadMoviePage from "../components/MoviePage";
 
 const ComponentPreviews = () => {
     return (
@@ -11,6 +12,9 @@ const ComponentPreviews = () => {
             </ComponentPreview>
             <ComponentPreview path="/LoginPage">
                 <LoginPage/>
+            </ComponentPreview>
+            <ComponentPreview path="/LoadMoviePage">
+                <LoadMoviePage/>
             </ComponentPreview>
         </Previews>
     )

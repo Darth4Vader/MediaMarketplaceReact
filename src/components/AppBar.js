@@ -45,6 +45,7 @@ export default function AppBar() {
         <div className="app-bar" style={
             {
                 display: 'flex',
+                //flexWrap: 'wrap',
                 //justifyContent: 'space-between',
                 alignItems: 'center',
                 //padding: '10px 20px',
@@ -55,6 +56,15 @@ export default function AppBar() {
                 //width: '100%',
                 gap: '10px',
                 //marginRight: '50px',
+                //alignSelf: 'center',
+                //width: '100%',
+                borderColor: 'red',
+                border: '1px solid red',
+                textAlign: 'center',
+                alignContent: 'center',
+                width: '70%',
+                marginInline: 'auto'
+                //alignSelf: "flex-center"
             }
         }>
             <img src={cartIcon} alt="Cart" className="icon" onClick={enterCart} height='100%'/>

@@ -73,8 +73,10 @@ export async function getDirectorsMovie(id){
     return data;
 }
 
-export async function getReviewsOfMovie(id, page=0, size=50){
-    const response = await requests.getData(`/api/main/movie-reviews/reviews/${id}?number=${page}&size=${size}`);
+export async function getReviewsOfMovie(id, page=0, size=1){
+    const response = await requests.getData(`/api/main/movie-reviews/reviews/${id}?page=${page}&size=${size}`);
+    console.log("Before: " + page);
+    console.log("Pocacho: " + `/api/main/movie-reviews/reviews/${id}?page=${page}&size=${size}`);
     console.log("Response");
     console.log(response);
     if (!response.ok) {
