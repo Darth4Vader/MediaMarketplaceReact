@@ -1,19 +1,22 @@
 import {useParams, useSearchParams} from "react-router-dom";
-import React, {Suspense, use} from "react";
+import React, {Suspense, use, useEffect} from "react";
 import AppBar from "./AppBar";
 import {getActorsMovie, getDirectorsMovie, getMovie, getReviewsOfMovie} from "../http/api";
 import Pagination from "./Pagination";
 
 export default function LoadReviewPage() {
     const { id } = useParams();
+    console.log("Load Review Page");
     console.log(id);
     const [searchParams, setSearchParams] = useSearchParams();
+    console.log(searchParams);
     const page = Number(searchParams.get("page")) || 1;
+
     console.log("Page: " + page);
     console.log("Page: " + (Number(page)+1));
     console.log("Page: " + (page+1));
     return (
-        <Suspense fallback={<div>Loading Reviews...</div>}>
+        <Suspense key={page} fallback={<div>Loading Reviews...</div>}>
             <ReviewsList reviewsPromise={getReviewsOfMovie(id, page-1)} />
         </Suspense>
     );
