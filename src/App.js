@@ -3,9 +3,11 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './App.css';
 import HomePage from "./components/HomePage";
 import LoadMoviePage from "./components/MoviePage";
+import LoadCartPage from "./components/CartPage";
 import Movie from "./components/Movie";
 import LoadReviewPage from "./components/ReviewPage";
 import AppBar from "./components/AppBar";
+import LoginPage from "./LoginPage";
 
 
 function App() {
@@ -16,6 +18,8 @@ function App() {
               <AppBar />
             <Routes>
                 <Route path="/" element={<HomePage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/cart" element={<LoadCartPage />} />
                 <Route path="/movie/:id" element={<LoadMoviePage />} />
                 <Route path="/movie/:id/reviews" element={<LoadReviewPage />} />
             </Routes>

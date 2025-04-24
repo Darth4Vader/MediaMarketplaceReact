@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
+import { saveTokens } from './http/requests'
 
 const Card = ({ className = "", children }) => (
     <div className={`bg-white p-6 rounded-2xl shadow ${className}`}>{children}</div>
@@ -30,7 +31,10 @@ const LoginPage = () => {
 
             if (response.ok) {
                 const data = await response.json();
-                alert("Login successful! Token: " + data.token);
+                console.log("Login successful");
+                console.log(data);
+                alert("Login successful! Token: " + data.refreshToken);
+                saveTokens(data.accessToken, data.refreshToken);
                 setError("");
             } else {
                 const err = await response.text();

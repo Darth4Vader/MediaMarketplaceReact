@@ -1,4 +1,6 @@
 import * as requests from './requests';
+import { useNavigate } from "react-router-dom";
+import {getDataWithAuth} from "./requests";
 
 export async function getAllMovies(){
     const response = await requests.getData('/api/main/movies/');
@@ -93,4 +95,25 @@ export async function getReviewsOfMovie(id, page=0, size=1){
     return data;
 }
 
+export async function getCurrentUserCart(navigate) {
+    console.log("Get cart")
+    const response = await requests.getDataWithAuth('/api/users/carts');
+    console.log("Response");
+    console.log(response);
+    if (!response.ok) {
+        console.log("Error in getCurrentUserCart");
+        //navigate('/login', { replace: true });
+        return {
+            status: response?.status,
+            isError: true,
+            error: `Request failed with status ${response.status}: ${response.statusText}`,
+        };
 
+    }
+
+    // Parse the response data
+    const data = await response.json();
+
+    // Return the successful response
+    return data;
+}
