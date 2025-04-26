@@ -1,4 +1,3 @@
-import { reject } from "react";
 import Cookies  from "js-cookie";
 
 
@@ -13,28 +12,11 @@ export async function getData(uri) {
         }
     };
     console.log(`${apiBaseUrl}${uri}`);
-    try {
-        const response = await fetch(`${apiBaseUrl}${uri}`, settings)
-            .catch((err) => {
-                console.log("Error in fetch:");
-                return Promise.reject(err);
-                //throw err;
-            });
-
-        /*if (!response.ok) {
-            throw new Error("Network response was not ok");
-        }
-        const data = await response.json();
-        return data;*/
-        //console.log(response.json());
-        return response;
-    }
-    catch (error) {
-        console.log("Error fetching data:");
-        //window.alert();
-        //return Promise.reject(error);
-        //throw error;
-    }
+    return await fetch(`${apiBaseUrl}${uri}`, settings)
+        .catch((err) => {
+            console.log("Error in fetch:");
+            return Promise.reject(err);
+        });
 }
 
 export async function getDataWithAuth(uri) {
@@ -45,43 +27,61 @@ export async function getDataWithAuth(uri) {
             'Content-Type': 'application/json',
         }
     };
-    return fetchWithAuth(uri, settings);
+    return await fetchWithAuth(uri, settings);
+}
+
+export async function putDataWithAuth(uri, jsonData) {
+    const settings = {
+        method: 'PUT',
+        headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+        },
+        body: jsonData
+    };
+    return await fetchWithAuth(uri, settings);
 }
 
 async function fetchWithAuth(uri, settings) {
     console.log("get cookie: " + Cookies.get('accessToken'));
     settings.headers.Authorization = `Bearer ${Cookies.get('accessToken')}`;
     console.log(`${apiBaseUrl}${uri}`);
-    try {
-        let response = await fetch(`${apiBaseUrl}${uri}`, settings)
-            .catch((err) => {
-                console.log("Error in fetch:");
-                return Promise.reject(err);
-                //throw err;
-            });
-        if (!response.ok) {
-            if(response.status === 401) {
-                console.log("401 Unauthorized");
-                // try to refresh token
-                if(refreshToken()) {
-                    settings.headers.Authorization = `Bearer ${Cookies.get('accessToken')}`;
-                    response = await fetch(`${apiBaseUrl}${uri}`, settings)
-                        .catch((err) => {
-                            console.log("Error in fetch:");
-                            return Promise.reject(err);
-                            //throw err;
-                        });
+    //try {
+    return await fetch(`${apiBaseUrl}${uri}`, settings)
+        .then(async function(response) {
+            console.log("Catched");
+            if (!response.ok) {
+                if (response.status === 401) {
+                    console.log("401 Unauthorized");
+                    // try to refresh token
+                    console.log("Try to refresh token");
+                    if (await refreshToken()) {
+                        console.log("Attempt Request Second Time")
+                        settings.headers.Authorization = `Bearer ${Cookies.get('accessToken')}`;
+                        const response2 = await fetch(`${apiBaseUrl}${uri}`, settings)
+                            .catch((err) => {
+                                console.log("Error in fetch:");
+                                return Promise.reject(err);
+                                //throw err;
+                            });
+                        console.log("Second Attempt Response: ");
+                        console.log(response2);
+                        return response2;
+                    }
+                    else {
+                        console.log("Post failed");
+                    }
                 }
             }
-        }
-        return response;
-    }
+            return response;
+        });
+    /*}
     catch (error) {
         console.log("Error fetching data:");
         //window.alert();
         //return Promise.reject(error);
         //throw error;
-    }
+    }*/
 }
 
 async function refreshToken() {
@@ -97,32 +97,26 @@ async function refreshToken() {
         },
         body: JSON.stringify({ refreshToken }),
     };
-    try {
-        const response = await fetch(`${apiBaseUrl}/api/users/refresh`, settings)
-            .catch((err) => {
-                console.log("Error in fetch:");
-                return Promise.reject(err);
-                //throw err;
-            });
-
-        if (!response.ok) {
-            if(response.status == 401) {
-                console.log("401 Unauthorized Again");
-                // try to refresh token
+    return await fetch(`${apiBaseUrl}/api/users/refresh`, settings)
+        .then(async function(response) {
+            console.log("Post ended");
+            if (!response.ok) {
+                if(response.status === 401) {
+                    console.log("401 Unauthorized Again");
+                    // try to refresh token
+                }
+                return false;
             }
-            return false;
-        }
-        const data = await response.json();
-        saveTokens(data.accessToken, data.refreshToken);
-        return true;
-    }
-    catch (error) {
-        console.log("Error fetching data: ");
-        console.error(error);
-        //window.alert();
-        //return Promise.reject(error);
-        //throw error;
-    }
+            const data = await response.json();
+            saveTokens(data.accessToken, data.refreshToken);
+            console.log("Token Refreshed Successfully");
+            return true;
+        })
+        .catch((err) => {
+            console.log("Error in fetch:");
+            return Promise.reject(err);
+            //throw err;
+        });
 }
 
 export function saveTokens(accessToken, refreshToken) {
@@ -132,37 +126,3 @@ export function saveTokens(accessToken, refreshToken) {
     console.log("Tokens saved");
     console.log("Access Token: " + Cookies.get('accessToken'));
 }
-
-export async function get(uri) {
-    const settings = {
-        method: 'GET',
-        headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-        }
-    };
-    console.log(`${apiBaseUrl}${uri}`);
-    try {
-        const response = await fetch(`${apiBaseUrl}${uri}`, settings)
-            .catch((err) => {
-                console.log("Error in fetch:");
-                return Promise.reject(err);
-                //throw err;
-            });
-
-        /*if (!response.ok) {
-            throw new Error("Network response was not ok");
-        }
-        const data = await response.json();
-        return data;*/
-        //console.log(response.json());
-        return response;
-    }
-    catch (error) {
-        console.log("Error fetching data:");
-        //return Promise.reject(error);
-        //throw error;
-    }
-}
-
-

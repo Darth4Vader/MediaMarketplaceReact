@@ -2,6 +2,7 @@ import React, {Suspense,use, useEffect, useState} from 'react';
 import {getCurrentUserCart} from '../http/api';
 import {useNavigate} from 'react-router';
 import {ErrorBoundary} from "react-error-boundary";
+import './CartPage.css';
 
 export default function LoadCartPage() {
     const navigate = useNavigate();
@@ -18,7 +19,6 @@ const CartPage = ({ cartPromise }) => {
 
     const [cartProducts, setCartProducts] = useState([]);
     const [totalPrice, setTotalPrice] = useState(0);
-    const [loading, setLoading] = useState(true);
 
     /*
     useEffect(() => {
@@ -65,13 +65,18 @@ const CartPage = ({ cartPromise }) => {
          */
     };
 
-    const reviews = use(cartPromise);
+    const productPurchaseTypeChange = async (productId) => {
+
+    }
+
+    const cart = use(cartPromise);
+
+    console.log("Cart");
+    console.log(cart);
 
     return (
         <div className="cart-page" style={{ textAlign: 'center', padding: '20px' }}>
-            {loading ? (
-                <p>Loading...</p>
-            ) : cartProducts.length === 0 ? (
+            {cart?.cartProducts?.length === 0 ? (
                 <h1 style={{ fontSize: '50px' }}>The Cart is empty.</h1>
             ) : (
                 <>
@@ -79,11 +84,11 @@ const CartPage = ({ cartPromise }) => {
                         Price:
                     </div>
                     <ul style={{ listStyle: 'none', padding: 0 }}>
-                        {cartProducts.map((product, index) => (
+                        {cart?.cartProducts?.map((cartProduct, index) => (
                             <li key={index}>
                                 <CartProductItem
-                                    product={product}
-                                    onRemove={() => removeProductFromCart(product.product.id)}
+                                    cartProduct={cartProduct}
+                                    onRemove={() => removeProductFromCart(cartProduct.product.id)}
                                 />
                             </li>
                         ))}
@@ -101,21 +106,23 @@ const CartPage = ({ cartPromise }) => {
     );
 };
 
-const CartProductItem = ({ product, onRemove }) => {
-    const { product: p, isBuying, price } = product;
-    const movie = p.movie;
+const CartProductItem = ({ cartProduct, onRemove, onPurchaseTypeChange}) => {
+    const movie = cartProduct?.movie;
 
     return (
-        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0' }}>
+        <div className="cart-product" style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0' }}>
             <div style={{ display: 'flex' }}>
-                <img src={movie.posterUrl} alt={movie.name} style={{ width: '100px', marginRight: '15px' }} />
+                <img src={movie?.posterPath} alt={movie?.name} style={{ width: '100px', marginRight: '15px' }} />
                 <div>
-                    <div style={{ fontWeight: 'bold' }}>{movie.name}</div>
-                    <div style={{ color: 'green', fontSize: '19px' }}>{isBuying ? 'Buy' : 'Rent'}</div>
+                    <div style={{ fontWeight: 'bold' }}>{movie?.name}</div>
+                    <select id="purchase-option" defaultValue={cartProduct?.purchaseType} onChange={onPurchaseTypeChange}>
+                        <option value="buy">Buy</option>
+                        <option value="rent">Rent</option>
+                    </select>
                     <button onClick={onRemove} style={{ marginTop: '10px' }}>Delete</button>
                 </div>
             </div>
-            <div style={{ fontWeight: 'bold', fontSize: '19px' }}>{price}</div>
+            <div style={{ fontWeight: 'bold', fontSize: '19px' }}>{cartProduct?.totalPrice}</div>
         </div>
     );
 };
