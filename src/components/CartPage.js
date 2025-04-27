@@ -107,7 +107,7 @@ const CartPage = ({ cartPromise }) => {
 };
 
 const CartProductItem = ({ cartProduct, onRemove, onPurchaseTypeChange}) => {
-    const movie = cartProduct?.movie;
+    const movie = cartProduct?.poster?.movie;
 
     return (
         <div className="cart-product" style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0' }}>

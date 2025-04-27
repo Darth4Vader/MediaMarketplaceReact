@@ -95,9 +95,9 @@ export async function getReviewsOfMovie(id, page=0, size=1){
     return data;
 }
 
-export async function getCurrentUserCart(navigate) {
+export async function getCurrentUserCart(navigation) {
     console.log("Get cart")
-    const response = await requests.getDataWithAuth('/api/users/carts/');
+    const response = await requests.getDataWithAuth('/api/users/carts/', navigation);
     console.log("Response");
     console.log(response);
     if (!response.ok) {
@@ -118,9 +118,9 @@ export async function getCurrentUserCart(navigate) {
     return data;
 }
 
-export async function updateProductInCart(navigate) {
+export async function updateProductInCart(navigation) {
     console.log("Get cart")
-    const response = await requests.putDataWithAuth('/api/users/carts/');
+    const response = await requests.putDataWithAuth('/api/users/carts/', navigation);
     console.log("Response");
     console.log(response);
     if (!response.ok) {
@@ -132,6 +132,25 @@ export async function updateProductInCart(navigate) {
             error: `Request failed with status ${response.status}: ${response.statusText}`,
         };
 
+    }
+
+    // Parse the response data
+    const data = await response.json();
+
+    // Return the successful response
+    return data;
+}
+
+export async function getProductOfMovie(movieId) {
+    const response = await requests.getData(`/api/main/products?movieId=${movieId}`);
+    console.log("Response");
+    console.log(response);
+    if (!response.ok) {
+        return {
+            status: response?.status,
+            isError: true,
+            error: `Request failed with status ${response.status}: ${response.statusText}`,
+        };
     }
 
     // Parse the response data

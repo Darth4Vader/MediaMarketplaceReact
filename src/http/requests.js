@@ -1,4 +1,6 @@
 import Cookies  from "js-cookie";
+import { useNavigate} from "react-router";
+import {Alert} from 'react-native';
 
 
 const apiBaseUrl = 'http://192.168.1.237:8080';
@@ -19,18 +21,35 @@ export async function getData(uri) {
         });
 }
 
-export async function getDataWithAuth(uri) {
+export async function getDataWithAuth(uri, navigation) {
     const settings = {
         method: 'GET',
         headers: {
             Accept: 'application/json',
             'Content-Type': 'application/json',
-        }
+        },
     };
-    return await fetchWithAuth(uri, settings);
+    /*
+    if(jsonData) {
+        settings.headers.body = jsonData;
+    }
+     */
+    return await fetchWithAuth(uri, settings, navigation);
 }
 
-export async function putDataWithAuth(uri, jsonData) {
+export async function postDataWithAuth(uri, jsonData, navigation) {
+    const settings = {
+        method: 'POST',
+        headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+        },
+        body: jsonData
+    };
+    return await fetchWithAuth(uri, settings, navigation);
+}
+
+export async function putDataWithAuth(uri, jsonData, navigation) {
     const settings = {
         method: 'PUT',
         headers: {
@@ -39,10 +58,10 @@ export async function putDataWithAuth(uri, jsonData) {
         },
         body: jsonData
     };
-    return await fetchWithAuth(uri, settings);
+    return await fetchWithAuth(uri, settings, navigation);
 }
 
-async function fetchWithAuth(uri, settings) {
+async function fetchWithAuth(uri, settings, navigation) {
     console.log("get cookie: " + Cookies.get('accessToken'));
     settings.headers.Authorization = `Bearer ${Cookies.get('accessToken')}`;
     console.log(`${apiBaseUrl}${uri}`);
@@ -55,20 +74,53 @@ async function fetchWithAuth(uri, settings) {
                     console.log("401 Unauthorized");
                     // try to refresh token
                     console.log("Try to refresh token");
-                    if (await refreshToken()) {
+                    const refreshTokenResponse = await refreshToken();
+                    if (refreshTokenResponse == null) {
                         console.log("Attempt Request Second Time")
                         settings.headers.Authorization = `Bearer ${Cookies.get('accessToken')}`;
-                        const response2 = await fetch(`${apiBaseUrl}${uri}`, settings)
+                        return await fetch(`${apiBaseUrl}${uri}`, settings)
+                            .then((response2) => {
+                                console.log("Second Attempt Response: ");
+                                console.log(response2);
+                                if (!response.ok) {
+                                    if (response.status === 401) {
+                                        // not authorized again. send to login page
+                                        console.log("Failed again")
+                                        Alert.alert("All Done!",
+                                            "You have successfully registered.",
+                                            [
+                                                {text: "OK",
+                                                    onPress: () => {
+                                                    navigation('/login', { replace: true });
+                                                }}
+                                            ]
+                                        );
+                                    }
+                                }
+                                return response2;
+                            })
                             .catch((err) => {
                                 console.log("Error in fetch:");
                                 return Promise.reject(err);
                                 //throw err;
                             });
-                        console.log("Second Attempt Response: ");
-                        console.log(response2);
-                        return response2;
                     }
                     else {
+                        if (!response.ok) {
+                            if(response.status === 401) {
+                                console.log("401 Unauthorized Again Again");
+                                Alert.alert("All Done!",
+                                    "You have successfully registered.",
+                                    [
+                                        {text: "OK",
+                                            onPress: () => {
+                                                navigation('/login', { replace: true });
+                                            }}
+                                    ]
+                                );
+                                //return null;
+                            }
+                        }
                         console.log("Post failed");
                     }
                 }
@@ -105,12 +157,12 @@ async function refreshToken() {
                     console.log("401 Unauthorized Again");
                     // try to refresh token
                 }
-                return false;
+                return response;
             }
             const data = await response.json();
             saveTokens(data.accessToken, data.refreshToken);
             console.log("Token Refreshed Successfully");
-            return true;
+            return null;
         })
         .catch((err) => {
             console.log("Error in fetch:");

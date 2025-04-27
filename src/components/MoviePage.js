@@ -1,10 +1,13 @@
 import React, {useState, useEffect, use, Suspense} from 'react';
-import {get} from '../http/requests';
+import {postDataWithAuth} from '../http/requests';
 import MovieGrid from "./MovieGrid";
 import { useParams, Link } from 'react-router-dom';
 import AppBar from "./AppBar";
-import {getMovie, getActorsMovie, getDirectorsMovie, getReviewsOfMovie} from "../http/api";
+import {getMovie, getActorsMovie, getDirectorsMovie, getReviewsOfMovie, getProductOfMovie} from "../http/api";
+import Alert from '@mui/material/Alert';
 import './MoviePage.css';
+import {useNavigate} from 'react-router-dom';
+import {Snackbar} from "@mui/material";
 
 export default function LoadMoviePage() {
     const { id } = useParams();
@@ -18,6 +21,7 @@ export default function LoadMoviePage() {
 
 const MoviePage = ({ moviePromise }) => {
     const movie = use(moviePromise);
+    const navigation = useNavigate();
     return (
         <div className="movie-page">
             <div className="movie-header">
@@ -28,6 +32,9 @@ const MoviePage = ({ moviePromise }) => {
                     <p><strong>Runtime:</strong> {movie?.runtime} minutes</p>
                     <p><strong>Rating:</strong> {movie?.rating}/100</p>
                 </div>
+                <Suspense fallback={<div>Loading Product Information...</div>}>
+                    <ProductOptions productPromise={getProductOfMovie(movie.id, navigation)}/>
+                </Suspense>
             </div>
             <div className="movie-synopsis">
                 <h2>Synopsis</h2>
@@ -51,6 +58,41 @@ const MoviePage = ({ moviePromise }) => {
                     <PagesList pagePromise={getReviewsOfMovie(movie.id)} />
                 </Suspense>
             </div>
+        </div>
+    );
+};
+
+const ProductOptions = ({ productPromise, navigation }) => {
+    const [error, setError] = useState("");
+    const product = use(productPromise);
+
+    const addToCart = async (e, productId, purchaseType) => {
+        e.preventDefault();
+        const response = await postDataWithAuth('/api/users/carts/',
+            JSON.stringify({productId, purchaseType}), navigation);
+        console.log("Add to Cart");
+        console.log(response);
+        if (!response.ok) {
+            setError(await response.text());
+        }
+        else {
+            console.log("Added Successfully");
+        }
+    };
+
+    const closeAlert = () => {
+        setError("");
+    };
+
+    return (
+        <div className="product-options">
+            {error &&
+                //<Snackbar open={error}>
+                    <Alert severity="error" onClose={closeAlert}>{error}</Alert>
+                //</Snackbar>
+            }
+            <button className="buy-button" onClick={(e) => addToCart(e, product.id, "buy")}>Buy for: {product?.finalBuyPrice}</button>
+            <button className="rent-button" onClick={(e)  => addToCart(e, product.id, "rent")}>Rent for: {product?.finalRentPrice}</button>
         </div>
     );
 };
