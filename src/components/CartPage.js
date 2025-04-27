@@ -1,13 +1,18 @@
 import React, {Suspense,use, useEffect, useState} from 'react';
-import {getCurrentUserCart} from '../http/api';
+import {useApi} from '../http/api';
 import {useNavigate} from 'react-router';
 import {ErrorBoundary} from "react-error-boundary";
 import './CartPage.css';
 
 export default function LoadCartPage() {
     const navigate = useNavigate();
+    const { getCurrentUserCart } = useApi();
+
+    const errorHandler = (error, info) => {
+        console.log("GOODODOODOOD");
+    };
     return (
-        <ErrorBoundary onError={"hello"} >
+        <ErrorBoundary onError={errorHandler} fallback={<div>Something went wrong...</div>}>
         <Suspense fallback={<div>Loading...</div>}>
             <CartPage cartPromise={getCurrentUserCart(navigate)} />
         </Suspense>

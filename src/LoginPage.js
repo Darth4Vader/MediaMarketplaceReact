@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
-import { saveTokens } from './http/requests'
+import { useFetchRequests, saveTokens } from './http/requests'
 
 const Card = ({ className = "", children }) => (
     <div className={`bg-white p-6 rounded-2xl shadow ${className}`}>{children}</div>
@@ -11,13 +11,13 @@ const CardContent = ({ children }) => (
 );
 
 const LoginPage = () => {
+    const { getAllMovies } = useFetchRequests();
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
 
     const handleLogin = async (e) => {
         e.preventDefault();
-
         try {
             console.log("login");
             console.log(JSON.stringify({ username, password }));

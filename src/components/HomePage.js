@@ -1,7 +1,7 @@
 import React, {Suspense, useEffect, useState, use} from 'react';
 import MovieGrid from './MovieGrid';
 import AppBar from './AppBar';
-import { getAllMovies, getAllMovies2 } from '../http/api';
+import { useApi } from '../http/api';
 
 function LoadHomePage({dataPromise}) {
     //const [state, action]
@@ -36,6 +36,7 @@ function LoadHomePage({dataPromise}) {
 }
 
 export default function HomePage() {
+    const { getAllMovies } = useApi();
     return (
         <Suspense fallback={<div>Loading...</div>}>
             <LoadHomePage dataPromise={getAllMovies()} />

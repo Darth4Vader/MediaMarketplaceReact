@@ -1,10 +1,12 @@
 import {useParams, useSearchParams} from "react-router-dom";
 import React, {Suspense, use, useEffect} from "react";
 import AppBar from "./AppBar";
-import {getActorsMovie, getDirectorsMovie, getMovie, getReviewsOfMovie} from "../http/api";
+import { useApi } from "../http/api";
 import Pagination from "./Pagination";
+import {ErrorBoundary} from "react-error-boundary";
 
 export default function LoadReviewPage() {
+    const { getReviewsOfMovie } = useApi();
     const { id } = useParams();
     console.log("Load Review Page");
     console.log(id);
@@ -16,9 +18,11 @@ export default function LoadReviewPage() {
     console.log("Page: " + (Number(page)+1));
     console.log("Page: " + (page+1));
     return (
+        <ErrorBoundary fallback={<div>Something went wrong...</div>}>
         <Suspense key={page} fallback={<div>Loading Reviews...</div>}>
             <ReviewsList reviewsPromise={getReviewsOfMovie(id, page-1)} />
         </Suspense>
+        </ErrorBoundary>
     );
 }
 
