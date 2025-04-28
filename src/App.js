@@ -9,12 +9,15 @@ import LoadReviewPage from "./components/ReviewPage";
 import AppBar from "./components/AppBar";
 import LoginPage from "./LoginPage";
 
+import { QueryClient, QueryClientProvider } from 'react-query';
 
 function App() {
-  return (
+    const queryClient = new QueryClient();
+    return (
       <div className="App">
         <header className="App-header">
-          <BrowserRouter>
+            <QueryClientProvider client={queryClient}>
+            <BrowserRouter>
               <AppBar />
             <Routes>
                 <Route path="/" element={<HomePage />} />
@@ -24,6 +27,7 @@ function App() {
                 <Route path="/movie/:id/reviews" element={<LoadReviewPage />} />
             </Routes>
           </BrowserRouter>
+            </QueryClientProvider>
         </header>
       </div>
   );

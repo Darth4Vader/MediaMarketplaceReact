@@ -8,6 +8,7 @@ import Alert from '@mui/material/Alert';
 import './MoviePage.css';
 import {useNavigate} from 'react-router-dom';
 import {Snackbar} from "@mui/material";
+import { useQuery } from 'react-query';
 
 export default function LoadMoviePage() {
     const { getMovie } = useApi();
@@ -20,8 +21,7 @@ export default function LoadMoviePage() {
     );
 }
 
-const MoviePage = ({ moviePromise }) => {
-    const { getProductOfMovie, getActorsMovie, getDirectorsMovie } = useApi();
+const MoviePage = ({ moviePromise}) => {
     const movie = use(moviePromise);
     const navigation = useNavigate();
     return (
@@ -35,7 +35,7 @@ const MoviePage = ({ moviePromise }) => {
                     <p><strong>Rating:</strong> {movie?.rating}/100</p>
                 </div>
                 <Suspense fallback={<div>Loading Product Information...</div>}>
-                    <ProductOptions productPromise={getProductOfMovie(movie.id, navigation)} />
+                    <ProductOptions id={movie.id} />
                 </Suspense>
             </div>
             <div className="movie-synopsis">
@@ -45,11 +45,11 @@ const MoviePage = ({ moviePromise }) => {
             <div className="movie-cast">
                 <h2>Directors</h2>
                 <Suspense fallback={<div>Loading Directors...</div>}>
-                    <DirectorList directorsPromise={getDirectorsMovie(movie.id, navigation)} />
+                    <DirectorList id={movie.id} />
                 </Suspense>
                 <h2>Actors</h2>
                 <Suspense fallback={<div>Loading Actors...</div>}>
-                    <ActorList actorsPromise={getActorsMovie(movie.id, navigation)} />
+                    <ActorList id={movie.id} />
                 </Suspense>
             </div>
             <div className="movie-reviews">
@@ -61,15 +61,20 @@ const MoviePage = ({ moviePromise }) => {
     );
 };
 
-const ProductOptions = ({ productPromise, navigation }) => {
+const ProductOptions = ({ id }) => {
     const requests = useFetchRequests();
     const [error, setError] = useState("");
-    const product = use(productPromise);
+    const { getProductOfMovie } = useApi();
+    const { isLoading, data: product } = useQuery(['product', id], () => getProductOfMovie(id));
+
+    if (isLoading) {
+        return <span>Loading...</span>;
+    }
 
     const addToCart = async (e, productId, purchaseType) => {
         e.preventDefault();
         const response = requests.postWithAuth('/api/users/carts/',
-            {productId, purchaseType}, navigation);
+            {productId, purchaseType});
         console.log("Add to Cart");
         console.log(response);
         if (!response.ok) {
@@ -123,10 +128,14 @@ const ReviewsList = ({ reviewsPromise }) => {
             );
 };
 
-const DirectorList = ({ directorsPromise }) => {
-    console.log(directorsPromise);
-    const directors = use(directorsPromise);
-    console.log("No")
+const DirectorList = ({ id }) => {
+    const { getDirectorsMovie } = useApi();
+
+    const {isLoading, data: directors} = useQuery(['directors', id], () => getDirectorsMovie(id));
+
+    if(isLoading) {
+        return <span>Loading...</span>;
+    }
     console.log(directors);
     return (
         <ol>
@@ -137,9 +146,13 @@ const DirectorList = ({ directorsPromise }) => {
     );
 };
 
-const ActorList = ({ actorsPromise }) => {
-    console.log(actorsPromise);
-    const actors = use(actorsPromise);
+const ActorList = ({ id }) => {
+    const { getActorsMovie } = useApi();
+    const {isLoading, data: actors} = useQuery(['actors', id], () => getActorsMovie(id));
+
+    if(isLoading) {
+        return <span>Loading...</span>;
+    }
     return (
         <ol>
             {actors?.map((actor) => {
