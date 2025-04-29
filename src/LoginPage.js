@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
 import { useFetchRequests, saveTokens } from './http/requests'
+import {useNavigate, useSearchParams} from "react-router-dom";
 
 const Card = ({ className = "", children }) => (
     <div className={`bg-white p-6 rounded-2xl shadow ${className}`}>{children}</div>
@@ -15,6 +16,9 @@ const LoginPage = () => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const returnTo = searchParams.get("return_to") || "/home";
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -36,6 +40,9 @@ const LoginPage = () => {
                 alert("Login successful! Token: " + data.refreshToken);
                 saveTokens(data.accessToken, data.refreshToken);
                 setError("");
+                // Redirect to the returnTo URL
+                navigate(returnTo);
+
             } else {
                 const err = await response.text();
                 setError(err || "Invalid email or password.");

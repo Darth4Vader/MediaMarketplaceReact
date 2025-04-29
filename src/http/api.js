@@ -13,20 +13,26 @@ export function useApi() {
         getReviewsOfMovie,
         getCurrentUserCart,
         updateProductInCart,
-        getProductOfMovie
+        getProductOfMovie,
+        handleResponse
     }
 
     async function handleResponse(response) {
         if (!response.ok) {
-            return {
+            console.log("Not ok");
+            return Promise.reject(response);
+            /*return {
                 status: response?.status,
                 isError: true,
                 error: `Request failed with status ${response.status}: ${response.statusText}`,
-            };
+            };*/
         }
+
+        console.log(response);
 
         // Parse the response data
         const data = await response.json();
+        console.log(data);
         // Return the successful response
         return data;
     }
@@ -44,11 +50,27 @@ export function useApi() {
     }
 
     async function getDirectorsMovie(id) {
-        return handleResponse(await requests.get(`/api/main/directors?movieId=${id}`));
+        //return handleResponse(await requests.get(`/api/main/directors?movieId=${id}`));
+       /* const response = handleResponse(await requests.get(`/api/main/directors?movieId=${id}`));
+        return Promise.delay(3000).then(() => {
+            return response;
+        });*/
+        // for testing. need to remove this and use the above version
+        return handleResponse(await requests.get(`/api/main/directors?movieId=${id}`))
+            .then(sleeper(3000))
+            .catch((err) => {
+                console.log("Oh no catched error");
+            });
     }
 
     async function getReviewsOfMovie(id, page=0, size=1) {
         return handleResponse(await requests.get(`/api/main/movie-reviews/reviews/${id}?page=${page}&size=${size}`));
+    }
+
+    function sleeper(ms) {
+        return function(x) {
+            return new Promise(resolve => setTimeout(() => resolve(x), ms));
+        };
     }
 
     async function getCurrentUserCart(navigation) {

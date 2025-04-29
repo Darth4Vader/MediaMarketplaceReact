@@ -39,6 +39,25 @@
     color: #ffcc00;
 }
 
+.product-missing {
+    //display: flex;
+    border: 1px solid white;
+    border-radius: 30px;
+    background-color: white;
+    //height: auto;
+    height: 100%
+}
+
+.product-missing:hover {
+    //font-weight: bold;
+    text-shadow: 1px 0px 0px black;
+}
+
+.product-missing .p {
+    //display: inline-block;
+    //border: 1px solid #ffcc00;
+}
+
 /* Synopsis section */
 .movie-synopsis {
     margin-top: 20px;

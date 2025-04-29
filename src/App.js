@@ -1,5 +1,5 @@
 import logo from './logo.svg';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import {BrowserRouter, Routes, Route, useNavigate} from 'react-router-dom';
 import './App.css';
 import HomePage from "./components/HomePage";
 import LoadMoviePage from "./components/MoviePage";
@@ -10,14 +10,50 @@ import AppBar from "./components/AppBar";
 import LoginPage from "./LoginPage";
 
 import { QueryClient, QueryClientProvider } from 'react-query';
+import {ErrorBoundary} from "react-error-boundary";
 
 function App() {
-    const queryClient = new QueryClient();
+    const navigate = useNavigate();
+    const queryClient = new QueryClient({
+        defaultOptions: {
+            queries: {
+                refetchOnWindowFocus: false,
+            }
+        },
+        onError: err => {
+            console.log("This is bad bad")
+            if (err.response?.status === 401) {
+                // clean up session state and prompt for login
+                // ex: window.location.reload();
+            }
+        }
+    });
+    const errorHandler = (error, info) => {
+        console.log("GOODODOODOOD");
+        console.log(error);
+        if (error?.status === 401) {
+            console.log("Good to see you");
+            navigate("/login?return_to=" + window.location.pathname);
+            // clean up session state and prompt for login
+            // ex: window.location.reload();
+        }
+        else
+            throw error;
+    };
     return (
       <div className="App">
         <header className="App-header">
             <QueryClientProvider client={queryClient}>
-            <BrowserRouter>
+                <ErrorBoundary onError={errorHandler} fallbackRender={({ error, resetErrorBoundary }) => {
+                    resetErrorBoundary();
+                    return (
+                        <div>
+                            <h2>Something went wrong:</h2>
+                            <pre>{error.message}</pre>
+                            <button onClick={() => resetErrorBoundary()}>Try again</button>
+                        </div>
+                    );
+                }}>
               <AppBar />
             <Routes>
                 <Route path="/" element={<HomePage />} />
@@ -26,7 +62,7 @@ function App() {
                 <Route path="/movie/:id" element={<LoadMoviePage />} />
                 <Route path="/movie/:id/reviews" element={<LoadReviewPage />} />
             </Routes>
-          </BrowserRouter>
+                </ErrorBoundary>
             </QueryClientProvider>
         </header>
       </div>

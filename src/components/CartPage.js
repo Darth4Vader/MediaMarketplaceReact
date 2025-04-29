@@ -2,6 +2,8 @@ import React, {Suspense,use, useEffect, useState} from 'react';
 import {useApi} from '../http/api';
 import {useNavigate} from 'react-router';
 import {ErrorBoundary} from "react-error-boundary";
+import {useMutation} from "react-query";
+import {useFetchRequests} from "../http/requests";
 import './CartPage.css';
 
 export default function LoadCartPage() {
@@ -12,50 +14,53 @@ export default function LoadCartPage() {
         console.log("GOODODOODOOD");
     };
     return (
-        <ErrorBoundary onError={errorHandler} fallback={<div>Something went wrong...</div>}>
-        <Suspense fallback={<div>Loading...</div>}>
+        //<ErrorBoundary onError={errorHandler} fallback={<div>Something went wrong...</div>}>
+        <Suspense key="cart" fallback={<div>Loading...</div>}>
             <CartPage cartPromise={getCurrentUserCart(navigate)} />
         </Suspense>
-        </ErrorBoundary>
+        //</ErrorBoundary>
     );
 }
 
 const CartPage = ({ cartPromise }) => {
-
-    const [cartProducts, setCartProducts] = useState([]);
+    const cart = use(cartPromise);
+    const [cartProducts, setCartProducts] = useState(cart?.cartProducts || []);
     const [totalPrice, setTotalPrice] = useState(0);
+    const requests = useFetchRequests();
+    const { mutate: updateProductPurchaseType } = useMutation({
+        mutationFn: async ({productId, purchaseType}) => {
+            return await requests.putWithAuth(`/api/users/carts/${productId}`,
+                {purchaseType});
+        },
+        onSuccess: async (response) => {
+            /*setOpenAlert(true);
+            if (!response.ok) {
+                setMessage(await response.text());
+                setSeverity('error');
+            } else {
+                setMessage("Added Successfully");
+                setSeverity('success');
+            }*/
+        },
+        useErrorBoundary: true,
+        throwOnError: true,
+    });
 
-    /*
-    useEffect(() => {
-        refreshCart();
-    }, []);
-    */
+    const { mutate: removeProductFromCart } = useMutation({
+        mutationFn: ({index, productId}) => {
+            return requests.deleteWithAuth(`/api/users/carts/${productId}`);
+        },
+        onSuccess: async (response, variables) => {
+            if(response.ok) {
+                setCartProducts(cartProducts => cartProducts.filter((_, i) => i !== variables.index));
+            }
+        },
+        useErrorBoundary: true,
+        throwOnError: true,
+    });
 
-    /*
-    const refreshCart = async () => {
-        try {
-            const cart = await AppClient.getCart();
-            setCartProducts(cart.cartProducts || []);
-            setTotalPrice(cart.totalPrice || 0);
-        } catch (e) {
-            console.error("Cart not found or error:", e);
-            setCartProducts([]);
-        } finally {
-            setLoading(false);
-        }
-    };
-     */
-
-    const removeProductFromCart = async (productId) => {
-        /*try {
-            await AppClient.removeProductFromCart(productId);
-            setCartProducts(prev => prev.filter(p => p.product.id !== productId));
-        } catch (e) {
-            console.warn("Failed to remove, but updating UI anyway.", e);
-            setCartProducts(prev => prev.filter(p => p.product.id !== productId));
-        }
-        refreshCart();
-         */
+    const removeProductFromCartAction = async (index, productId) => {
+        removeProductFromCart({ index, productId });
     };
 
     const purchaseCart = async () => {
@@ -70,18 +75,13 @@ const CartPage = ({ cartPromise }) => {
          */
     };
 
-    const productPurchaseTypeChange = async (productId) => {
-
+    const productPurchaseTypeChange = async (productId, purchaseType) => {
+        await updateProductPurchaseType({productId, purchaseType});
     }
-
-    const cart = use(cartPromise);
-
-    console.log("Cart");
-    console.log(cart);
 
     return (
         <div className="cart-page" style={{ textAlign: 'center', padding: '20px' }}>
-            {cart?.cartProducts?.length === 0 ? (
+            {cartProducts.length === 0 ? (
                 <h1 style={{ fontSize: '50px' }}>The Cart is empty.</h1>
             ) : (
                 <>
@@ -89,11 +89,12 @@ const CartPage = ({ cartPromise }) => {
                         Price:
                     </div>
                     <ul style={{ listStyle: 'none', padding: 0 }}>
-                        {cart?.cartProducts?.map((cartProduct, index) => (
+                        {cartProducts.map((cartProduct, index) => (
                             <li key={index}>
                                 <CartProductItem
                                     cartProduct={cartProduct}
-                                    onRemove={() => removeProductFromCart(cartProduct.product.id)}
+                                    onRemove={() => removeProductFromCartAction(index, cartProduct.product.id)}
+                                    onPurchaseTypeChange={(type) => productPurchaseTypeChange(cartProduct.product.id, type)}
                                 />
                             </li>
                         ))}
@@ -112,7 +113,7 @@ const CartPage = ({ cartPromise }) => {
 };
 
 const CartProductItem = ({ cartProduct, onRemove, onPurchaseTypeChange}) => {
-    const movie = cartProduct?.poster?.movie;
+    const movie = cartProduct?.product?.movie;
 
     return (
         <div className="cart-product" style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0' }}>
@@ -120,7 +121,7 @@ const CartProductItem = ({ cartProduct, onRemove, onPurchaseTypeChange}) => {
                 <img src={movie?.posterPath} alt={movie?.name} style={{ width: '100px', marginRight: '15px' }} />
                 <div>
                     <div style={{ fontWeight: 'bold' }}>{movie?.name}</div>
-                    <select id="purchase-option" defaultValue={cartProduct?.purchaseType} onChange={onPurchaseTypeChange}>
+                    <select id="purchase-option" defaultValue={cartProduct?.purchaseType} onChange={(e) => onPurchaseTypeChange(e.target.value)}>
                         <option value="buy">Buy</option>
                         <option value="rent">Rent</option>
                     </select>

@@ -1,19 +1,16 @@
-import React, {useState, useEffect, use, Suspense, useMemo} from 'react';
-import { useFetchRequests } from '../http/requests';
-import MovieGrid from "./MovieGrid";
+import { useState, use, Suspense } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import AppBar from "./AppBar";
-import { useApi } from "../http/api";
 import Alert from '@mui/material/Alert';
+import { Fade } from "@mui/material";
+import { useMutation, useQuery } from 'react-query';
+import { ErrorBoundary } from "react-error-boundary";
+import { useFetchRequests } from '../http/requests';
+import { useApi } from "../http/api";
 import './MoviePage.css';
-import {useNavigate} from 'react-router-dom';
-import {Snackbar} from "@mui/material";
-import { useQuery } from 'react-query';
 
 export default function LoadMoviePage() {
     const { getMovie } = useApi();
     const { id } = useParams();
-    console.log(id);
     return (
         <Suspense fallback={<div>Loading...</div>}>
             <MoviePage moviePromise={getMovie(id)} />
@@ -23,7 +20,7 @@ export default function LoadMoviePage() {
 
 const MoviePage = ({ moviePromise}) => {
     const movie = use(moviePromise);
-    const navigation = useNavigate();
+    const movieId = movie.id;
     return (
         <div className="movie-page">
             <div className="movie-header">
@@ -34,9 +31,7 @@ const MoviePage = ({ moviePromise}) => {
                     <p><strong>Runtime:</strong> {movie?.runtime} minutes</p>
                     <p><strong>Rating:</strong> {movie?.rating}/100</p>
                 </div>
-                <Suspense fallback={<div>Loading Product Information...</div>}>
-                    <ProductOptions id={movie.id} />
-                </Suspense>
+                <LoadProductOptions movieId={movieId} />
             </div>
             <div className="movie-synopsis">
                 <h2>Synopsis</h2>
@@ -45,11 +40,11 @@ const MoviePage = ({ moviePromise}) => {
             <div className="movie-cast">
                 <h2>Directors</h2>
                 <Suspense fallback={<div>Loading Directors...</div>}>
-                    <DirectorList id={movie.id} />
+                    <DirectorList id={movieId} />
                 </Suspense>
                 <h2>Actors</h2>
                 <Suspense fallback={<div>Loading Actors...</div>}>
-                    <ActorList id={movie.id} />
+                    <ActorList id={movieId} />
                 </Suspense>
             </div>
             <div className="movie-reviews">
@@ -61,82 +56,91 @@ const MoviePage = ({ moviePromise}) => {
     );
 };
 
+const LoadProductOptions = ({ movieId }) => {
+    const errorHandler = (error, info) => {
+        if (error?.status === 404) {
+            // Handle 404 error in the fallback
+        }
+        else
+            throw error;
+    };
+    return (
+        <ErrorBoundary onError={errorHandler} fallbackRender={({ error, resetErrorBoundary }) => {
+            return (
+                <div className="product-missing">
+                    <p>Movie Not Available to Purchase</p>
+                </div>
+            );
+        }}>
+            <Suspense fallback={<div>Loading Product Information...</div>}>
+                <ProductOptions id={movieId} />
+            </Suspense>
+        </ErrorBoundary>
+    );
+}
+
 const ProductOptions = ({ id }) => {
     const requests = useFetchRequests();
-    const [error, setError] = useState("");
     const { getProductOfMovie } = useApi();
-    const { isLoading, data: product } = useQuery(['product', id], () => getProductOfMovie(id));
-
-    if (isLoading) {
-        return <span>Loading...</span>;
-    }
-
+    const [openAlert, setOpenAlert] = useState(false);
+    const [message, setMessage] = useState('');
+    const [severity, setSeverity] = useState('info');
+    const { data: product } = useQuery(['product', id], () => getProductOfMovie(id), {
+        suspense: true,
+        retry: false
+    });
+    const { mutate: addToCarRequest } = useMutation({
+        mutationFn: async ({productId, purchaseType}) => {
+            return await requests.postWithAuth('/api/users/carts/',
+                {productId, purchaseType});
+        },
+        onSuccess: async (response) => {
+            setOpenAlert(true);
+            if (!response.ok) {
+                setMessage(await response.text());
+                setSeverity('error');
+            } else {
+                setMessage("Added Successfully");
+                setSeverity('success');
+            }
+        },
+        useErrorBoundary: true,
+        throwOnError: true,
+    });
     const addToCart = async (e, productId, purchaseType) => {
         e.preventDefault();
-        const response = requests.postWithAuth('/api/users/carts/',
-            {productId, purchaseType});
-        console.log("Add to Cart");
-        console.log(response);
-        if (!response.ok) {
-            setError(await response.text());
-        }
-        else {
-            console.log("Added Successfully");
-        }
+        const response = await addToCarRequest({productId, purchaseType});
     };
-
     const closeAlert = () => {
-        setError("");
+        setOpenAlert(false);
     };
-
     return (
         <div className="product-options">
-            {error &&
-                //<Snackbar open={error}>
-                    <Alert severity="error" onClose={closeAlert}>{error}</Alert>
-                //</Snackbar>
-            }
+                <Fade
+                    in={openAlert}
+                    //timeout={{ enter: 500, exit: 200 }}
+                    timeout={1000}
+                    addEndListener={() => {
+                        setTimeout(() => {
+                            setOpenAlert(false)
+                        }, 1000);
+                    }}
+                    >
+                    <Alert severity={severity} onClose={closeAlert} >{message}</Alert>
+                </Fade>
             <button className="buy-button" onClick={(e) => addToCart(e, product.id, "buy")}>Buy for: {product?.finalBuyPrice}</button>
             <button className="rent-button" onClick={(e)  => addToCart(e, product.id, "rent")}>Rent for: {product?.finalRentPrice}</button>
         </div>
     );
 };
 
-function formatDate(dateStr) {
-    if (!dateStr) return '';
-    const date = new Date(dateStr);
-    return date.toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-    });
-}
-
-const ReviewsList = ({ reviewsPromise }) => {
-    const reviews = use(reviewsPromise);
-    console.log(reviews);
-    return reviews?.content?.length > 0 ? (
-                reviews?.content?.map((review) => (
-                    <div key={review.id} className="review">
-                        <h3>{review.title}</h3>
-                        <p>{review.content}</p>
-                        <p><strong>Rating:</strong> {review.rating}/100</p>
-                    </div>
-                ))
-            ) : (
-                <p>No reviews yet.</p>
-            );
-};
-
 const DirectorList = ({ id }) => {
     const { getDirectorsMovie } = useApi();
-
-    const {isLoading, data: directors} = useQuery(['directors', id], () => getDirectorsMovie(id));
-
-    if(isLoading) {
-        return <span>Loading...</span>;
-    }
-    console.log(directors);
+    const { data: directors} = useQuery({
+        queryKey: ['directors', id],
+        queryFn: () => getDirectorsMovie(id),
+        suspense: true
+    });
     return (
         <ol>
             {directors?.map((director) => {
@@ -148,11 +152,9 @@ const DirectorList = ({ id }) => {
 
 const ActorList = ({ id }) => {
     const { getActorsMovie } = useApi();
-    const {isLoading, data: actors} = useQuery(['actors', id], () => getActorsMovie(id));
-
-    if(isLoading) {
-        return <span>Loading...</span>;
-    }
+    const {data: actors} = useQuery(['actors', id], () => getActorsMovie(id), {
+        suspense: true
+    });
     return (
         <ol>
             {actors?.map((actor) => {

@@ -12,6 +12,7 @@ export function useFetchRequests() {
         getWithAuth: requestWithAuth('GET'),
         putWithAuth: requestWithAuth('PUT'),
         postWithAuth: requestWithAuth('POST'),
+        deleteWithAuth: requestWithAuth('DELETE'),
     };
 
     function createSettings(method, body) {
@@ -40,7 +41,7 @@ export function useFetchRequests() {
         };
     }
 
-    async function requestWithAuth(method) {
+    function requestWithAuth(method) {
         return async (uri, body, navigation) => {
             const settings = createSettings(method, body);
             const accessToken = Cookies.get('accessToken');
@@ -92,8 +93,8 @@ export function useFetchRequests() {
                                     });
                             }
                             else {
-                                if (!response.ok) {
-                                    if(response.status === 401) {
+                                if (!refreshTokenResponse.ok) {
+                                    if(refreshTokenResponse.status === 401) {
                                         console.log("401 Unauthorized Again Again");
                                         Alert.alert("All Done!",
                                             "You have successfully registered.",
@@ -104,6 +105,8 @@ export function useFetchRequests() {
                                                     }}
                                             ]
                                         );
+                                        throw refreshTokenResponse;
+                                        //return Promise.reject(refreshTokenResponse);
                                         //return null;
                                     }
                                 }
@@ -119,7 +122,7 @@ export function useFetchRequests() {
     async function RefreshToken() {
         const request = useFetchRequests();
         const refreshToken = Cookies.get('refreshToken');
-        return await request.post(`${apiBaseUrl}/api/users/refresh`, { refreshToken })
+        return await request.post(`/api/users/refresh`, { refreshToken })
             .then(async function(response) {
                 console.log("Post ended");
                 if (!response.ok) {
