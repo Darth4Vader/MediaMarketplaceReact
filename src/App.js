@@ -8,6 +8,7 @@ import Movie from "./components/Movie";
 import LoadReviewPage from "./components/ReviewPage";
 import AppBar from "./components/AppBar";
 import LoginPage from "./LoginPage";
+import RegisterPage from "./components/RegisterPage";
 
 import { QueryClient, QueryClientProvider } from 'react-query';
 import {ErrorBoundary} from "react-error-boundary";
@@ -58,6 +59,7 @@ function App() {
             <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
                 <Route path="/cart" element={<LoadCartPage />} />
                 <Route path="/movie/:id" element={<LoadMoviePage />} />
                 <Route path="/movie/:id/reviews" element={<LoadReviewPage />} />

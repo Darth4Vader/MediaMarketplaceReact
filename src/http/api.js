@@ -14,7 +14,8 @@ export function useApi() {
         getCurrentUserCart,
         updateProductInCart,
         getProductOfMovie,
-        handleResponse
+        getUserActiveMoviesOrdered,
+        handleResponse,
     }
 
     async function handleResponse(response) {
@@ -83,5 +84,10 @@ export function useApi() {
 
     async function getProductOfMovie(movieId) {
         return handleResponse(await requests.get(`/api/main/products?movieId=${movieId}`));
+    }
+
+    async function getUserActiveMoviesOrdered(movieId) {
+        return await requests.getWithAuth(`/api/users/current/movie-purchased/actives/${movieId}`);
+        //return handleResponse(await requests.getWithAuth(`/api/users/current/movie-purchased/actives/${movieId}`));
     }
 }

@@ -1,4 +1,4 @@
-import { useState, use, Suspense } from 'react';
+import {useState, use, Suspense, useEffect} from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
 import { Fade } from "@mui/material";
@@ -80,11 +80,166 @@ const LoadProductOptions = ({ movieId }) => {
 }
 
 const ProductOptions = ({ id }) => {
-    const requests = useFetchRequests();
-    const { getProductOfMovie } = useApi();
+    const { getUserActiveMoviesOrdered } = useApi();
     const [openAlert, setOpenAlert] = useState(false);
     const [message, setMessage] = useState('');
     const [severity, setSeverity] = useState('info');
+    const [isRented, setIsRented] = useState(false);
+    const [isBought, setIsBought] = useState(false);
+    const { data: userPurchaseInfoResponse, status } = useQuery(['userActiveMovieOrders', id], async () => {
+        return await getUserActiveMoviesOrdered(id);
+    }, {
+        suspense: true,
+        retry: false,
+        useErrorBoundary: false,
+    });
+    useEffect(() => {
+        const load = async () => {
+            if(status === 'success') {
+                if(userPurchaseInfoResponse.ok) {
+                    const data = await userPurchaseInfoResponse.json();
+                    console.log("Parsed");
+                    console.log(data);
+                    if (data?.activePurchases?.length > 0) {
+                        data?.activePurchases?.forEach(purchaseInfo => {
+                            console.log(purchaseInfo);
+                            if (purchaseInfo?.isRented === true) {
+                                setIsRented(true);
+                            } else if (purchaseInfo?.isRented === false) {
+                                setIsBought(true);
+                            }
+                        });
+                    }
+                }
+            }
+        }
+        load();
+    }, [status, userPurchaseInfoResponse]);
+    /*
+    const { data: userPurchaseInfoResponse } = useQuery(['userActiveMovieOrders', id], () => getUserActiveMoviesOrdered(id)
+        .then(async (response) => {
+            if(response.ok) {
+                console.log("Success");
+                console.log(response);
+                const userPurchaseInfo = await response.json();
+                console.log(userPurchaseInfo);
+                userPurchaseInfo?.activePurchases?.forEach(purchaseInfo => {
+                    console.log(purchaseInfo);
+                    if (purchaseInfo?.isRented === true) {
+                        console.log("Good");
+                        setIsRented(true);
+                    } else if (purchaseInfo?.isRented === false) {
+                        console.log("Bad");
+                        setIsBought(true);
+                        console.log("isBought");
+                    }
+                });
+            }
+        }), {
+        suspense: true,
+        retry: false,
+        useErrorBoundary: false,
+        /*
+        onSuccess: async (response) => {
+            if(response.ok) {
+                console.log("Success");
+                console.log(response);
+                const userPurchaseInfo = await response.json();
+                console.log(userPurchaseInfo);
+                userPurchaseInfo?.activePurchases?.forEach(purchaseInfo => {
+                    if (purchaseInfo?.isRented === true) {
+                        setIsRented(true);
+                    } else if (purchaseInfo?.isRented === false) {
+                        setIsBought(true);
+                    }
+                });
+            }
+        },*/
+    //});
+   /* const { data: userPurchaseInfoResponse } = useQuery({
+        queryKey: ['userActiveMovieOrders', id],
+        queryFn: async () => {
+            return await getUserActiveMoviesOrdered(id);
+        },
+        suspense: true,
+        retry: false,
+        onSuccess: async (data) => {
+            console.log("Success");
+            console.log(data);
+            const userPurchaseInfo = await data.json();
+            console.log(userPurchaseInfo);
+        },
+        useErrorBoundary: false,
+
+        /*onError: (err) => {
+            console.log("Catchhhhh ", err);
+            //console.log(err);
+            if(!err.ok) {
+                console.log("This is bad bad")
+                if (err.response?.status === 401) {
+                    // clean up session state and prompt for login
+                    // ex: window.location.reload();
+                }
+            }
+            return err;
+        },*/
+        //useErrorBoundary: false,
+        /*onSuccess: async (response) => {
+            console.log("Finished")
+            console.log(response);
+            //return data.ok;
+        },*/
+    //});
+
+    /*
+    console.log("parsed")
+    console.log(userPurchaseInfoResponse);
+    if(userPurchaseInfoResponse?.ok) {
+        console.log('userPurchaseInfo', userPurchaseInfoResponse);
+        // can be rejected, and it ok
+        const userPurchaseInfo = userPurchaseInfoResponse.json();
+        console.log('userPurchaseInfo', userPurchaseInfo);
+        userPurchaseInfo?.forEach(purchaseInfo => {
+            if (purchaseInfo?.isRented === true) {
+                setIsRented(true);
+            } else if (purchaseInfo?.isRented === false) {
+                setIsBought(true);
+            }
+        });
+    }
+
+     */
+    const closeAlert = () => {
+        setOpenAlert(false);
+    };
+    return (
+        <div className="product-options">
+                <Fade
+                    in={openAlert}
+                    //timeout={{ enter: 500, exit: 200 }}
+                    timeout={1000}
+                    addEndListener={() => {
+                        setTimeout(() => {
+                            setOpenAlert(false)
+                        }, 1000);
+                    }}
+                    >
+                    <Alert severity={severity} onClose={closeAlert} >{message}</Alert>
+                </Fade>
+
+            {(isRented || isBought) &&
+                <button>
+                    Watch Movie
+                </button>
+            }
+            <ProductPurchaseOptions id={id} isRented={isRented} isBought={isBought} setOpenAlert={setOpenAlert} setMessage={setMessage} setSeverity={setSeverity} />
+        </div>
+    );
+};
+
+const ProductPurchaseOptions = ({ id, isRented, isBought, setOpenAlert, setMessage, setSeverity }) => {
+    const requests = useFetchRequests();
+    const { getProductOfMovie } = useApi();
     const { data: product } = useQuery(['product', id], () => getProductOfMovie(id), {
         suspense: true,
         retry: false
@@ -111,25 +266,20 @@ const ProductOptions = ({ id }) => {
         e.preventDefault();
         const response = await addToCarRequest({productId, purchaseType});
     };
-    const closeAlert = () => {
-        setOpenAlert(false);
-    };
+    console.log(isRented);
+    console.log(isBought);
     return (
         <div className="product-options">
-                <Fade
-                    in={openAlert}
-                    //timeout={{ enter: 500, exit: 200 }}
-                    timeout={1000}
-                    addEndListener={() => {
-                        setTimeout(() => {
-                            setOpenAlert(false)
-                        }, 1000);
-                    }}
-                    >
-                    <Alert severity={severity} onClose={closeAlert} >{message}</Alert>
-                </Fade>
-            <button className="buy-button" onClick={(e) => addToCart(e, product.id, "buy")}>Buy for: {product?.finalBuyPrice}</button>
-            <button className="rent-button" onClick={(e)  => addToCart(e, product.id, "rent")}>Rent for: {product?.finalRentPrice}</button>
+            {!isBought &&
+                <button className="buy-button" onClick={(e) => addToCart(e, product.id, "buy")}>
+                    Buy for: {product?.finalBuyPrice}
+                </button>
+            }
+            {(!isBought && !isRented) &&
+                <button className="rent-button" onClick={(e)  => addToCart(e, product.id, "rent")}>
+                    Rent for: {product?.finalRentPrice}
+                </button>
+            }
         </div>
     );
 };

@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
 import { useFetchRequests, saveTokens } from './http/requests'
-import {useNavigate, useSearchParams} from "react-router-dom";
+import {Link, useNavigate, useSearchParams} from "react-router-dom";
+import logo from "./marketplace_logo.png";
+import {ShowHidePassword} from "./components/UtilsComponents";
 
 const Card = ({ className = "", children }) => (
     <div className={`bg-white p-6 rounded-2xl shadow ${className}`}>{children}</div>
@@ -71,18 +73,21 @@ const LoginPage = () => {
                             onChange={(e) => setUsername(e.target.value)}
                             required
                         />
-                        <input
-                            type="password"
-                            placeholder="Password"
+                        <ShowHidePassword
+                            name="current-password"
                             value={password}
+                            placeholder="Password"
                             onChange={(e) => setPassword(e.target.value)}
-                            required
+                            autocomplete="current-password"
                         />
                         {error && <p className="text-red-500 text-sm">{error}</p>}
                         <button type="submit" className="w-full">
                             Login
                         </button>
                     </form>
+                    <Link to="/register">
+                        Register Page
+                    </Link>
                 </CardContent>
             </Card>
         </motion.div>
