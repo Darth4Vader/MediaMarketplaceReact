@@ -7,6 +7,18 @@
   pointer-events: none;
 }
 
+.auth-header {
+  height: 10vh;
+  margin-bottom: 20px;
+}
+
+.auth-header .icon {
+  float: left;
+  margin-left: 10px;
+  height: 100%;
+  margin-top: 5px;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
     animation: App-logo-spin infinite 20s linear;

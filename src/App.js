@@ -1,5 +1,5 @@
-import logo from './logo.svg';
-import {BrowserRouter, Routes, Route, useNavigate} from 'react-router-dom';
+import logo from './marketplace_logo.png';
+import {BrowserRouter, Routes, Route, useNavigate, Link} from 'react-router-dom';
 import './App.css';
 import HomePage from "./components/HomePage";
 import LoadMoviePage from "./components/MoviePage";
@@ -12,6 +12,30 @@ import RegisterPage from "./components/RegisterPage";
 
 import { QueryClient, QueryClientProvider } from 'react-query';
 import {ErrorBoundary} from "react-error-boundary";
+import {Outlet} from "react-router";
+import React from "react";
+
+const HomeTemplate = () => {
+    return (
+        <div>
+            <AppBar/>
+            <Outlet/>
+        </div>
+    );
+};
+
+const LogTemplate = () => {
+    return (
+        <div>
+            <div className="auth-header">
+                <Link to="/">
+                    <img src={logo} alt="Home" className="icon"/>
+                </Link>
+            </div>
+            <Outlet/>
+        </div>
+    );
+};
 
 function App() {
     const navigate = useNavigate();
@@ -55,14 +79,17 @@ function App() {
                         </div>
                     );
                 }}>
-              <AppBar />
             <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
-                <Route path="/cart" element={<LoadCartPage />} />
-                <Route path="/movie/:id" element={<LoadMoviePage />} />
-                <Route path="/movie/:id/reviews" element={<LoadReviewPage />} />
+                <Route path="" element={<HomeTemplate />}>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/cart" element={<LoadCartPage />} />
+                    <Route path="/movie/:id" element={<LoadMoviePage />} />
+                    <Route path="/movie/:id/reviews" element={<LoadReviewPage />} />
+                </Route>
+                <Route path="" element={<LogTemplate />}>
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/register" element={<RegisterPage />} />
+                </Route>
             </Routes>
                 </ErrorBoundary>
             </QueryClientProvider>

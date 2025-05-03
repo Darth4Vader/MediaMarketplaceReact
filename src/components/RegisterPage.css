@@ -1,14 +1,73 @@
+.register-page {
+    //display: inline-block;
+    //display: block;
+    display: flex;
+    flex-direction: row;
+}
+
+.register-image-swapper-div {
+    width: 50%;
+    height: 30%;
+    display: inline;
+    overflow: hidden;
+}
+
+.register-image-swapper {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: hidden;
+
+    mask-image: linear-gradient(
+            to right,
+            rgba(0, 0, 0, 1),
+            rgba(0, 0, 0, 0)
+    );
+}
+
+.register-image-swapper-fade-enter{
+    opacity: 0;
+}
+
+.register-image-swapper-fade-enter-active {
+    opacity: 1;
+    transform: scale(1.25);
+    transition: opacity 3000ms, transform 5000ms;
+    transition-delay: 0s, 2s;
+}
+
+.register-image-swapper-fade-exit {
+    opacity: 1;
+    transform: scale(1.25);
+}
+
+.register-image-swapper-fade-exit-active {
+    opacity: 0;
+    transform: scale(1);
+    transition: all 9500ms;
+}
+
+.register-panel {
+    //display: inline;
+    //float: right;
+    background-color: white;
+    color: black;
+    width: 100%;
+}
 
 .register-form {
     display: flex;
     flex-direction: column;
     gap: 1rem;
   width: 50%;
+    margin: auto;
 }
 
-
-.form-input {
-    display: flex;
-    //flex-direction: column;
-  margin-bottom: 1rem;
+.signIn-link {
+    //text-decoration: none;
+    //color: #007bff;
+    font-size: 1rem;
+    //margin-top: 1rem;
+    //line-height: 0;
+    margin-bottom: 1rem;
 }
