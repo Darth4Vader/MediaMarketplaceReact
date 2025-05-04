@@ -251,6 +251,7 @@ const ProductPurchaseOptions = ({ id, isRented, isBought, setOpenAlert, setMessa
         },
         onSuccess: async (response) => {
             setOpenAlert(true);
+            console.log(response);
             if (!response.ok) {
                 setMessage(await response.text());
                 setSeverity('error');

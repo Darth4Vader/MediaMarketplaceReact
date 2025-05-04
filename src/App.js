@@ -1,5 +1,5 @@
 import logo from './marketplace_logo.png';
-import {BrowserRouter, Routes, Route, useNavigate, Link} from 'react-router-dom';
+import {BrowserRouter, Routes, Route, useNavigate, Link, Navigate } from 'react-router-dom';
 import './App.css';
 import HomePage from "./components/HomePage";
 import LoadMoviePage from "./components/MoviePage";
@@ -14,6 +14,7 @@ import { QueryClient, QueryClientProvider } from 'react-query';
 import {ErrorBoundary} from "react-error-boundary";
 import {Outlet} from "react-router";
 import React from "react";
+import {useApi} from "./http/api";
 
 const HomeTemplate = () => {
     return (
@@ -25,6 +26,8 @@ const HomeTemplate = () => {
 };
 
 const LogTemplate = () => {
+    // we first check if the user is logged
+    // if so then we redirect them back
     return (
         <div>
             <div className="auth-header">
@@ -35,6 +38,28 @@ const LogTemplate = () => {
             <Outlet/>
         </div>
     );
+};
+
+const AuthRoute = () => {
+    const { checkIfUserLogged } = useApi();
+    const navigate = useNavigate();
+
+    const response = checkIfUserLogged()
+        .then((response) => {
+            console.log(response);
+
+            if (response.ok) {
+                //user is logged in
+                // go to previous page
+                navigate(-1);
+            }
+        })
+        .catch(err => {
+            // it's ok
+            // that means user is not authenticated
+        });
+
+    return <LogTemplate />;
 };
 
 function App() {
@@ -86,7 +111,7 @@ function App() {
                     <Route path="/movie/:id" element={<LoadMoviePage />} />
                     <Route path="/movie/:id/reviews" element={<LoadReviewPage />} />
                 </Route>
-                <Route path="" element={<LogTemplate />}>
+                <Route  path="" element={<AuthRoute />}>
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
                 </Route>

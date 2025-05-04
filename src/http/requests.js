@@ -46,15 +46,14 @@ export function useFetchRequests() {
             const settings = createSettings(method, body);
             const accessToken = Cookies.get('accessToken');
             if (!accessToken) {
-                if(!Cookies.get('refreshToken')) {
+                if (!Cookies.get('refreshToken')) {
                 }
-            }
-            else {
+            } else {
                 settings.headers.Authorization = `Bearer ${accessToken}`;
             }
             console.log(`${apiBaseUrl}${uri}`);
             return await fetch(`${apiBaseUrl}${uri}`, settings)
-                .then(async function(response) {
+                .then(async function (response) {
                     console.log("Catched");
                     if (!response.ok) {
                         if (response.status === 401) {
@@ -76,10 +75,12 @@ export function useFetchRequests() {
                                                 Alert.alert("All Done!",
                                                     "You have successfully registered.",
                                                     [
-                                                        {text: "OK",
+                                                        {
+                                                            text: "OK",
                                                             onPress: () => {
-                                                                navigation('/login', { replace: true });
-                                                            }}
+                                                                navigation('/login', {replace: true});
+                                                            }
+                                                        }
                                                     ]
                                                 );
                                             }
@@ -91,23 +92,29 @@ export function useFetchRequests() {
                                         return Promise.reject(err);
                                         //throw err;
                                     });
-                            }
-                            else {
+                            } else {
                                 if (!refreshTokenResponse.ok) {
-                                    if(refreshTokenResponse.status === 401) {
+                                    if (refreshTokenResponse.status === 401) {
                                         console.log("401 Unauthorized Again Again");
                                         Alert.alert("All Done!",
                                             "You have successfully registered.",
                                             [
-                                                {text: "OK",
+                                                {
+                                                    text: "OK",
                                                     onPress: () => {
-                                                        navigation('/login', { replace: true });
-                                                    }}
+                                                        navigation('/login', {replace: true});
+                                                    }
+                                                }
                                             ]
                                         );
                                         throw refreshTokenResponse;
                                         //return Promise.reject(refreshTokenResponse);
                                         //return null;
+                                    }
+                                    if (refreshTokenResponse.status === 404) {
+                                        // the refresh token is not found
+                                        // throw the original response unauthorized
+                                        throw response;
                                     }
                                 }
                                 console.log("Post failed");
@@ -122,13 +129,17 @@ export function useFetchRequests() {
     async function RefreshToken() {
         const request = useFetchRequests();
         const refreshToken = Cookies.get('refreshToken');
-        return await request.post(`/api/users/refresh`, { refreshToken })
-            .then(async function(response) {
+        return await request.post(`/api/users/refresh`, {refreshToken})
+            .then(async function (response) {
                 console.log("Post ended");
                 if (!response.ok) {
-                    if(response.status === 401) {
+                    if (response.status === 401) {
                         console.log("401 Unauthorized Again");
                         // try to refresh token
+                    }
+                    // refresh token not found
+                    if (response.status === 404) {
+
                     }
                     return response;
                 }

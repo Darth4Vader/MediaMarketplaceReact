@@ -8,9 +8,16 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { SearchOutlinedIcon } from "@mui/icons-material";
 import AbcTwoToneIcon from '@mui/icons-material/AbcTwoTone';
+import {Link, useSearchParams} from "react-router-dom";
 
-export function ShowHidePassword({ name, value, placeholder, onChange, autocomplete }) {
+export function ShowHidePassword({ name, value, placeholder, onChange, autocomplete, errorMessage, setErrorMessage }) {
     const [isVisible, setVisible] = useState(false);
+    const [mainErrorMessage, setMainErrorMessage] = useState("");
+
+    useEffect(() => {
+        console.log("errorMessage");
+        setMainErrorMessage(errorMessage);
+    }, [errorMessage])
 
     const toggle = () => {
         setVisible(!isVisible);
@@ -22,11 +29,16 @@ export function ShowHidePassword({ name, value, placeholder, onChange, autocompl
                 type={!isVisible ? "password" : "text"}
                 autoComplete={autocomplete}
                 value={value}
-                onChange={onChange}
+                onChange={(e) => {
+                    onChange(e);
+                    if(setErrorMessage)
+                        setErrorMessage("");
+                }}
                 required
                 label={placeholder}
                 variant="outlined"
-
+                error={!!mainErrorMessage}
+                helperText={mainErrorMessage ? mainErrorMessage : ""}
                 slotProps={{
                 input: {
                     endAdornment: (
@@ -45,6 +57,23 @@ export function ShowHidePassword({ name, value, placeholder, onChange, autocompl
                 }}
             />
         //</div>
+    );
+}
+
+export function useReturnToParam() {
+    const [searchParams, setSearchParams] = useSearchParams();
+    return searchParams.get("return_to") || "/";
+}
+
+export function AuthLink({ children, to }) {
+    const returnTo = useReturnToParam();
+    return (
+        <Link to={{
+            pathname: to,
+            search: `?return_to=${returnTo}`
+        }}>
+            {children}
+        </Link>
     );
 }
 

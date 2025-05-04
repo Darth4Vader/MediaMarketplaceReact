@@ -1,57 +1,61 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
 import { useFetchRequests, saveTokens } from './http/requests'
-import {Link, useNavigate, useSearchParams} from "react-router-dom";
-import logo from "./marketplace_logo.png";
-import {ShowHidePassword} from "./components/UtilsComponents";
-
-const Card = ({ className = "", children }) => (
-    <div className={`bg-white p-6 rounded-2xl shadow ${className}`}>{children}</div>
-);
-
-const CardContent = ({ children }) => (
-    <div className="space-y-4">{children}</div>
-);
+import {useNavigate} from "react-router-dom";
+import {AuthLink, ShowHidePassword, useReturnToParam} from "./components/UtilsComponents";
+import "./components/RegisterPage.css";
+import TextField from "@mui/material/TextField";
+import {FormHelperText} from "@mui/material";
 
 const LoginPage = () => {
-    const { getAllMovies } = useFetchRequests();
+    const requests = useFetchRequests();
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [usernameError, setUsernameError] = useState("");
+    const [passwordError, setPasswordError] = useState("");
     const [error, setError] = useState("");
     const navigate = useNavigate();
-    const [searchParams, setSearchParams] = useSearchParams();
-    const returnTo = searchParams.get("return_to") || "/home";
+    const returnTo = useReturnToParam();
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        try {
-            console.log("login");
-            console.log(JSON.stringify({ username, password }));
-            const response = await fetch("http://localhost:8080/api/users/login", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ username, password }),
-            });
+        const response = await requests.post("/api/users/login", { username, password });
+        if (response.ok) {
+            const data = await response.json();
+            console.log("Login successful");
+            saveTokens(data.accessToken, data.refreshToken);
+            // Redirect to the returnTo URL
+            navigate(returnTo);
 
-            if (response.ok) {
-                const data = await response.json();
-                console.log("Login successful");
-                console.log(data);
-                alert("Login successful! Token: " + data.refreshToken);
-                saveTokens(data.accessToken, data.refreshToken);
-                setError("");
-                // Redirect to the returnTo URL
-                navigate(returnTo);
-
-            } else {
-                const err = await response.text();
-                setError(err || "Invalid email or password.");
+        } else {
+            if(response.status === 400) {
+                // problem with input fields
+                const vals = await response.json();
+                setError(vals.error);
+                if(vals?.fields) {
+                    if(vals.fields.username) {
+                        setUsernameError(vals.fields.username);
+                    }
+                    if(vals.fields.password) {
+                        setPasswordError(vals.fields.password);
+                    }
+                }
             }
-        } catch (err) {
-            console.error(err);
-            //setError("An error occurred while trying to login.");
+            else if(response.status === 401) {
+                // Password incorrect
+                const err = await response.text();
+                setPasswordError(err);
+            }
+            else if(response.status === 404) {
+                //user was not found
+                const err = await response.text();
+                setUsernameError(err);
+                setError("Problem with siging in");
+            }
+            else {
+                // unkown error
+                throw response;
+            }
         }
     };
 
@@ -62,34 +66,53 @@ const LoginPage = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
         >
-            <Card className="w-full max-w-sm shadow-lg rounded-2xl">
-                <CardContent className="p-6">
-                    <h2 className="text-2xl font-bold mb-4 text-center">Login</h2>
-                    <form onSubmit={handleLogin} className="space-y-4">
-                        <input
-                            //type="username"
-                            placeholder="Username"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            required
-                        />
-                        <ShowHidePassword
-                            name="current-password"
-                            value={password}
-                            placeholder="Password"
-                            onChange={(e) => setPassword(e.target.value)}
-                            autocomplete="current-password"
-                        />
-                        {error && <p className="text-red-500 text-sm">{error}</p>}
-                        <button type="submit" className="w-full">
-                            Login
-                        </button>
-                    </form>
-                    <Link to="/register">
-                        Register Page
-                    </Link>
-                </CardContent>
-            </Card>
+            <div>
+                <div>
+                    <div className="register-panel">
+                        <h2>Login</h2>
+                        <div className="signIn-link">
+                            <span>
+                                <span>New User? </span>
+                                <AuthLink to='/register'>
+                                    Create an Account
+                                </AuthLink>
+                            </span>
+                        </div>
+                        <form onSubmit={handleLogin} className="register-form">
+                            <TextField
+                                type="text"
+                                autoComplete="username"
+                                value={username}
+                                onChange={(e) => {
+                                    setUsername(e.target.value);
+                                    setUsernameError("");
+                                }}
+                                label={"Username"}
+                                variant="outlined"
+                                error={!!usernameError}
+                                helperText={usernameError ? usernameError : ""}
+                            />
+                            <ShowHidePassword
+                                name="current-password"
+                                value={password}
+                                placeholder="Password"
+                                onChange={(e) => setPassword(e.target.value)}
+                                autocomplete="current-password"
+                                errorMessage={passwordError}
+                                setErrorMessage={setPasswordError}
+                            />
+                            <button type="submit">
+                                Login
+                            </button>
+                            {error && (
+                                <FormHelperText error>
+                                    {error}
+                                </FormHelperText>
+                            )}
+                        </form>
+                    </div>
+                </div>
+            </div>
         </motion.div>
     );
 };

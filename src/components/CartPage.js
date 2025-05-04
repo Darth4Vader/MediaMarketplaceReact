@@ -11,14 +11,20 @@ export default function LoadCartPage() {
     const { getCurrentUserCart } = useApi();
 
     const errorHandler = (error, info) => {
-        console.log("GOODODOODOOD");
+        console.log("GOODODOODOODYYYY");
+        if(error.status === 404) {
+
+        }
+        else
+            throw error;
+        console.log(error);
     };
     return (
-        //<ErrorBoundary onError={errorHandler} fallback={<div>Something went wrong...</div>}>
+        <ErrorBoundary onError={errorHandler} fallback={<div>Empty Cart</div>}>
         <Suspense key="cart" fallback={<div>Loading...</div>}>
             <CartPage cartPromise={getCurrentUserCart(navigate)} />
         </Suspense>
-        //</ErrorBoundary>
+        </ErrorBoundary>
     );
 }
 

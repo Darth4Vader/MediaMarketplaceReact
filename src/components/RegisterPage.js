@@ -1,10 +1,10 @@
-import React, {useRef, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import { motion } from "framer-motion"; // fixed incorrect import
-import { saveTokens } from '../http/requests';
+import {saveTokens, useFetchRequests} from '../http/requests';
 import {Link, useNavigate} from "react-router-dom";
 import './RegisterPage.css'
-import {ShowHidePassword} from "./UtilsComponents";
-import {TextField} from "@mui/material";
+import {AuthLink, ShowHidePassword, useReturnToParam} from "./UtilsComponents";
+import {FormHelperText, TextField} from "@mui/material";
 import {SwitchTransition, CSSTransition} from "react-transition-group";
 
 function importAll(r) {
@@ -16,11 +16,21 @@ const images = importAll(require.context('../assets/register-page', false, /\.(p
 const RegisterPage = () => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
+    const [passwordConfirm, setPasswordConfirm] = useState("");
+    const [usernameError, setUsernameError] = useState("");
+    const [passwordError, setPasswordError] = useState("");
+    const [passwordConfirmError, setPasswordConfirmError] = useState("");
     const [error, setError] = useState("");
     const navigate = useNavigate();
     const [currentIndex, setCurrentIndex] = useState(0);
     const nodeRef = useRef(null);
+    const [loaded, setLoaded] = useState(false);
+    const requests = useFetchRequests();
+    const returnTo = useReturnToParam();
+
+    useEffect(() => {
+        setLoaded(true);
+    }, []);
 
     const switchIndex = () => {
         if(currentIndex === images.length - 1) {
@@ -33,34 +43,41 @@ const RegisterPage = () => {
 
     const handleRegister = async (e) => {
         e.preventDefault();
-
-        /*
-        if (password !== confirmPassword) {
-            setError("Passwords do not match.");
-            return;
-        }
-         */
-
-        try {
-            const response = await fetch("http://localhost:8080/api/users/register", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ username, password }),
-            });
-            if (response.ok) {
-                const data = await response.json();
-                alert("Registration successful!");
-                saveTokens(data.accessToken, data.refreshToken);
-                navigate("/login");
-            } else {
-                const err = await response.text();
-                setError(err || "Registration failed.");
+        const response = await requests.post("/api/users/register", { username, password, passwordConfirm });
+        if (response.ok) {
+            const data = await response.json();
+            alert("Registration successful!");
+            saveTokens(data.accessToken, data.refreshToken);
+            // Redirect to the returnTo URL
+            navigate(returnTo);
+        } else {
+            if(response.status === 400) {
+                // problem with input fields
+                const vals = await response.json();
+                console.log(vals);
+                setError(vals.error);
+                if(vals?.fields) {
+                    if(vals.fields.username) {
+                        setUsernameError(vals.fields.username);
+                    }
+                    if(vals.fields.password) {
+                        setPasswordError(vals.fields.password);
+                    }
+                    if(vals.fields.passwordConfirm) {
+                        setPasswordConfirmError(vals.fields.passwordConfirm);
+                    }
+                }
             }
-        } catch (err) {
-            console.error(err);
-            setError("An error occurred during registration.");
+            else if(response.status === 401) {
+                // Password incorrect
+                const err = await response.text();
+                setPasswordError(err);
+                setPasswordConfirmError(err);
+            }
+            else {
+                // unkown error
+                throw response;
+            }
         }
     };
 
@@ -75,6 +92,7 @@ const RegisterPage = () => {
                 <CSSTransition classNames="register-image-swapper-fade"
                     nodeRef={nodeRef}
                     timeout={9000}
+                    in={loaded}
                     unmountOnExit
                     onExited={() => switchIndex()}
                 >
@@ -92,7 +110,9 @@ const RegisterPage = () => {
                 <div className="signIn-link">
                     <span>
                         <span>Already have an account? </span>
-                        <Link to="/login">Sign in</Link>
+                        <AuthLink to="/login">
+                            Sign in
+                        </AuthLink>
                     </span>
                 </div>
                 <form onSubmit={handleRegister} className="register-form">
@@ -111,18 +131,26 @@ const RegisterPage = () => {
                         placeholder="Password"
                         onChange={(e) => setPassword(e.target.value)}
                         autocomplete="new-password"
+                        errorMessage={passwordError}
+                        setErrorMessage={setPasswordError}
                     />
                     <ShowHidePassword
                         name="password-confirm"
                         placeholder="Confirm Password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        value={passwordConfirm}
+                        onChange={(e) => setPasswordConfirm(e.target.value)}
                         autocomplete="new-password"
+                        errorMessage={passwordConfirmError}
+                        setErrorMessage={setPasswordConfirmError}
                     />
-                    {error && <p className="text-red-500 text-sm">{error}</p>}
                     <button type="submit" className="w-full">
                         Register
                     </button>
+                    {error && (
+                        <FormHelperText error>
+                            {error}
+                        </FormHelperText>
+                    )}
                 </form>
             </div>
         </div>

@@ -16,6 +16,7 @@ export function useApi() {
         getProductOfMovie,
         getUserActiveMoviesOrdered,
         handleResponse,
+        checkIfUserLogged
     }
 
     async function handleResponse(response) {
@@ -89,5 +90,9 @@ export function useApi() {
     async function getUserActiveMoviesOrdered(movieId) {
         return await requests.getWithAuth(`/api/users/current/movie-purchased/actives/${movieId}`);
         //return handleResponse(await requests.getWithAuth(`/api/users/current/movie-purchased/actives/${movieId}`));
+    }
+
+    async function checkIfUserLogged() {
+        return await requests.getWithAuth('/api/users/authenticate');
     }
 }
