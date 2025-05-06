@@ -5,11 +5,13 @@ import userIcon from '../user.png';
 import React, {Suspense, useEffect, useState, use} from 'react';
 import { Link } from 'react-router-dom'
 import { getAllMovies, getAllMovies2 } from '../http/api';
+import './AppBar.css';
 
 export default function AppBar() {
 
     const [searchText, setSearchText] = useState('');
     const [userMessage, setUserMessage] = useState('User Not Logged');
+
 
     const handleSearch = () => {
         //App.getApplicationInstance().enterSearchPage(searchText);
@@ -26,65 +28,18 @@ export default function AppBar() {
     const enterUserPage = () => {
         //App.getApplicationInstance().changeAppPanel(UserPageController.PATH);
     };
-    /*return (
-        <div className="app-bar" style={
-            {
-                //display: 'flex',
-                //justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '10px 20px',
-                backgroundColor: '#f8f8f8',
-                borderBottom: '1px solid #ccc',
-                height: '10vh',
-                width: '100%',
-            }
-        }>
-        </div>
-    );*/
     return (
-        <div className="app-bar" style={
-            {
-                display: 'flex',
-                //flexWrap: 'wrap',
-                //justifyContent: 'space-between',
-                alignItems: 'center',
-                //padding: '10px 20px',
-                backgroundColor: '#f8f8f8',
-                borderBottom: '1px solid #ccc',
-                height: '10vh',
-                //maxWidth: '100%',
-                //width: '100%',
-                gap: '10px',
-                //marginRight: '50px',
-                //alignSelf: 'center',
-                //width: '100%',
-                borderColor: 'red',
-                border: '1px solid red',
-                textAlign: 'center',
-                alignContent: 'center',
-                width: '70%',
-                marginInline: 'auto'
-                //alignSelf: "flex-center"
-            }
-        }>
-            <img src={cartIcon} alt="Cart" className="icon" onClick={enterCart} height='100%'/>
+        <div className="app-bar">
+            <Link to="/cart">
+                <img src={cartIcon} alt="Cart" className="icon" onClick={enterCart} height='100%'/>
+            </Link>
             <div style={{height: "100%"}}>
                 <Link to="/">
                     <img src={logo} alt="Home" className="icon" onClick={enterHome} height="100%"/>
                 </Link>
             </div>
 
-            <div className="search-bar" style={
-                {
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '2px',
-                    height: '50%',
-                    border: '1px solid #ccc',
-                    //containerType: 'inline-size',
-                    //boxSizing: 'border-box'
-                }
-            }>
+            <div className="search-bar">
                 <img src={searchIcon} alt="Search" className="search-icon" onClick={handleSearch} height="100%"/>
                 <input
                     type="text"

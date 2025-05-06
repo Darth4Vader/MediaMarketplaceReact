@@ -1,38 +1,53 @@
 import React, {Suspense,use, useEffect, useState} from 'react';
 import {useApi} from '../http/api';
-import {useNavigate} from 'react-router';
-import {ErrorBoundary} from "react-error-boundary";
-import {useMutation} from "react-query";
+import {ErrorBoundary, useErrorBoundary} from "react-error-boundary";
+import {useMutation, useQuery} from "react-query";
 import {useFetchRequests} from "../http/requests";
 import './CartPage.css';
+import {NotFoundErrorBoundary} from "./ApiErrorUtils";
 
 export default function LoadCartPage() {
-    const navigate = useNavigate();
-    const { getCurrentUserCart } = useApi();
-
-    const errorHandler = (error, info) => {
-        console.log("GOODODOODOODYYYY");
-        if(error.status === 404) {
-
-        }
-        else
-            throw error;
-        console.log(error);
-    };
     return (
-        <ErrorBoundary onError={errorHandler} fallback={<div>Empty Cart</div>}>
+        <NotFoundErrorBoundary
+            fallbackRender={({ error, resetErrorBoundary  }) => {
+            //resetErrorBoundary();
+            return (
+                <div>
+                    <div>Empty Cart</div>
+                    {/*<button onClick={() => {showBoundary(error);}}>Reset</button>*/}
+                </div>
+            );}}>
         <Suspense key="cart" fallback={<div>Loading...</div>}>
-            <CartPage cartPromise={getCurrentUserCart(navigate)} />
+            <CartPage key="cart"/>
         </Suspense>
-        </ErrorBoundary>
+        </NotFoundErrorBoundary>
     );
 }
 
-const CartPage = ({ cartPromise }) => {
-    const cart = use(cartPromise);
-    const [cartProducts, setCartProducts] = useState(cart?.cartProducts || []);
+const CartPage = () => {
+    console.log("Hellllllllll")
+    const { getCurrentUserCart } = useApi();
+    const [cartProducts, setCartProducts] = useState([]);
     const [totalPrice, setTotalPrice] = useState(0);
     const requests = useFetchRequests();
+    console.log("Helol eloeleo");
+    const { data: userPurchaseInfoResponse, isSuccess } = useQuery(['getCurrentUserCart'], async () => {
+        return await getCurrentUserCart();
+    }, {
+        suspense: true,
+        retry: false,
+        useErrorBoundary: true,
+    });
+    console.log("THis is Working Good");
+    useEffect(() => {
+        console.log("Loading...", isSuccess, userPurchaseInfoResponse);
+        if(isSuccess) {
+            console.log("Parsed");
+            console.log(userPurchaseInfoResponse);
+            setCartProducts(userPurchaseInfoResponse?.cartProducts || []);
+            setTotalPrice(userPurchaseInfoResponse?.totalPrice || 0);
+        }
+    }, [isSuccess, userPurchaseInfoResponse]);
     const { mutate: updateProductPurchaseType } = useMutation({
         mutationFn: async ({productId, purchaseType}) => {
             return await requests.putWithAuth(`/api/users/carts/${productId}`,
@@ -85,6 +100,10 @@ const CartPage = ({ cartPromise }) => {
         await updateProductPurchaseType({productId, purchaseType});
     }
 
+    //return Object.values(userWalletIncomes).reduce((total, value) => total + value, 0);
+
+    const totalPrice2 = cartProducts.reduce((total, cartProduct) => cartProduct.price, 0);
+
     return (
         <div className="cart-page" style={{ textAlign: 'center', padding: '20px' }}>
             {cartProducts.length === 0 ? (
@@ -107,7 +126,7 @@ const CartPage = ({ cartPromise }) => {
                     </ul>
                     <div style={{ textAlign: 'right', fontSize: '19px', marginTop: '10px' }}>
                         <span>Total Price ({cartProducts.length} items): </span>
-                        <strong>{totalPrice}</strong>
+                        <strong>{totalPrice2}</strong>
                     </div>
                     <button onClick={purchaseCart} style={{ marginTop: '20px', padding: '10px 20px' }}>
                         Purchase
@@ -119,7 +138,8 @@ const CartPage = ({ cartPromise }) => {
 };
 
 const CartProductItem = ({ cartProduct, onRemove, onPurchaseTypeChange}) => {
-    const movie = cartProduct?.product?.movie;
+    const product = cartProduct?.product;
+    const movie = product?.movie;
 
     return (
         <div className="cart-product" style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0' }}>

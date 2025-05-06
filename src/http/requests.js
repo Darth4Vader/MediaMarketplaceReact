@@ -30,7 +30,7 @@ export function useFetchRequests() {
     }
 
     function request(method) {
-        return (uri, body, navigation) => {
+        return (uri, body) => {
             console.log(uri, body);
             const settings = createSettings(method, body);
             return fetch(`${apiBaseUrl}${uri}`, settings)
@@ -42,7 +42,7 @@ export function useFetchRequests() {
     }
 
     function requestWithAuth(method) {
-        return async (uri, body, navigation) => {
+        return async (uri, body) => {
             const settings = createSettings(method, body);
             const accessToken = Cookies.get('accessToken');
             if (!accessToken) {
@@ -72,17 +72,6 @@ export function useFetchRequests() {
                                             if (response.status === 401) {
                                                 // not authorized again. send to login page
                                                 console.log("Failed again")
-                                                Alert.alert("All Done!",
-                                                    "You have successfully registered.",
-                                                    [
-                                                        {
-                                                            text: "OK",
-                                                            onPress: () => {
-                                                                navigation('/login', {replace: true});
-                                                            }
-                                                        }
-                                                    ]
-                                                );
                                             }
                                         }
                                         return response2;
@@ -96,18 +85,10 @@ export function useFetchRequests() {
                                 if (!refreshTokenResponse.ok) {
                                     if (refreshTokenResponse.status === 401) {
                                         console.log("401 Unauthorized Again Again");
-                                        Alert.alert("All Done!",
-                                            "You have successfully registered.",
-                                            [
-                                                {
-                                                    text: "OK",
-                                                    onPress: () => {
-                                                        navigation('/login', {replace: true});
-                                                    }
-                                                }
-                                            ]
-                                        );
-                                        throw refreshTokenResponse;
+                                        return Promise.reject(response);
+                                        //throw refreshTokenResponse;
+
+
                                         //return Promise.reject(refreshTokenResponse);
                                         //return null;
                                     }

@@ -3,6 +3,7 @@ import {PaletteTree} from './palette'
 import App from "../App";
 import LoginPage from "../LoginPage";
 import LoadMoviePage from "../components/MoviePage";
+import LoadCartPage from "../components/CartPage";
 
 const ComponentPreviews = () => {
     return (
@@ -15,6 +16,9 @@ const ComponentPreviews = () => {
             </ComponentPreview>
             <ComponentPreview path="/LoadMoviePage">
                 <LoadMoviePage/>
+            </ComponentPreview>
+            <ComponentPreview path="/LoadCartPage">
+                <LoadCartPage/>
             </ComponentPreview>
         </Previews>
     )

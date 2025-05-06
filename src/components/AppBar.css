@@ -1,0 +1,27 @@
+
+.app-bar {
+    display: flex;
+    align-items: center;
+    background-color: #f8f8f8;
+    border-bottom: 1px solid #ccc;
+    height: 10vh;
+    gap: 10px;
+    border-color: red;
+    border: 1px solid red;
+    text-align: center;
+    align-content: center;
+    width: 70%;
+    margin-inline: auto;
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    height: 50%;
+    border: 1px solid #ccc;
+}
+
+.icon {
+    height: 10vh;
+}

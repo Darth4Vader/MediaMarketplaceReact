@@ -75,16 +75,20 @@ export function useApi() {
         };
     }
 
-    async function getCurrentUserCart(navigation) {
-        return handleResponse(await requests.getWithAuth('/api/users/carts/', navigation));
+    async function getCurrentUserCart() {
+        return handleResponse(await requests.getWithAuth('/api/users/carts/'));
     }
 
-    async function updateProductInCart(navigation) {
-        return handleResponse(await requests.putWithAuth('/api/users/carts/', navigation));
+    async function updateProductInCart() {
+        return handleResponse(await requests.putWithAuth('/api/users/carts/'));
     }
 
     async function getProductOfMovie(movieId) {
-        return handleResponse(await requests.get(`/api/main/products?movieId=${movieId}`));
+        return handleResponse(await requests.get(`/api/main/products?movieId=${movieId}`))
+            .then(sleeper(3000))
+            /*.catch((err) => {
+                console.log("Oh no catched error");
+            });*/
     }
 
     async function getUserActiveMoviesOrdered(movieId) {

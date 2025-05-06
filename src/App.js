@@ -1,5 +1,5 @@
 import logo from './marketplace_logo.png';
-import {BrowserRouter, Routes, Route, useNavigate, Link, Navigate } from 'react-router-dom';
+import {BrowserRouter, Routes, Route, useNavigate, Link, Navigate, useLocation} from 'react-router-dom';
 import './App.css';
 import HomePage from "./components/HomePage";
 import LoadMoviePage from "./components/MoviePage";
@@ -12,9 +12,10 @@ import RegisterPage from "./components/RegisterPage";
 
 import { QueryClient, QueryClientProvider } from 'react-query';
 import {ErrorBoundary} from "react-error-boundary";
-import {Outlet} from "react-router";
+import {isRouteErrorResponse, Outlet} from "react-router";
 import React from "react";
 import {useApi} from "./http/api";
+import {ReactQueryDevtools} from "react-query/devtools";
 
 const HomeTemplate = () => {
     return (
@@ -62,8 +63,27 @@ const AuthRoute = () => {
     return <LogTemplate />;
 };
 
+function AuthenticationFallback({ error }) {
+    console.log("Rendering...");
+    const returnTo = window.location.pathname;
+    if (error?.status === 401) {
+        return <Navigate to={`/login?return_to=${returnTo}`} replace/>;
+    }
+    throw error;
+}
+
+function AuthenticationBoundary({ children }) {
+    const location =  useLocation();
+    return (
+        <ErrorBoundary key={location.pathname} fallbackRender={({ error, resetErrorBoundary }) => {
+            return ( <AuthenticationFallback error={error}/> );
+        }}>
+            {children}
+        </ErrorBoundary>
+    );
+}
+
 function App() {
-    const navigate = useNavigate();
     const queryClient = new QueryClient({
         defaultOptions: {
             queries: {
@@ -78,73 +98,29 @@ function App() {
             }
         }
     });
-    const errorHandler = (error, info) => {
-        console.log("GOODODOODOOD");
-        console.log(error);
-        if (error?.status === 401) {
-            console.log("Good to see you");
-            navigate("/login?return_to=" + window.location.pathname);
-            // clean up session state and prompt for login
-            // ex: window.location.reload();
-        }
-        else
-            throw error;
-    };
     return (
-      <div className="App">
-        <header className="App-header">
-            <QueryClientProvider client={queryClient}>
-                <ErrorBoundary onError={errorHandler} fallbackRender={({ error, resetErrorBoundary }) => {
-                    resetErrorBoundary();
-                    return (
-                        <div>
-                            <h2>Something went wrong:</h2>
-                            <pre>{error.message}</pre>
-                            <button onClick={() => resetErrorBoundary()}>Try again</button>
-                        </div>
-                    );
-                }}>
-            <Routes>
-                <Route path="" element={<HomeTemplate />}>
-                    <Route path="/" element={<HomePage />} />
-                    <Route path="/cart" element={<LoadCartPage />} />
-                    <Route path="/movie/:id" element={<LoadMoviePage />} />
-                    <Route path="/movie/:id/reviews" element={<LoadReviewPage />} />
-                </Route>
-                <Route  path="" element={<AuthRoute />}>
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route path="/register" element={<RegisterPage />} />
-                </Route>
-            </Routes>
-                </ErrorBoundary>
-            </QueryClientProvider>
-        </header>
-      </div>
-  );
+        <div className="App">
+            <header className="App-header">
+                <QueryClientProvider client={queryClient}>
+                    <AuthenticationBoundary>
+                        <Routes>
+                            <Route path="" element={<HomeTemplate />}>
+                                <Route path="/" element={<HomePage />} />
+                                <Route path="/cart" element={<LoadCartPage />} />
+                                <Route path="/movie/:id" element={<LoadMoviePage />} />
+                                <Route path="/movie/:id/reviews" element={<LoadReviewPage />} />
+                            </Route>
+                            <Route  path="" element={<AuthRoute />}>
+                                <Route path="/login" element={<LoginPage />} />
+                                <Route path="/register" element={<RegisterPage />} />
+                            </Route>
+                        </Routes>
+                    </AuthenticationBoundary>
+                    {/*<ReactQueryDevtools initialIsOpen={true} />*/}
+                </QueryClientProvider>
+            </header>
+        </div>
+    );
 }
-
-/*
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-          <HomePage></HomePage>
-      </header>
-    </div>
-  );
-}
-*/
 
 export default App;
