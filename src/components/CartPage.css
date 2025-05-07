@@ -1,6 +1,27 @@
 
 
-.cart-product .select {
-    color: green;
-    font-size: 19px;
+.cart-product {
+    display: flex;
+    padding: 10px 0;
+}
+
+.cart-product .product-poster {
+    width: 100px;
+    height: auto;
+    margin-right: 15px;
+}
+
+.cart-product .product-name {
+    font-weight: bold;
+}
+
+.cart-product .product-purchase-panel {
+    display: flex;
+    //flex-direction: column;
+    //justify-content: center;
+}
+
+.cart-product .remove-product-button {
+    color: white;
+    margin-top: 10px;
 }

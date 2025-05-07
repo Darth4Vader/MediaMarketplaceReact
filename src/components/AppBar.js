@@ -5,6 +5,7 @@ import userIcon from '../user.png';
 import React, {Suspense, useEffect, useState, use} from 'react';
 import { Link } from 'react-router-dom'
 import { getAllMovies, getAllMovies2 } from '../http/api';
+import { logoutTokens } from '../http/requests';
 import './AppBar.css';
 
 export default function AppBar() {
@@ -65,6 +66,7 @@ export default function AppBar() {
                 </Link>
                 <label>{userMessage}</label>
             </div>
+            <button onClick={() => {logoutTokens()}}>Logout</button>
         </div>
     );
 }

@@ -79,8 +79,13 @@ export function useApi() {
         return handleResponse(await requests.getWithAuth('/api/users/carts/'));
     }
 
-    async function updateProductInCart() {
-        return handleResponse(await requests.putWithAuth('/api/users/carts/'));
+    async function updateProductInCart(productId, purchaseType) {
+        return handleResponse(await requests.putWithAuth(`/api/users/carts/${productId}`, {purchaseType}))
+            .then(sleeper(3000))
+            .then((data) => {
+                console.log("Good Morning")
+                return data;})
+            ;
     }
 
     async function getProductOfMovie(movieId) {

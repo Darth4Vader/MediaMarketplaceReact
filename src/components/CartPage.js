@@ -5,6 +5,8 @@ import {useMutation, useQuery} from "react-query";
 import {useFetchRequests} from "../http/requests";
 import './CartPage.css';
 import {NotFoundErrorBoundary} from "./ApiErrorUtils";
+import {IconButton, Skeleton} from "@mui/material";
+import DeleteIcon from '@mui/icons-material/Delete';
 
 export default function LoadCartPage() {
     return (
@@ -26,42 +28,45 @@ export default function LoadCartPage() {
 
 const CartPage = () => {
     console.log("Hellllllllll")
-    const { getCurrentUserCart } = useApi();
+    const { getCurrentUserCart, updateProductInCart } = useApi();
     const [cartProducts, setCartProducts] = useState([]);
     const [totalPrice, setTotalPrice] = useState(0);
+    const [totalItems, setTotalItems] = useState(0);
     const requests = useFetchRequests();
     console.log("Helol eloeleo");
-    const { data: userPurchaseInfoResponse, isSuccess } = useQuery(['getCurrentUserCart'], async () => {
-        return await getCurrentUserCart();
-    }, {
-        suspense: true,
-        retry: false,
-        useErrorBoundary: true,
-    });
-    console.log("THis is Working Good");
+    const errorBoundary = useErrorBoundary();
     useEffect(() => {
-        console.log("Loading...", isSuccess, userPurchaseInfoResponse);
-        if(isSuccess) {
-            console.log("Parsed");
-            console.log(userPurchaseInfoResponse);
-            setCartProducts(userPurchaseInfoResponse?.cartProducts || []);
-            setTotalPrice(userPurchaseInfoResponse?.totalPrice || 0);
+        const fetching = async () => {
+            try {
+                const cart = await getCurrentUserCart();
+                setCartProducts(cart?.cartProducts || []);
+                setTotalPrice(cart?.totalPrice || 0);
+                setTotalItems(cart?.totalItems || 0);
+            }
+            catch (error) {
+                errorBoundary.showBoundary(error);
+            }
         }
-    }, [isSuccess, userPurchaseInfoResponse]);
-    const { mutate: updateProductPurchaseType } = useMutation({
-        mutationFn: async ({productId, purchaseType}) => {
-            return await requests.putWithAuth(`/api/users/carts/${productId}`,
-                {purchaseType});
+        fetching();
+    }, []);
+
+    const { data: updateProductResponse, mutate: updateProductPurchaseType, isSuccess: updateProductSuccess } = useMutation({
+        mutationFn: async ({index, productId, purchaseType, setLoaded}) => {
+            return await updateProductInCart(productId, purchaseType);
         },
-        onSuccess: async (response) => {
-            /*setOpenAlert(true);
-            if (!response.ok) {
-                setMessage(await response.text());
-                setSeverity('error');
-            } else {
-                setMessage("Added Successfully");
-                setSeverity('success');
-            }*/
+        onSuccess: async (data, variables) => {
+            const index = variables.index;
+            console.log("Update Product Purchase Type");
+            console.log(data);
+            console.log("Response");
+            setCartProducts(cartProducts => {
+                const newCartProducts = [...cartProducts];
+                newCartProducts[index] = data?.cartProduct || cartProducts[index];
+                return newCartProducts;
+            });
+            setTotalPrice(data?.totalPrice || 0);
+            setTotalItems(data?.totalItems || 0);
+            variables.setLoaded(true);
         },
         useErrorBoundary: true,
         throwOnError: true,
@@ -96,13 +101,10 @@ const CartPage = () => {
          */
     };
 
-    const productPurchaseTypeChange = async (productId, purchaseType) => {
-        await updateProductPurchaseType({productId, purchaseType});
+    const productPurchaseTypeChange = async (index, productId, purchaseType, setLoaded) => {
+        setLoaded(false);
+        updateProductPurchaseType({index, productId, purchaseType, setLoaded});
     }
-
-    //return Object.values(userWalletIncomes).reduce((total, value) => total + value, 0);
-
-    const totalPrice2 = cartProducts.reduce((total, cartProduct) => cartProduct.price, 0);
 
     return (
         <div className="cart-page" style={{ textAlign: 'center', padding: '20px' }}>
@@ -119,14 +121,14 @@ const CartPage = () => {
                                 <CartProductItem
                                     cartProduct={cartProduct}
                                     onRemove={() => removeProductFromCartAction(index, cartProduct.product.id)}
-                                    onPurchaseTypeChange={(type) => productPurchaseTypeChange(cartProduct.product.id, type)}
+                                    onPurchaseTypeChange={(type, setLoaded) => productPurchaseTypeChange(index, cartProduct.product.id, type, setLoaded)}
                                 />
                             </li>
                         ))}
                     </ul>
                     <div style={{ textAlign: 'right', fontSize: '19px', marginTop: '10px' }}>
-                        <span>Total Price ({cartProducts.length} items): </span>
-                        <strong>{totalPrice2}</strong>
+                        <span>Total Price ({totalItems} items): </span>
+                        <strong>{totalPrice}</strong>
                     </div>
                     <button onClick={purchaseCart} style={{ marginTop: '20px', padding: '10px 20px' }}>
                         Purchase
@@ -138,23 +140,45 @@ const CartPage = () => {
 };
 
 const CartProductItem = ({ cartProduct, onRemove, onPurchaseTypeChange}) => {
+    const [loaded, setLoaded] = useState(true);
     const product = cartProduct?.product;
     const movie = product?.movie;
 
-    return (
-        <div className="cart-product" style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0' }}>
-            <div style={{ display: 'flex' }}>
-                <img src={movie?.posterPath} alt={movie?.name} style={{ width: '100px', marginRight: '15px' }} />
-                <div>
-                    <div style={{ fontWeight: 'bold' }}>{movie?.name}</div>
-                    <select id="purchase-option" defaultValue={cartProduct?.purchaseType} onChange={(e) => onPurchaseTypeChange(e.target.value)}>
+    return loaded ? (
+        <div className="cart-product">
+            <img src={movie?.posterPath} alt={movie?.name} className="product-poster"/>
+            <div>
+                <div className="product-name">{movie?.name}</div>
+                <div className="product-purchase-panel">
+                    <text>Purchase Type:</text>
+                    <select id="purchase-option" defaultValue={cartProduct?.purchaseType} onChange={(e) => onPurchaseTypeChange(e.target.value, setLoaded)}>
                         <option value="buy">Buy</option>
                         <option value="rent">Rent</option>
                     </select>
-                    <button onClick={onRemove} style={{ marginTop: '10px' }}>Delete</button>
+                </div>
+                <IconButton aria-label="delete" size="large" className="remove-product-button" onClick={onRemove} >
+                    <DeleteIcon />
+                </IconButton>
+                <div style={{ fontSize: '14px', color: 'gray' }}>
+                    {cartProduct?.purchaseType === 'buy' ? 'Buy for:' : 'Rent for:'} {cartProduct?.price}
                 </div>
             </div>
-            <div style={{ fontWeight: 'bold', fontSize: '19px' }}>{cartProduct?.totalPrice}</div>
         </div>
+    ): (
+        <CartProductItemSkeleton/>
     );
 };
+
+const CartProductItemSkeleton = () => {
+    return (
+        <div className="cart-product">
+            <Skeleton variant="rectangular" className="product-poster"/>
+            <div>
+                <Skeleton variant="text" width={200} height={30} />
+                <Skeleton variant="text" width={100} height={30} />
+                <Skeleton variant="text" width={100} height={30} />
+                <Skeleton variant="text" width={100} height={30} />
+            </div>
+        </div>
+    );
+}

@@ -80,20 +80,10 @@ const ProductOptions = ({ id }) => {
     const [severity, setSeverity] = useState('info');
     const [isRented, setIsRented] = useState(false);
     const [isBought, setIsBought] = useState(false);
-    const { data: userPurchaseInfoResponse, status } = useQuery(['userActiveMovieOrders', id], async () => {
-        return await getUserActiveMoviesOrdered(id);
-    }, {
-        suspense: true,
-        retry: false,
-        useErrorBoundary: false,
-    });
-    console.log("userPurchaseInfoResponse", userPurchaseInfoResponse);
     useEffect(() => {
-        console.log("What", status);
-        if(status === 'success') {
-            if(userPurchaseInfoResponse.ok) {
-                const data = userPurchaseInfoResponse.json();
-                console.log("Parsed");
+        const fetching = async () => {
+            try {
+                const data = await getUserActiveMoviesOrdered(id);
                 console.log(data);
                 if (data?.activePurchases?.length > 0) {
                     data?.activePurchases?.forEach(purchaseInfo => {
@@ -106,8 +96,11 @@ const ProductOptions = ({ id }) => {
                     });
                 }
             }
+            catch (e) {}
         }
-    }, [status, userPurchaseInfoResponse]);
+        fetching();
+    }, []);
+
     const closeAlert = () => {
         setOpenAlert(false);
     };

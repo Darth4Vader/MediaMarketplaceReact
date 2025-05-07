@@ -144,3 +144,8 @@ export function saveTokens(accessToken, refreshToken) {
     console.log("Tokens saved");
     console.log("Access Token: " + Cookies.get('accessToken'));
 }
+
+export function logoutTokens(accessToken, refreshToken) {
+    Cookies.remove('accessToken', { path: '' })
+    Cookies.remove('refreshToken', { path: '' })
+}
