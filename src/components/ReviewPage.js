@@ -2,7 +2,7 @@ import {useParams, useSearchParams} from "react-router-dom";
 import React, {Suspense, use, useEffect} from "react";
 import AppBar from "./AppBar";
 import { useApi } from "../http/api";
-import Pagination from "./Pagination";
+import {PaginationNavigatePage} from "./Pagination";
 import {ErrorBoundary} from "react-error-boundary";
 
 export default function LoadReviewPage() {
@@ -53,7 +53,7 @@ const ReviewsList = ({ reviewsPromise }) => {
                 <p>No reviews yet.</p>
             )}
             <div className="pagination">
-                <Pagination paginationResult={reviews} />
+                <PaginationNavigatePage paginationResult={reviews} />
             </div>
         </div>
 );

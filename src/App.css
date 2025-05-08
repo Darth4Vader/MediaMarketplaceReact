@@ -49,3 +49,17 @@
     transform: rotate(360deg);
   }
 }
+
+.header-visible {
+  /* display: flex; */
+  position: sticky;
+  top: 0;
+  transition: top 0.4s ease-out;
+  z-index: 1;
+}
+
+.header-hidden {
+  /* display: none; */
+  top: -100vh;
+  transition: top 0.4s ease-out;
+}

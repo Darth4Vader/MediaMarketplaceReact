@@ -1,8 +1,16 @@
-
+.cart-page {
+    text-align: center;
+    padding: 20px;
+}
 
 .cart-product {
     display: flex;
     padding: 10px 0;
+}
+
+.cart-product .product-link {
+    text-decoration: unset;
+    color: unset;
 }
 
 .cart-product .product-poster {
@@ -13,6 +21,12 @@
 
 .cart-product .product-name {
     font-weight: bold;
+    transition: all .2s;
+}
+
+.cart-product .product-name:hover {
+    -webkit-text-stroke-color: #555555;
+    -webkit-text-stroke-width: 1px;
 }
 
 .cart-product .product-purchase-panel {
@@ -24,4 +38,15 @@
 .cart-product .remove-product-button {
     color: white;
     margin-top: 10px;
+}
+
+.cart .cart-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.cart .purchase-button {
+    margin-top: 20px;
+    padding: 10px 20px;
 }

@@ -13,14 +13,30 @@ import RegisterPage from "./components/RegisterPage";
 import { QueryClient, QueryClientProvider } from 'react-query';
 import {ErrorBoundary} from "react-error-boundary";
 import {isRouteErrorResponse, Outlet} from "react-router";
-import React from "react";
+import React, {useEffect, useState} from "react";
 import {useApi} from "./http/api";
 import {ReactQueryDevtools} from "react-query/devtools";
 
 const HomeTemplate = () => {
+    const [position, setPosition] = useState(window.scrollY);
+    const [visible, setVisible] = useState(true)
+    useEffect(()=> {
+        const handleScroll = () => {
+            let moving = window.scrollY;
+
+            setVisible(position > moving);
+            setPosition(moving)
+        };
+        window.addEventListener("scroll", handleScroll);
+        return(() => {
+            window.removeEventListener("scroll", handleScroll);
+        })
+    })
     return (
         <div>
-            <AppBar/>
+            <div className={`header-${visible ? "visible" : "hidden"}`}>
+                <AppBar/>
+            </div>
             <Outlet/>
         </div>
     );

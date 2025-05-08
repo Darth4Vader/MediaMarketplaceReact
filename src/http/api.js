@@ -16,10 +16,11 @@ export function useApi() {
         getProductOfMovie,
         getUserActiveMoviesOrdered,
         handleResponse,
-        checkIfUserLogged
+        checkIfUserLogged,
+        purchaseCart,
     }
 
-    async function handleResponse(response) {
+    async function handleResponseRejection(response) {
         if (!response.ok) {
             console.log("Not ok");
             return Promise.reject(response);
@@ -29,8 +30,11 @@ export function useApi() {
                 error: `Request failed with status ${response.status}: ${response.statusText}`,
             };*/
         }
+        return response;
+    }
 
-        console.log(response);
+    async function handleResponse(response) {
+        await handleResponseRejection(response);
 
         // Parse the response data
         const data = await response.json();
@@ -75,8 +79,8 @@ export function useApi() {
         };
     }
 
-    async function getCurrentUserCart() {
-        return handleResponse(await requests.getWithAuth('/api/users/carts/'));
+    async function getCurrentUserCart(page=0, size=1) {
+        return handleResponse(await requests.getWithAuth(`/api/users/carts?page=${page}&size=${size}`));
     }
 
     async function updateProductInCart(productId, purchaseType) {
@@ -97,11 +101,14 @@ export function useApi() {
     }
 
     async function getUserActiveMoviesOrdered(movieId) {
-        return await requests.getWithAuth(`/api/users/current/movie-purchased/actives/${movieId}`);
-        //return handleResponse(await requests.getWithAuth(`/api/users/current/movie-purchased/actives/${movieId}`));
+        return handleResponse(await requests.getWithAuth(`/api/users/current/movie-purchased/actives/${movieId}`));
     }
 
     async function checkIfUserLogged() {
         return await requests.getWithAuth('/api/users/authenticate');
+    }
+
+    async function purchaseCart() {
+        return handleResponseRejection(await requests.postWithAuth(`/api/users/current/orders/place-order`));
     }
 }
