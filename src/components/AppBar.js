@@ -4,11 +4,13 @@ import searchIcon from '../search.png';
 import userIcon from '../user.png';
 import React, {Suspense, useEffect, useState, use} from 'react';
 import { Link } from 'react-router-dom'
-import { getAllMovies, getAllMovies2 } from '../http/api';
+import { useApi } from '../http/api';
 import { logoutTokens } from '../http/requests';
 import './AppBar.css';
 
 export default function AppBar() {
+
+    const { logout } = useApi();
 
     const [searchText, setSearchText] = useState('');
     const [userMessage, setUserMessage] = useState('User Not Logged');
@@ -66,7 +68,7 @@ export default function AppBar() {
                 </Link>
                 <label>{userMessage}</label>
             </div>
-            <button onClick={() => {logoutTokens()}}>Logout</button>
+            <button onClick={() => { logout(); }}>Logout</button>
         </div>
     );
 }

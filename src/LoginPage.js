@@ -20,7 +20,7 @@ const LoginPage = () => {
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        const response = await login({ username, password });
+        const response = await login(username, password);
         if (response.ok) {
             console.log("Login successful");
             // Redirect to the returnTo URL

@@ -1,7 +1,3 @@
-import Cookies  from "js-cookie";
-import { useNavigate} from "react-router";
-import {Alert} from 'react-native';
-
 
 const apiBaseUrl = 'http://localhost:8080';
 
@@ -13,8 +9,7 @@ export function useFetchRequests() {
         putWithAuth: requestWithAuth('PUT'),
         postWithAuth: requestWithAuth('POST'),
         deleteWithAuth: requestWithAuth('DELETE'),
-        createSettings,
-        request,
+        postWithCookies: requestWithCookies('POST'),
     };
 
     function createSettings(method, body) {
@@ -44,6 +39,19 @@ export function useFetchRequests() {
         };
     }
 
+    function requestWithCookies(method) {
+        return async (uri, body) => {
+            console.log(uri, body);
+            const settings = createSettings(method, body);
+            settings.credentials = 'include';
+            return fetch(`${apiBaseUrl}${uri}`, settings)
+                .catch((err) => {
+                    console.log("Error in fetch:");
+                    return Promise.reject(err);
+                });
+        };
+    }
+
     function requestWithAuth(method) {
         return async (uri, body) => {
             const settings = createSettings(method, body);
@@ -57,7 +65,8 @@ export function useFetchRequests() {
             }
              */
             //settings.credentials = 'same-origin';
-            settings.withCredentials = true;
+            //settings.withCredentials = true;
+            settings.credentials = 'include';
             console.log(`${apiBaseUrl}${uri}`);
             return await fetch(`${apiBaseUrl}${uri}`, settings)
                 .then(async function (response) {
@@ -70,7 +79,7 @@ export function useFetchRequests() {
                             const refreshTokenResponse = await RefreshToken();
                             if (refreshTokenResponse == null) {
                                 console.log("Attempt Request Second Time")
-                                settings.headers.Authorization = `Bearer ${Cookies.get('accessToken')}`;
+                                //settings.headers.Authorization = `Bearer ${Cookies.get('accessToken')}`;
                                 return await fetch(`${apiBaseUrl}${uri}`, settings)
                                     .then((response2) => {
                                         console.log("Second Attempt Response: ");
@@ -116,12 +125,8 @@ export function useFetchRequests() {
 
     async function RefreshToken() {
         const request = useFetchRequests();
-        const refreshToken = Cookies.get('refreshToken');
-        console.log('refresh me', refreshToken);
-        const settings = createSettings('POST');
-        settings.credentials = 'include';
-
-        return await fetch(`/api/users/refresh`, settings)
+        return await request.postWithCookies(`/api/users/refresh`)
+        //return await fetch(`/api/users/refresh`, settings)
             .then(async function (response) {
                 console.log("Post ended");
                 if (!response.ok) {
@@ -145,52 +150,5 @@ export function useFetchRequests() {
                 return Promise.reject(err);
                 //throw err;
             });
-
-        /*
-        return await request.post(`/api/users/refresh`, {refreshToken})
-            .then(async function (response) {
-                console.log("Post ended");
-                if (!response.ok) {
-                    if (response.status === 401) {
-                        console.log("401 Unauthorized Again");
-                        // try to refresh token
-                    }
-                    // refresh token not found
-                    if (response.status === 404) {
-
-                    }
-                    return response;
-                }
-                //const data = await response.json();
-                //saveTokens(data.accessToken, data.refreshToken);
-                console.log("Token Refreshed Successfully");
-                return null;
-            })
-            .catch((err) => {
-                console.log("Error in fetch:");
-                return Promise.reject(err);
-                //throw err;
-            });
-
-         */
     }
-}
-
-export function saveTokens(accessToken, refreshToken) {
-    /*
-    Cookies.set('accessToken', accessToken, { expires: 1 });
-    Cookies.set('refreshToken', refreshToken, { expires: 1 });
-
-    console.log("Tokens saved");
-    console.log("Access Token: " + Cookies.get('accessToken'));
-
-     */
-}
-
-export function logoutTokens(accessToken, refreshToken) {
-    /*
-    Cookies.remove('accessToken', { path: '' })
-    Cookies.remove('refreshToken', { path: '' })
-
-     */
 }

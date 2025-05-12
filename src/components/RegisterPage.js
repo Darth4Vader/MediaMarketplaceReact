@@ -14,6 +14,7 @@ function importAll(r) {
 const images = importAll(require.context('../assets/register-page', false, /\.(png|jpe?g|svg)$/));
 
 const RegisterPage = () => {
+    const { register } = useFetchRequests();
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [passwordConfirm, setPasswordConfirm] = useState("");
@@ -25,7 +26,6 @@ const RegisterPage = () => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const nodeRef = useRef(null);
     const [loaded, setLoaded] = useState(false);
-    const requests = useFetchRequests();
     const returnTo = useReturnToParam();
 
     useEffect(() => {
@@ -43,7 +43,7 @@ const RegisterPage = () => {
 
     const handleRegister = async (e) => {
         e.preventDefault();
-        const response = await requests.post("/api/users/register", { username, password, passwordConfirm });
+        const response = await register(username, password, passwordConfirm);
         if (response.ok) {
             alert("Registration successful!");
             // Redirect to the returnTo URL

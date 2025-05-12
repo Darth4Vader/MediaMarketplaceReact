@@ -18,7 +18,9 @@ export function useApi() {
         handleResponse,
         checkIfUserLogged,
         purchaseCart,
-        login
+        login,
+        register,
+        logout
     }
 
     async function handleResponseRejection(response) {
@@ -114,8 +116,14 @@ export function useApi() {
     }
 
     async function login(username, password) {
-        const settings = requests.createSettings('POST', { username, password });
-        settings.credentials = 'include';
-        return await requests.request('/api/users/login', settings);
+        return await requests.postWithCookies('/api/users/login', { username, password });
+    }
+
+    async function register(username, password, passwordConfirm) {
+        return await requests.postWithCookies('/api/users/register', { username, password, passwordConfirm });
+    }
+
+    async function logout() {
+        return await requests.postWithCookies('/api/users/refresh/logout');
     }
 }
