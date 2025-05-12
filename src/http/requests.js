@@ -3,7 +3,7 @@ import { useNavigate} from "react-router";
 import {Alert} from 'react-native';
 
 
-const apiBaseUrl = 'http://192.168.1.237:8080';
+const apiBaseUrl = 'http://localhost:8080';
 
 export function useFetchRequests() {
     return {
@@ -13,6 +13,8 @@ export function useFetchRequests() {
         putWithAuth: requestWithAuth('PUT'),
         postWithAuth: requestWithAuth('POST'),
         deleteWithAuth: requestWithAuth('DELETE'),
+        createSettings,
+        request,
     };
 
     function createSettings(method, body) {
@@ -26,11 +28,12 @@ export function useFetchRequests() {
         if (body) {
             settings.body = JSON.stringify(body);
         }
+        //settings.credentials = 'include';
         return settings;
     }
 
     function request(method) {
-        return (uri, body) => {
+        return async (uri, body) => {
             console.log(uri, body);
             const settings = createSettings(method, body);
             return fetch(`${apiBaseUrl}${uri}`, settings)
@@ -44,13 +47,17 @@ export function useFetchRequests() {
     function requestWithAuth(method) {
         return async (uri, body) => {
             const settings = createSettings(method, body);
-            const accessToken = Cookies.get('accessToken');
+            //const accessToken = Cookies.get('accessToken');
+            /*
             if (!accessToken) {
                 if (!Cookies.get('refreshToken')) {
                 }
             } else {
                 settings.headers.Authorization = `Bearer ${accessToken}`;
             }
+             */
+            //settings.credentials = 'same-origin';
+            settings.withCredentials = true;
             console.log(`${apiBaseUrl}${uri}`);
             return await fetch(`${apiBaseUrl}${uri}`, settings)
                 .then(async function (response) {
@@ -110,6 +117,36 @@ export function useFetchRequests() {
     async function RefreshToken() {
         const request = useFetchRequests();
         const refreshToken = Cookies.get('refreshToken');
+        console.log('refresh me', refreshToken);
+        const settings = createSettings('POST');
+        settings.credentials = 'include';
+
+        return await fetch(`/api/users/refresh`, settings)
+            .then(async function (response) {
+                console.log("Post ended");
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        console.log("401 Unauthorized Again");
+                        // try to refresh token
+                    }
+                    // refresh token not found
+                    if (response.status === 404) {
+
+                    }
+                    return response;
+                }
+                //const data = await response.json();
+                //saveTokens(data.accessToken, data.refreshToken);
+                console.log("Token Refreshed Successfully");
+                return null;
+            })
+            .catch((err) => {
+                console.log("Error in fetch:");
+                return Promise.reject(err);
+                //throw err;
+            });
+
+        /*
         return await request.post(`/api/users/refresh`, {refreshToken})
             .then(async function (response) {
                 console.log("Post ended");
@@ -124,8 +161,8 @@ export function useFetchRequests() {
                     }
                     return response;
                 }
-                const data = await response.json();
-                saveTokens(data.accessToken, data.refreshToken);
+                //const data = await response.json();
+                //saveTokens(data.accessToken, data.refreshToken);
                 console.log("Token Refreshed Successfully");
                 return null;
             })
@@ -134,18 +171,26 @@ export function useFetchRequests() {
                 return Promise.reject(err);
                 //throw err;
             });
+
+         */
     }
 }
 
 export function saveTokens(accessToken, refreshToken) {
+    /*
     Cookies.set('accessToken', accessToken, { expires: 1 });
     Cookies.set('refreshToken', refreshToken, { expires: 1 });
 
     console.log("Tokens saved");
     console.log("Access Token: " + Cookies.get('accessToken'));
+
+     */
 }
 
 export function logoutTokens(accessToken, refreshToken) {
+    /*
     Cookies.remove('accessToken', { path: '' })
     Cookies.remove('refreshToken', { path: '' })
+
+     */
 }

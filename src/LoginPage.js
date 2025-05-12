@@ -6,9 +6,10 @@ import {AuthLink, ShowHidePassword, useReturnToParam} from "./components/UtilsCo
 import "./components/RegisterPage.css";
 import TextField from "@mui/material/TextField";
 import {FormHelperText} from "@mui/material";
+import {useApi} from "./http/api";
 
 const LoginPage = () => {
-    const requests = useFetchRequests();
+    const { login } = useApi();
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [usernameError, setUsernameError] = useState("");
@@ -19,11 +20,9 @@ const LoginPage = () => {
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        const response = await requests.post("/api/users/login", { username, password });
+        const response = await login({ username, password });
         if (response.ok) {
-            const data = await response.json();
             console.log("Login successful");
-            saveTokens(data.accessToken, data.refreshToken);
             // Redirect to the returnTo URL
             navigate(returnTo);
 

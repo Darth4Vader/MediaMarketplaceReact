@@ -45,9 +45,7 @@ const RegisterPage = () => {
         e.preventDefault();
         const response = await requests.post("/api/users/register", { username, password, passwordConfirm });
         if (response.ok) {
-            const data = await response.json();
             alert("Registration successful!");
-            saveTokens(data.accessToken, data.refreshToken);
             // Redirect to the returnTo URL
             navigate(returnTo);
         } else {

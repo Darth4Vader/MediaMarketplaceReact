@@ -18,6 +18,7 @@ export function useApi() {
         handleResponse,
         checkIfUserLogged,
         purchaseCart,
+        login
     }
 
     async function handleResponseRejection(response) {
@@ -110,5 +111,11 @@ export function useApi() {
 
     async function purchaseCart() {
         return handleResponseRejection(await requests.postWithAuth(`/api/users/current/orders/place-order`));
+    }
+
+    async function login(username, password) {
+        const settings = requests.createSettings('POST', { username, password });
+        settings.credentials = 'include';
+        return await requests.request('/api/users/login', settings);
     }
 }
