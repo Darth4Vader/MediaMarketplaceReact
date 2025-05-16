@@ -20,7 +20,8 @@ export function useApi() {
         purchaseCart,
         login,
         register,
-        logout
+        logout,
+        getCurrentUserOrders
     }
 
     async function handleResponseRejection(response) {
@@ -125,5 +126,9 @@ export function useApi() {
 
     async function logout() {
         return await requests.postWithCookies('/api/users/refresh/logout');
+    }
+
+    async function getCurrentUserOrders(page=0, size=1) {
+        return handleResponse(await requests.getWithAuth(`/api/users/current/orders?page=${page}&size=${size}`));
     }
 }

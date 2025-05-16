@@ -63,7 +63,7 @@ export default function AppBar() {
                     height: '100%',
                 }
             }>
-                <Link to="/cart">
+                <Link to="/user">
                     <img src={userIcon} alt="User" className="user-icon" onClick={enterUserPage} height="100%"/>
                 </Link>
                 <label>{userMessage}</label>

@@ -16,6 +16,11 @@ import {isRouteErrorResponse, Outlet} from "react-router";
 import React, {useEffect, useState} from "react";
 import {useApi} from "./http/api";
 import {ReactQueryDevtools} from "react-query/devtools";
+import UserPageTemplate from "./components/UserPage";
+import UserOrdersPage from "./components/UserOrdersPage";
+import MediaCollectionPage from "./components/MediaCollectionPage";
+import UserInformationPage from "./components/UserInformationPage";
+import LoadUserOrdersPage from "./components/UserOrdersPage";
 
 const HomeTemplate = () => {
     const [position, setPosition] = useState(window.scrollY);
@@ -129,6 +134,11 @@ function App() {
                             <Route  path="" element={<AuthRoute />}>
                                 <Route path="/login" element={<LoginPage />} />
                                 <Route path="/register" element={<RegisterPage />} />
+                            </Route>
+                            <Route path="/user" element={<UserPageTemplate/>}>
+                                <Route path="orders" element={<LoadUserOrdersPage />} />
+                                <Route path="./watch" element={<MediaCollectionPage />} />
+                                <Route path="./information" element={<UserInformationPage />} />
                             </Route>
                         </Routes>
                     </AuthenticationBoundary>
