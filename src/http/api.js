@@ -21,7 +21,8 @@ export function useApi() {
         login,
         register,
         logout,
-        getCurrentUserOrders
+        getCurrentUserOrders,
+        searchActors
     }
 
     async function handleResponseRejection(response) {
@@ -48,7 +49,7 @@ export function useApi() {
     }
 
     async function getAllMovies() {
-        return handleResponse(await requests.get('/api/main/movies/'));
+        return handleResponse(await requests.get('/api/main/movies/search?page=0&size=25'));
     }
 
     async function getMovie(id) {
@@ -130,5 +131,9 @@ export function useApi() {
 
     async function getCurrentUserOrders(page=0, size=1) {
         return handleResponse(await requests.getWithAuth(`/api/users/current/orders?page=${page}&size=${size}`));
+    }
+
+    async function searchActors(name, page=0, size=1) {
+        return handleResponse(await requests.get(`/api/main/actors/search?name=${name}&page=${page}&size=${size}`));
     }
 }

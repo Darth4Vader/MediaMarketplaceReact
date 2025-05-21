@@ -22,6 +22,9 @@ import MediaCollectionPage from "./components/MediaCollectionPage";
 import UserInformationPage from "./components/UserInformationPage";
 import LoadUserOrdersPage from "./components/UserOrdersPage";
 
+import Cookies from "js-cookie";
+import SearchPage from "./components/SearchPage";
+
 const HomeTemplate = () => {
     const [position, setPosition] = useState(window.scrollY);
     const [visible, setVisible] = useState(true)
@@ -104,7 +107,16 @@ function AuthenticationBoundary({ children }) {
     );
 }
 
+function setupCookies() {
+    Cookies.set('timezone', Intl.DateTimeFormat().resolvedOptions().timeZone, {
+        expires: 365
+    });
+}
+
 function App() {
+    useEffect(() => {
+        setupCookies();
+    }, []);
     const queryClient = new QueryClient({
         defaultOptions: {
             queries: {
@@ -127,6 +139,7 @@ function App() {
                         <Routes>
                             <Route path="" element={<HomeTemplate />}>
                                 <Route path="/" element={<HomePage />} />
+                                <Route path="/search" element={<SearchPage />} />
                                 <Route path="/cart" element={<LoadCartPage />} />
                                 <Route path="/movie/:id" element={<LoadMoviePage />} />
                                 <Route path="/movie/:id/reviews" element={<LoadReviewPage />} />

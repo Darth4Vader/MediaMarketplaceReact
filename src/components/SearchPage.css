@@ -1,0 +1,56 @@
+
+.search-page {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 20px;
+    width: 100%;
+    //display:inline-block;
+    //display: none;
+    //display: flex;
+    /*display: inline-block;*/
+    //height: auto;
+}
+
+.search-filters {
+    top: 0;
+    width: 30%;
+    height: 100vh;
+    position: sticky;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+
+    //max-width: 300px;
+    /*
+     width: 30%;
+     height: 100vh;
+     float: right;
+    */
+}
+
+.search-filters-item {
+    width: 100%;
+}
+
+.search-actors-filter {
+    border: 1px solid #61dafb;
+}
+
+.search-cast-cell {
+    display: flex;
+    flex-direction: row;
+
+}
+
+.search-results {
+    /*
+    width: 70%;
+    float: right;
+
+     */
+    flex-grow: 1;
+    display: inline-block;
+    float: none;
+}

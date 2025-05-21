@@ -43,7 +43,11 @@ export default function AppBar() {
             </div>
 
             <div className="search-bar">
-                <img src={searchIcon} alt="Search" className="search-icon" onClick={handleSearch} height="100%"/>
+                <div style={{height: "100%"}}>
+                    <Link to="/search">
+                        <img src={searchIcon} alt="Search" className="search-icon" onClick={handleSearch} height="100%"/>
+                    </Link>
+                </div>
                 <input
                     type="text"
                     value={searchText}

@@ -1,0 +1,16 @@
+
+.user-page {
+    //display: flex;
+    //flex-direction: row;
+}
+
+.user-page .user-side-bar {
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+}
+
+.user-page .user-side-bar .user-logo {
+    height: 20%;
+    width: 20%;
+}
