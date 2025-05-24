@@ -22,7 +22,8 @@ export function useApi() {
         register,
         logout,
         getCurrentUserOrders,
-        searchActors
+        searchActors,
+        searchMovies,
     }
 
     async function handleResponseRejection(response) {
@@ -134,6 +135,12 @@ export function useApi() {
     }
 
     async function searchActors(name, page=0, size=1) {
-        return handleResponse(await requests.get(`/api/main/actors/search?name=${name}&page=${page}&size=${size}`));
+        return handleResponse(await requests.get(`/api/main/actors/search?name=${name}&page=${page}&size=${size}`))
+            .then(sleeper(3000));
+    }
+
+    async function searchMovies(page=0, size=1, searchParams) {
+        return handleResponse(await requests.get(`/api/main/movies/search?page=${page}&size=${size}${searchParams}`))
+            .then(sleeper(3000));
     }
 }

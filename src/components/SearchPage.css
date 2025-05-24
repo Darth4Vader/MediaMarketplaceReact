@@ -1,10 +1,11 @@
 
 .search-page {
     display: flex;
-    flex-direction: row;
-    align-items: center;
+    //flex-direction: row;
+
+    //align-items: center;
     padding: 20px;
-    width: 100%;
+    //width: 100%;
     //display:inline-block;
     //display: none;
     //display: flex;
@@ -14,12 +15,14 @@
 
 .search-filters {
     top: 0;
+    bottom: 0;
     width: 30%;
     height: 100vh;
     position: sticky;
+    //position: fixed;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    //overflow: hidden;
 
 
     //max-width: 300px;
@@ -30,18 +33,63 @@
     */
 }
 
+.search-filters-scroll {
+    height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: none;
+}
+
 .search-filters-item {
     width: 100%;
 }
 
+.search-actors-filter-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
 .search-actors-filter {
     border: 1px solid #61dafb;
+    //height: 50px;
+    //overflow: auto;
+}
+
+.search-actors-filter ul, .search-actors-filter li{
+    margin:0;
+    padding:0;
+}
+
+.search-actors-filter > ul {
+    height: 100px;
+    overflow: auto;
 }
 
 .search-cast-cell {
     display: flex;
     flex-direction: row;
+}
 
+.search-director-cell-div {
+    height: 50%;
+}
+
+.search-director-cell {
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    //justify-content: center;
+    align-items: center;
+    //list-style: none;
+}
+
+.search-director-cell > p{
+    text-wrap: nowrap;
+}
+
+.search-director-cell > img {
+    height: 100%;
+    width: 20%;
 }
 
 .search-results {
@@ -53,4 +101,11 @@
     flex-grow: 1;
     display: inline-block;
     float: none;
+}
+
+.search-results-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(30%,180px), 1fr));
+    gap: 16px;
+    padding: 20px;
 }
