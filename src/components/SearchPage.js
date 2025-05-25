@@ -1,33 +1,27 @@
-import MovieGrid from "./MovieGrid";
 import {useApi} from "../http/api";
-import React, {Suspense, use, useCallback, useEffect, useRef, useState} from "react";
+import React, {useState} from "react";
 import './SearchPage.css'
-import {Checkbox, FormControl, FormControlLabel, IconButton, Skeleton} from "@mui/material";
-import {PaginationScroll} from "./PagainationScroll";
-import DeleteIcon from "@mui/icons-material/Delete";
+import {Checkbox, IconButton, Skeleton} from "@mui/material";
+import {
+    infiniteScrollFetchWrapper,
+    InfiniteScrollItem,
+    useInfiniteScrollRefPage
+} from "./PagainationScroll";
 import CancelIcon from '@mui/icons-material/Cancel';
-import {useFetchRequests} from "../http/requests";
 import Movie from "./Movie";
+import {useEffectAfterPageRendered} from "./UseEffectAfterPageRendered";
 
 export default function SearchPage() {
-    const { getAllMovies } = useApi();
-    return (
-            <LoadSearchPage />
-    );
-}
-
-function LoadSearchPage() {
-    /*const movies = use(dataPromise);*/
-    const [movies, setMovies] = useState([]);
     console.log("search");
 
     const { searchMovies } = useApi();
-
+    const [movies, setMovies] = useState([]);
     const [selectedActors, setSelectedActors] = useState([]);
 
     const [page, setPage] = useState(0);
-
-    const hasPageRendered = useRef(false);
+    const [hasMore, setHasMore] = useState(true);
+    const [loading, setLoading] = useState(false);
+    const infiniteScrollRef = useInfiniteScrollRefPage(setPage, loading, hasMore);
 
     const search = async (pageNumber) => {
         let searchParams = "";
@@ -50,54 +44,23 @@ function LoadSearchPage() {
         //console.log(`/api/main/movies/search?actors=${selectedActors}`);
     };
 
-    const fetchActors = async (pageNum: number) => {
-        setLoading(true);
-        try {
+    const fetchMovies = async (pageNumber: number) => {
+        const fetchMoviesFunction = async (pageNum) => {
             const data = await search(pageNum);
             console.log(data);
             console.log(data?.last);
             setMovies((prevMovies) => {
                 return [...prevMovies, ...data?.content || []];
             });
-            //}
             setHasMore(!data.last);
-        } finally {
-            setLoading(false);
-        }
+        };
+        await infiniteScrollFetchWrapper(fetchMoviesFunction, pageNumber, loading, setLoading, setHasMore);
     };
 
-    useEffect(() => {
+    useEffectAfterPageRendered(() => {
         console.log("search page");
-        if(hasPageRendered.current) {
-            const c = fetchActors(page);
-        }
-        else {
-            hasPageRendered.current = true;
-        }
+        fetchMovies(page);
     }, [page]);
-
-    const [hasMore, setHasMore] = useState(true);
-    const [loading, setLoading] = useState(false);
-
-    const observer = useRef(null);
-    const lastPostElementRef = useCallback(
-        (node: HTMLDivElement) => {
-            console.log("Hola", loading, hasMore);
-            console.log(observer.current);
-            if (loading) return;
-            if (observer.current) observer.current.disconnect();
-            observer.current = new IntersectionObserver(
-                (entries) => {
-                    if (entries[0].isIntersecting && hasMore) {
-                        setPage((prevPage) => prevPage + 1);
-                    }
-                },
-                { threshold: 1.0 }
-            );
-            if (node) observer.current.observe(node);
-        },
-        [loading, hasMore]
-    );
 
     return (
         <div style={{ width: "100%" }}>
@@ -110,9 +73,8 @@ function LoadSearchPage() {
                         <ActorsFilter selectedActors={selectedActors} setSelectedActors={setSelectedActors}/>
                         <button onClick={() => {
                             setMovies([]);
-                            if (observer.current) observer.current.disconnect();
                             if(page === 0)
-                                fetchActors(0);
+                                fetchMovies(0);
                             else
                                 setPage(0);
                         }} style={{ height: "50px"}}>
@@ -131,69 +93,24 @@ function LoadSearchPage() {
                             <div className="search-results-items">
                                 {movies.map((item, index) => {
                                     const movie = item.movie || item; // handle both ProductDto and MovieReference
-                                    if(movies.length === index + 1) {
-                                        console.log("last");
-                                        console.log(movie);
-                                        return (
-                                            <div ref={lastPostElementRef} key={movie.id}>
-                                                <Movie key={index} movie={movie} />
-                                            </div>
-                                        );
-                                    } else {
-                                        return (
-                                            <div key={movie.id}>
-                                                <Movie key={index} movie={movie} />
-                                            </div>
-                                        );
-                                    }
+
+                                    return (
+                                        <InfiniteScrollItem
+                                            idx={index}
+                                            length={movies.length}
+                                            infiniteScrollRef={infiniteScrollRef}
+                                            //className="search-movie-cell-div"
+                                        >
+                                            <Movie key={index} movie={movie} />
+                                        </InfiniteScrollItem>
+                                    );
                                 })}
                             </div>
                             {loading && <Skeleton variant="rectangular"/>}
                         </div>
                     }
-                    {/*<MovieGrid movies={movies?.content} />*/}
                 </div>
             </div>
-        </div>
-    );
-}
-
-const SearchPageFilters = ( { movies, setMovies } ) => {
-    const [selectedActors, setSelectedActors] = useState([]);
-    const requests = useFetchRequests();
-    const { handleResponse } = useApi();
-    const search = async () => {
-        let searchParams = "";
-        /*const searchParams = {};
-        if (selectedActors.length > 0) {
-            searchParams.actors = selectedActors;
-        }*/
-        console.log("Search Params: ", selectedActors);
-        if(selectedActors.length > 0) {
-            const stringData = selectedActors.map((actor) => `${actor.id}`).join(',');
-            if(searchParams !== "")
-                searchParams = `?actors=${stringData}`;
-            else
-                searchParams = searchParams + `&actors=${stringData}`;
-            //searchParams = searchParams + `?actors=${stringData}`;
-            console.log(stringData);
-            console.log(`/api/main/movies/search?actors=${selectedActors}`);
-        }
-        const url = `/api/main/movies/search${searchParams}`;
-        const data = await handleResponse(requests.get(url));
-
-
-        //console.log(`/api/main/movies/search?actors=${selectedActors}`);
-    };
-
-    return (
-        <div className="search-filters">
-            {/*<h1>Search Page Filters</h1>*/}
-            <p>This is the search page filters.</p>
-            <ActorsFilter selectedActors={selectedActors} setSelectedActors={setSelectedActors}/>
-            <button onClick={() => search()} style={{ height: "50px"}}>
-                Search
-            </button>
         </div>
     );
 }
@@ -245,66 +162,31 @@ const ActorsFilter = ({ selectedActors, setSelectedActors }) => {
     );
 }
 
-
 const SearchActor = ({ isCheckedAction, checkedChangeAction }) => {
     const { searchActors } = useApi();
     const [searchText, setSearchText] = useState("");
     const [actors, setActors] = useState([]);
-    const hasPageRendered = useRef(false);
-    const [searchFinished, setSearchFinished] = useState(true);
+
     const [page, setPage] = useState(0);
-
-
     const [hasMore, setHasMore] = useState(true);
     const [loading, setLoading] = useState(false);
+    const infiniteScrollRef = useInfiniteScrollRefPage(setPage, loading, hasMore);
 
-
-    const fetchActors = async (pageNum: number) => {
-        setLoading(true);
-        try {
-            const data = await searchActors(searchText, pageNum, 3);
-            console.log(data);
-            console.log(data?.last);
-            setActors((prevActors) => {
-                return [...prevActors, ...data?.content || []];
-            });
-            //}
-            setHasMore(!data.last);
-        } finally {
-            setLoading(false);
+    useEffectAfterPageRendered(() => {
+        const fetchActors = async (pageNum: number) => {
+            const fetchActorsFunction = async (pageNumber) => {
+                const data = await searchActors(searchText, pageNumber, 3);
+                console.log(data);
+                console.log(data?.last);
+                setActors((prevActors) => {
+                    return [...prevActors, ...data?.content || []];
+                });
+                setHasMore(!data.last);
+            }
+            await infiniteScrollFetchWrapper(fetchActorsFunction, pageNum, loading, setLoading, setHasMore);
         }
-    };
-
-    useEffect(() => {
-        console.log("search page");
-        if(hasPageRendered.current) {
-            const c = fetchActors(page);
-        }
-        else {
-            hasPageRendered.current = true;
-        }
+        fetchActors(page);
     }, [searchText, page]);
-
-
-    const observer = useRef(null);
-    const lastPostElementRef = useCallback(
-        (node: HTMLDivElement) => {
-            console.log("Hola", loading, hasMore);
-            console.log(observer.current);
-            if (loading) return;
-            if (observer.current) observer.current.disconnect();
-            observer.current = new IntersectionObserver(
-                (entries) => {
-                    if (entries[0].isIntersecting && hasMore) {
-                        setPage((prevPage) => prevPage + 1);
-                    }
-                },
-                { threshold: 1.0 }
-            );
-            if (node) observer.current.observe(node);
-        },
-        [loading, hasMore]
-    );
 
     const searchTextChange = (e) => {
         //if(searchFinished) {
@@ -313,17 +195,10 @@ const SearchActor = ({ isCheckedAction, checkedChangeAction }) => {
         if (value !== "" && !ALPHA_NUMERIC_DASH_REGEX.test(value)) {
             return;
         }
-        if (observer.current) observer.current.disconnect();
-        //setPage(0);
-        //setResultPage(0);
         setActors([]);
         setSearchText(value);
-        console.log(hasPageRendered.current);
         console.log(searchText && searchText !== "");
-        //if (searchText && searchText !== "") {
         setPage(0);
-        //}
-        //}
     };
 
     return (
@@ -346,25 +221,18 @@ const SearchActor = ({ isCheckedAction, checkedChangeAction }) => {
                 </div> :
                 <ul>
                     {actors?.map((actor, index) => {
-                        if(actors.length === index + 1) {
-                            console.log("last");
-                            console.log(actor);
-                            return (
-                                <div ref={lastPostElementRef} key={actor.id} className="search-director-cell-div">
-                                    <DirectorCell castMember={actor}
-                                                  isChecked={isCheckedAction(actor)}
-                                                  onChange={(checkValue) => checkedChangeAction(actor, checkValue)}/>
-                                </div>
-                            );
-                        } else {
-                            return (
-                                <div key={actor.id} className="search-director-cell-div">
-                                    <DirectorCell castMember={actor}
-                                                  isChecked={isCheckedAction(actor)}
-                                                  onChange={(checkValue) => checkedChangeAction(actor, checkValue)}/>
-                                </div>
-                            );
-                        }
+                        return (
+                            <InfiniteScrollItem
+                                idx={index}
+                                length={actors.length}
+                                infiniteScrollRef={infiniteScrollRef}
+                                className="search-director-cell-div"
+                            >
+                                <DirectorCell castMember={actor}
+                                              isChecked={isCheckedAction(actor)}
+                                              onChange={(checkValue) => checkedChangeAction(actor, checkValue)}/>
+                            </InfiniteScrollItem>
+                        );
                     })}
                     {loading && <Skeleton variant="rectangular"/>}
                 </ul>
@@ -372,25 +240,6 @@ const SearchActor = ({ isCheckedAction, checkedChangeAction }) => {
         </div>
     );
 }
-
-/*
-                {
-                <PaginationScroll
-                    page={page}
-                    setPage={setPage}
-                    lastPage={lastPage}
-                    //changePageAction={(newPage) => {
-                   //setPage(newPage);
-                    //}}
-                >
-                    <ul>
-                        {actors?.map((actor) => {
-                            return <DirectorCell castMember={actor}/>;
-                        })}
-                    </ul>
-                </PaginationScroll>
-                }
- */
 
 const DirectorCell = ({ castMember, isChecked, onChange }) => {
     console.log(castMember);
@@ -405,59 +254,3 @@ const DirectorCell = ({ castMember, isChecked, onChange }) => {
         </li>
     );
 };
-
-
-const DirectorCell2 = ({ castMember }) => {
-    return (
-        <li key={castMember.id} className="cast-cell">
-            <input
-                type="checkbox"
-                //checked={isChecked}
-                //onChange={handleCheckboxChange}
-            />
-            <img src={castMember?.person?.imagePath} alt={`${castMember?.name} Poster`} />
-            <div>
-                <p>{castMember?.person?.name}</p>
-            </div>
-        </li>
-    );
-};
-
-
-
-const DirectorCell3 = ({ castMember }) => {
-    console.log(castMember);
-    return (
-        <li key={castMember.id} className="search-director-cell">
-            <FormControlLabel
-                control={
-                    <Checkbox
-                        //checked={isChecked}
-                        //onChange={handleCheckboxChange}
-                    />
-                }
-                label={
-                    <React.Fragment>
-                        {<img src={castMember?.imagePath} alt={`${castMember?.name} Poster`} width="20px" height="auto"/>}
-                        <p>{castMember?.name}</p>
-                    </React.Fragment>
-                }
-            />
-        </li>
-    );
-};
-
-const PeopleFilter = () => {
-    const [searchText, setSearchText] = useState("");
-    return (
-        <div className="people-filter">
-            <p>This is the people filter.</p>
-            <input
-                type="text"
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                placeholder="Search for people..."
-            />
-        </div>
-    );
-}
