@@ -1,7 +1,7 @@
 import {useApi} from "../http/api";
 import React, {useState} from "react";
 import './SearchPage.css'
-import {Checkbox, IconButton, Skeleton} from "@mui/material";
+import {Checkbox, Grid, IconButton, MenuItem, Select, Skeleton} from "@mui/material";
 import {
     infiniteScrollFetchWrapper,
     InfiniteScrollItem,
@@ -25,6 +25,8 @@ export default function SearchPage() {
     const [hasMore, setHasMore] = useState(true);
     const [loading, setLoading] = useState(false);
     const infiniteScrollRef = useInfiniteScrollRefPage(setPage, loading, hasMore);
+
+    const [sortOption, setSortOption] = useState("");
 
     const search = async (pageNumber) => {
         let searchParams = "";
@@ -54,6 +56,10 @@ export default function SearchPage() {
             console.log(stringData);
             console.log(`/api/main/movies/search?directors=${selectedDirectors}`);
         }
+        console.log(sortOption);
+        if(sortOption) {
+            searchParams = searchParams + `&sort=${sortOption}`;
+        }
         //const url = `/api/main/movies/search${searchParams}`;
         //const data = await handleResponse(requests.get(url));
         return await searchMovies(pageNumber, 8, searchParams);
@@ -79,10 +85,35 @@ export default function SearchPage() {
         fetchMovies(page);
     }, [page]);
 
+    useEffectAfterPageRendered(() => {
+        if(page === 0)
+            fetchMovies(0);
+        else
+            setPage(0);
+    }, [sortOption]);
+
     return (
         <div style={{ width: "100%" }}>
             <h1>Search Page</h1>
             <p>This is the search page.</p>
+            <label>Sort By</label>
+            <Select
+                value={sortOption}
+                onChange={(e) => {
+                    console.log("Fast", e.target.value);
+                    setSortOption(e.target.value);
+                    setMovies([]);
+                    /*if(page === 0)
+                        fetchMovies(0);
+                    else
+                        setPage(0);*/
+                }}
+
+            >
+                <MenuItem value={"name,ASC"}>Name: Low to Height</MenuItem>
+                <MenuItem value={"name,DESC"}>Name: Height to Low</MenuItem>
+                <MenuItem value={"rating,ASC"}>Rating: Height to Low</MenuItem>
+            </Select>
             <div className="search-page">
                 <div className="search-filters">
                     <div className="search-filters-scroll">
@@ -103,11 +134,7 @@ export default function SearchPage() {
                 </div>
                 <div className="search-results">
                     {(page === 0 && loading) ?
-                        <div className="search-actors-filter-skeleton">
-                            <Skeleton variant="rectangular"/>
-                            <Skeleton variant="rectangular"/>
-                            <Skeleton variant="rectangular"/>
-                        </div> :
+                        <SearchMovieSkeleton num={16}/> :
                         <div>
                             <div className="search-results-items">
                                 {movies.map((item, index) => {
@@ -125,11 +152,28 @@ export default function SearchPage() {
                                     );
                                 })}
                             </div>
-                            {loading && <Skeleton variant="rectangular"/>}
+                            {loading && <SearchMovieSkeleton num={16}/>}
                         </div>
                     }
                 </div>
             </div>
+        </div>
+    );
+}
+
+const SearchMovieSkeleton = ({ num }) => {
+    return (
+        <div
+            style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(min(30%,180px), 1fr))',
+                gap: '16px',
+                padding: '20px',
+            }}
+        >
+            {[...Array(num)].map((_, index) =>
+                <Skeleton variant="rectangular" style={{height:'10vh'}}/>
+            )}
         </div>
     );
 }
