@@ -1,6 +1,11 @@
 import { useSearchParams } from "react-router-dom";
 import './Pagination.css';
 
+export function useCurrentPage() {
+    const [searchParams, setSearchParams] = useSearchParams();
+    return getPageNumber(searchParams);
+}
+
 function getPageNumber(searchParams) {
     return Number(searchParams.get("page")) || 1;
 }
@@ -26,23 +31,23 @@ export const Pagination = ({ paginationResult, changePageAction }) => {
     const page = paginationResult?.number != null ? paginationResult.number + 1 : null;
     return (
         <div className="pagination-bar">
-            {!paginationResult?.first ? (
+            {!paginationResult?.first && (
                 <>
                     <ChangePageButton page={page-1} text="Previous" changePageAction={changePageAction} />
                     <ChangePage page={1} changePageAction={changePageAction} />
                 </>
-            ) : null}
-            {paginationResult?.number != null ? (
+            )}
+            {paginationResult?.number != null && (
                 <div className="current-page-number">
                     <ChangePage page={page} changePageAction={changePageAction} />
                 </div>
-                ) : null}
-            {!paginationResult?.last ? (
+                )}
+            {!paginationResult?.last && (
                 <>
                     <ChangePage page={paginationResult?.totalPages} changePageAction={changePageAction} />
                     <ChangePageButton page={page+1} text="Next" changePageAction={changePageAction} />
                 </>
-            ) : null}
+            )}
         </div>
     );
 };

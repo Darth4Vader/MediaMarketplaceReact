@@ -1,8 +1,9 @@
 import {useApi} from "../http/api";
-import {useParams, useSearchParams} from "react-router-dom";
-import {ErrorBoundary} from "react-error-boundary";
-import React, {Suspense, use} from "react";
-import {PaginationNavigatePage} from "./Pagination";
+import {Link, useParams, useSearchParams} from "react-router-dom";
+import {ErrorBoundary, useErrorBoundary} from "react-error-boundary";
+import React, {Suspense, use, useEffect, useState} from "react";
+import {PaginationNavigatePage, useCurrentPage} from "./Pagination";
+import './UserOrdersPage.css';
 
 export default function LoadUserOrdersPage() {
     const { getCurrentUserOrders } = useApi();
@@ -10,8 +11,8 @@ export default function LoadUserOrdersPage() {
     const [searchParams, setSearchParams] = useSearchParams();
     const page = Number(searchParams.get("page")) || 1;
     return (
-            <Suspense key={page} fallback={<div>Loading Orders...</div>}>
-                <UserOrdersPage ordersPromise={getCurrentUserOrders(id, page-1)} />
+            <Suspense key="orders" fallback={<div>Loading Orders...</div>}>
+                <UserOrdersPage /*ordersPromise={getCurrentUserOrders(page-1)}*/ />
             </Suspense>
     );
 }
@@ -27,33 +28,48 @@ function formatDate(dateStr) {
 }
 
 const UserOrdersPage = ({ ordersPromise }) => {
-    const orders = use(ordersPromise);
-    console.log(orders);
+    const { getCurrentUserOrders } = useApi();
+    const page = useCurrentPage();
+    const [orders, setOrders] = useState(null);
+
+    const errorBoundary = useErrorBoundary();
+
+    useEffect(() => {
+        const fetchOrders = async () => {
+            try {
+                const orders = await getCurrentUserOrders(page - 1);
+                setOrders(orders);
+            } catch (error) {
+                errorBoundary.showBoundary(error);
+            }
+        }
+        fetchOrders();
+    }, [page]);
     return (
-        <div>
+        <div key="orders">
             {orders?.content?.length > 0 ? (
                 orders?.content?.map((order) => (
-                    <div key={order.id} className="order">
+                    <div key={order?.id} className="order">
                         <div>
                             Order Number:
-                            {order.id}
+                            {order?.id}
                             {' - Date: '}
-                            {formatDate(order.purchasedDate)}
+                            {formatDate(order?.purchasedDate)}
                         </div>
                         <div>
                             <strong>Products:</strong>
-                            {order.purchasedItems.map((purchasedItem) => (
+                            {order?.purchasedItems.map((purchasedItem) => (
                                 <PurchasedProductItem key={purchasedItem.id} purchasedItem={purchasedItem} />
                             ))}
                         </div>
-                        <text>{order.price}</text>
+                        <text>{order?.price}</text>
                     </div>
                 ))
             ) : (
                 <p>No reviews yet.</p>
             )}
             <div className="pagination">
-                <PaginationNavigatePage paginationResult={orders.content} />
+                <PaginationNavigatePage paginationResult={orders} />
             </div>
         </div>
     );
@@ -65,11 +81,12 @@ const PurchasedProductItem = ({ purchasedItem }) => {
     return (
         <div className="purchased-item">
             <div>
-                <label>
-                    {movie.name}
-                </label>
+                <Link to={"/movie/" + movie?.id} className="product-link">
+                    <div className="product-name">{movie?.name}</div>
+                </Link>
                 -
                 {purchasedItem.purchaseType === 'RENT' ? 'Rented' : 'Bought'}
+                {" "}
                 (
                 {purchasedItem.isUsable ?
                     <p style={{color: 'green'}}>Active</p>

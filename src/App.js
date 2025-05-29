@@ -143,15 +143,15 @@ function App() {
                                 <Route path="/cart" element={<LoadCartPage />} />
                                 <Route path="/movie/:id" element={<LoadMoviePage />} />
                                 <Route path="/movie/:id/reviews" element={<LoadReviewPage />} />
+                                <Route path="user" element={<UserPageTemplate/>}>
+                                    <Route path="orders" element={<LoadUserOrdersPage />} />
+                                    <Route path="./watch" element={<MediaCollectionPage />} />
+                                    <Route path="./information" element={<UserInformationPage />} />
+                                </Route>
                             </Route>
-                            <Route  path="" element={<AuthRoute />}>
+                            <Route path="" element={<AuthRoute />}>
                                 <Route path="/login" element={<LoginPage />} />
                                 <Route path="/register" element={<RegisterPage />} />
-                            </Route>
-                            <Route path="/user" element={<UserPageTemplate/>}>
-                                <Route path="orders" element={<LoadUserOrdersPage />} />
-                                <Route path="./watch" element={<MediaCollectionPage />} />
-                                <Route path="./information" element={<UserInformationPage />} />
                             </Route>
                         </Routes>
                     </AuthenticationBoundary>

@@ -4,3 +4,18 @@
     display: flex;
     flex-direction: row;
 }
+
+.purchased-item .product-link {
+    text-decoration: unset;
+    color: unset;
+}
+
+.purchased-item .product-name {
+    font-weight: bold;
+    transition: all .2s;
+}
+
+.purchased-item .product-name:hover {
+    -webkit-text-stroke-color: #555555;
+    -webkit-text-stroke-width: 1px;
+}

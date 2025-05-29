@@ -9,23 +9,25 @@ import './UserPage.css'
 const UserPageMenuBar = () => {
     return (
         <div className="user-side-bar">
-            <Link to="./orders">
-                <div>
-                    <img src={OrderHistotyImage} alt="Order histoty image" className="user-logo"/>
-                    Order History
+            <div className="user-side-bar-scroll">
+                <Link to="./orders">
+                    <div className="side-bar-item">
+                        <img src={OrderHistotyImage} alt="Order histoty image" className="user-logo"/>
+                        Order History
+                    </div>
+                </Link>
+                <div className="side-bar-item">
+                    <img src={MediaCollectionImage} alt="MediaCollection image" className="user-logo"/>
+                    {<label>
+                        Media Collection
+                    </label>}
                 </div>
-            </Link>
-            <div>
-                <img src={MediaCollectionImage} alt="MediaCollection image" className="user-logo"/>
-                <label>
-                    Media Collection
-                </label>
-            </div>
-            <div>
-                <img src={UserInformationImage} alt="User information image" className="user-logo"/>
-                <label>
-                    User Information
-                </label>
+                <div className="side-bar-item">
+                    <img src={UserInformationImage} alt="User information image" className="user-logo"/>
+                    <label>
+                        User Information
+                    </label>
+                </div>
             </div>
         </div>
     );
@@ -35,7 +37,9 @@ const UserPageTemplate = () => {
     return (
         <div className='user-page'>
             <UserPageMenuBar />
-            <Outlet/>
+            <div className="main-user-page">
+                <Outlet/>
+            </div>
         </div>
     );
 };

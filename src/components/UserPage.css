@@ -1,16 +1,44 @@
 
 .user-page {
-    //display: flex;
+    display: flex;
     //flex-direction: row;
 }
 
 .user-page .user-side-bar {
+    top: 0;
+    bottom: 0;
+    width: 40%;
+    height: 100vh;
+    position: sticky;
     display: flex;
     flex-direction: column;
-    position: sticky;
+
+    text-align: start;
+    //direction: rtl;
+    //justify-content: start;
+}
+
+.user-page .user-side-bar-scroll {
+    height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: none;
+}
+
+.user-side-bar .side-bar-item {
+    width: 100%;
+    height: 8vh;
+    display: flex;
+    //justify-content: center;
+    align-items: center;
 }
 
 .user-page .user-side-bar .user-logo {
-    height: 20%;
+    height: 100%;
     width: 20%;
+}
+
+.user-page .main-user-page {
+    flex-grow: 1;
+    display: inline-block;
+    float: none;
 }
