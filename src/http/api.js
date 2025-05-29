@@ -87,8 +87,8 @@ export function useApi() {
         };
     }
 
-    async function getCurrentUserCart(page=0, size=1) {
-        return handleResponse(await requests.getWithAuth(`/api/users/carts?page=${page}&size=${size}`));
+    async function getCurrentUserCart(page=0, size=1, searchParams) {
+        return handleResponse(await requests.getWithAuth(`/api/users/carts?page=${page}&size=${size}${searchParams}`));
     }
 
     async function updateProductInCart(productId, purchaseType) {

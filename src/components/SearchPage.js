@@ -110,9 +110,11 @@ export default function SearchPage() {
                 }}
 
             >
-                <MenuItem value={"name,ASC"}>Name: Low to Height</MenuItem>
-                <MenuItem value={"name,DESC"}>Name: Height to Low</MenuItem>
-                <MenuItem value={"rating,ASC"}>Rating: Height to Low</MenuItem>
+                <MenuItem value={"name,ASC"}>Name: Low to High</MenuItem>
+                <MenuItem value={"name,DESC"}>Name: High to Low</MenuItem>
+                <MenuItem value={"rating,ASC"}>Rating: Low to High</MenuItem>
+                <MenuItem value={"rating,DESC"}>Rating: High to Low</MenuItem>
+
             </Select>
             <div className="search-page">
                 <div className="search-filters">

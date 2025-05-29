@@ -30,7 +30,14 @@ const MoviePage = ({ moviePromise}) => {
                     <h1>{movie?.name}</h1>
                     <p><strong>Year:</strong> {movie?.year}</p>
                     <p><strong>Runtime:</strong> {movie?.runtime} minutes</p>
-                    <p><strong>Rating:</strong> {movie?.rating}/100</p>
+                    {movie?.averageRating ?
+                        <>
+                            <p>
+                                <strong>Rating:</strong> {movie?.averageRating}/100 </p>
+                            <p>({movie?.totalRatings} Reviewers)</p>
+                        </>
+                        : <p> Not yet Rated </p>
+                    }
                 </div>
                 <LoadProductOptions movieId={movieId} />
             </div>

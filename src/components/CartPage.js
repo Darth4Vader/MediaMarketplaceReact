@@ -5,10 +5,10 @@ import {useMutation, useQuery} from "react-query";
 import {useFetchRequests} from "../http/requests";
 import './CartPage.css';
 import {NotFoundErrorBoundary} from "./ApiErrorUtils";
-import {Fade, IconButton, Skeleton} from "@mui/material";
+import {Fade, IconButton, MenuItem, Select, Skeleton} from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Pagination } from "./Pagination";
-import {Link} from "react-router-dom";
+import {Link, useNavigate, useNavigation, useSearchParams} from "react-router-dom";
 import Alert from "@mui/material/Alert";
 
 export default function LoadCartPage() {
@@ -43,10 +43,19 @@ const CartPage = () => {
     const [message, setMessage] = useState(null);
     const [openAlert, setOpenAlert] = useState(false);
     const [severity, setSeverity] = useState("error");
+
+    // For sorting options
+    //const [searchParams, setSearchParams] = useSearchParams();
+    const [sortOption, setSortOption] = useState("");
+
     useEffect(() => {
         const fetching = async () => {
             try {
-                const cart = await getCurrentUserCart(page);
+                let searchParams = "";
+                if(sortOption) {
+                    searchParams = searchParams + `&sort=${sortOption}`;
+                }
+                const cart = await getCurrentUserCart(page, 1, searchParams);
                 setCartProducts(cart?.cartProducts?.content || []);
                 setTotalPrice(cart?.totalPrice || 0);
                 setTotalItems(cart?.totalItems || 0);
@@ -57,7 +66,7 @@ const CartPage = () => {
             }
         }
         fetching();
-    }, [page]);
+    }, [page, sortOption]);
 
     const { mutate: updateProductPurchaseType } = useMutation({
         mutationFn: async ({index, productId, purchaseType, setLoaded}) => {
@@ -70,6 +79,7 @@ const CartPage = () => {
             console.log("Response");
             setCartProducts(cartProducts => {
                 const newCartProducts = [...cartProducts];
+                console.log("New Boy");
                 newCartProducts[index] = data?.cartProduct?.content || cartProducts[index];
                 return newCartProducts;
             });
@@ -143,12 +153,32 @@ const CartPage = () => {
         updateProductPurchaseType({index, productId, purchaseType, setLoaded});
     }
 
+    /*useEffect(() => {
+        navigation({ search: `?sort=${sortOption}` });
+    }, [sortOption]);*/
+
     return (
         <div className="cart-page">
             {cartProducts.length === 0 ? (
                 <h1 style={{ fontSize: '50px' }}>The Cart is empty.</h1>
             ) : (
                 <div className="cart">
+                    <Select
+                        value={sortOption}
+                        onChange={(e) => {
+                            console.log("Fast", e.target.value);
+                            setSortOption(e.target.value);
+                        }}
+
+                    >
+                        <MenuItem value={"price,ASC"}>Price: Low to High</MenuItem>
+                        <MenuItem value={"price,DESC"}>Price: High to Low</MenuItem>
+                        <MenuItem value={"purchaseType,ASC"}>Purchase Type: Low to High</MenuItem>
+                        <MenuItem value={"purchaseType,DESC"}>Purchase Type: High to Low</MenuItem>
+                        <MenuItem value={"discount,ASC"}>Discount: Low to High</MenuItem>
+                        <MenuItem value={"discount,DESC"}>Discount: High to Low</MenuItem>
+
+                    </Select>
                     <ul style={{ listStyle: 'none', padding: 0 }}>
                         {cartProducts.map((cartProduct, index) => (
                             <li key={index}>
@@ -204,6 +234,7 @@ const CartProductItem = ({ cartProduct, setPageLoaded, onRemove, onPurchaseTypeC
     const [loaded, setLoaded] = useState(true);
     const product = cartProduct?.product;
     const movie = product?.movie;
+    console.log(cartProduct?.purchaseType);
 
     useEffect(() => {
         setPageLoaded(loaded);
@@ -220,10 +251,15 @@ const CartProductItem = ({ cartProduct, setPageLoaded, onRemove, onPurchaseTypeC
                 </Link>
                 <div className="product-purchase-panel">
                     Purchase Type:
-                    <select id="purchase-option" defaultValue={cartProduct?.purchaseType} onChange={(e) => onPurchaseTypeChange(e.target.value, setLoaded)}>
-                        <option value="buy">Buy</option>
-                        <option value="rent">Rent</option>
-                    </select>
+                    <Select
+                        id="purchase-option"
+                        value={cartProduct?.purchaseType || 'buy'}
+                        onChange={(e) => onPurchaseTypeChange(e.target.value, setLoaded)}
+                        style={{ marginLeft: '10px', width: '100px' }}
+                        >
+                        <MenuItem value="buy">Buy</MenuItem>
+                        <MenuItem value="rent">Rent</MenuItem>
+                    </Select>
                 </div>
                 <IconButton aria-label="delete" size="large" className="remove-product-button" onClick={onRemove} >
                     <DeleteIcon />

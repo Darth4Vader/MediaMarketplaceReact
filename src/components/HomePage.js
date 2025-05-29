@@ -25,12 +25,14 @@ function LoadHomePage({dataPromise}) {
     */
 
     const products = use(dataPromise);
+    console.log("Products in HomePage");
+    console.log(products);
     return (
         <div style={{width: '100%'}}>
             <h1 style={{ textAlign: 'center', fontSize: '48px', margin: '20px 0' }}>
                 Welcome
             </h1>
-            <MovieGrid movies={products} />
+            <MovieGrid movies={products?.content} />
         </div>
     );
 }
