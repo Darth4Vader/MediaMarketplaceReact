@@ -5,6 +5,7 @@ import UserInformationImage from '../user_info.png';
 import {Outlet} from "react-router";
 import {Link} from "react-router-dom";
 import './UserPage.css'
+import {useApi} from "../http/api";
 
 const UserPageMenuBar = () => {
     return (

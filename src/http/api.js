@@ -15,6 +15,7 @@ export function useApi() {
         updateProductInCart,
         getProductOfMovie,
         getUserActiveMoviesOrdered,
+        getUserMovieReview,
         handleResponse,
         checkIfUserLogged,
         purchaseCart,
@@ -110,6 +111,10 @@ export function useApi() {
 
     async function getUserActiveMoviesOrdered(movieId) {
         return handleResponse(await requests.getWithAuth(`/api/users/current/movie-purchased/actives/${movieId}`));
+    }
+
+    async function getUserMovieReview(movieId) {
+        return handleResponse(await requests.getWithAuth(`/api/main/movie-reviews/reviews/${movieId}/current-user`));
     }
 
     async function checkIfUserLogged() {

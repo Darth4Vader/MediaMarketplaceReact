@@ -21,6 +21,7 @@ export default function LoadMoviePage() {
 
 const MoviePage = ({ moviePromise}) => {
     const movie = use(moviePromise);
+    const [ userMovieReview, setUserMovieReview] = useState(null);
     const movieId = movie.id;
     return (
         <div className="movie-page">
@@ -38,6 +39,7 @@ const MoviePage = ({ moviePromise}) => {
                         </>
                         : <p> Not yet Rated </p>
                     }
+                    <UserMovieRating movieId={movieId} setUserMovieReview={setUserMovieReview} userMovieReview={userMovieReview} />
                 </div>
                 <LoadProductOptions movieId={movieId} />
             </div>
@@ -63,6 +65,101 @@ const MoviePage = ({ moviePromise}) => {
         </div>
     );
 };
+
+const UserMovieRating = ({ movieId, userMovieReview, setUserMovieReview }) => {
+    const { getUserMovieReview } = useApi();
+    const requests = useFetchRequests();
+    const [userLoggedIn, setUserLoggedIn] = useState(false);
+    const [userRating , setUserRating] = useState(null);
+    const [message, setMessage] = useState('');
+
+    useEffect(() => {
+        const fetching = async () => {
+            try {
+                const data = await getUserMovieReview(movieId);
+                console.log(data);
+                setUserMovieReview(data);
+                setUserLoggedIn(true);
+            } catch (e) {
+                setUserLoggedIn(false);
+            }
+        }
+        fetching();
+    }, [movieId]);
+
+    const { mutate: addUserRatingRequest } = useMutation({
+        mutationFn: async ({ rating }) => {
+            return await requests.postWithAuth(`/api/main/movie-reviews/ratings/${movieId}/current-user`,
+                { rating });
+        },
+        onSuccess: async (response) => {
+            console.log(response);
+            if (response.ok) {
+                setMessage("Updated Successfully");
+            }
+            else {
+                if( response.status === 401) {
+                    throw response;
+                }
+                //setMessage(await response.text());
+            }
+        },
+        useErrorBoundary: true,
+        throwOnError: true,
+    });
+
+    const addToCart = async (e, rating) => {
+        e.preventDefault();
+        const response = await addUserRatingRequest({ rating });
+    };
+
+    console.log("Hello", userMovieReview);
+
+    return (
+        <div className="user-movie-rating">
+            {userMovieReview?.rating ? (
+                <p>Your Rating: {userMovieReview?.rating}/100</p>
+            ) : (
+                <>
+                    <p>Rate Movie: </p>
+                    <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        value={userRating}
+                        onKeyDown={(e) => {
+                            // prevent the user from entering scientific notation
+                            // regex pattern for only numbers
+                            const regex = /^[0-9]*$/;
+                            if (!regex.test(e.key) && e.key !== 'Backspace' && e.key !== 'Delete'
+                            && e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key != "ArrowUp" && e.key != "ArrowDown") {
+                                e.preventDefault();
+                            }
+                        }}
+                        onChange={(e) => {
+                            // replace with regex the caracters "e", "E", "+", "-"
+                            // to prevent the user from entering scientific notation
+                            const value = e.target.value;
+                            console.log(value);
+                            if (value < 0) {
+                                setUserRating(0);
+                            } else if (value > 100) {
+                                setUserRating(100);
+                            } else {
+                                setUserRating(value);
+                            }
+                        }}
+                    />
+                    <button onClick={(e) => {
+                        addToCart(e, userRating);
+                    }}>
+                        Submit Rating
+                    </button>
+                </>
+            )}
+        </div>
+    );
+}
 
 const LoadProductOptions = ({ movieId }) => {
     return (

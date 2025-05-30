@@ -144,6 +144,7 @@ function App() {
                                 <Route path="/movie/:id" element={<LoadMoviePage />} />
                                 <Route path="/movie/:id/reviews" element={<LoadReviewPage />} />
                                 <Route path="user" element={<UserPageTemplate/>}>
+                                    <Route index element={<Navigate to="orders" replace />} />
                                     <Route path="orders" element={<LoadUserOrdersPage />} />
                                     <Route path="./watch" element={<MediaCollectionPage />} />
                                     <Route path="./information" element={<UserInformationPage />} />
