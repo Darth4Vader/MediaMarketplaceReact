@@ -11,6 +11,7 @@
     display: flex;
     gap: 20px;
     margin-bottom: 20px;
+    color: white;
 }
 
 .movie-poster {
@@ -19,6 +20,46 @@
     border-radius: 5px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
+
+.movie-main-info {
+    display: flex;
+}
+
+
+.movie-main-info span+span {
+    padding-left: 20px;
+    position: relative;
+    top: 0;
+    left: 0;
+}
+
+.movie-main-info span+span:before {
+    font-size: 1.1em;
+    line-height: 1;
+    content: "•";
+    //width: 100%;
+    //width: 7px;
+    height: 100%;
+    position: absolute;
+    //top: 0;
+    left: 7px;
+    display: inline-flex;
+    align-content: center;
+    align-items: center;
+    //z-index: -1;
+}
+
+/*
+.movie-main-info span:not(:first-child):before {
+    content: "•";
+    display: inline-flex;
+    //position: absolute;
+    //top: 0;
+    //left: 7px;
+    align-items: center;
+}
+
+ */
 
 .movie-details {
     flex: 1;

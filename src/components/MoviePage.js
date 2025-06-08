@@ -8,6 +8,7 @@ import { useFetchRequests } from '../http/requests';
 import { useApi } from "../http/api";
 import './MoviePage.css';
 import {NotFoundErrorBoundary} from "./ApiErrorUtils";
+import ColorThief from "colorthief/dist/color-thief";
 
 export default function LoadMoviePage() {
     const { getMovie } = useApi();
@@ -23,29 +24,58 @@ const MoviePage = ({ moviePromise}) => {
     const movie = use(moviePromise);
     const [ userMovieReview, setUserMovieReview] = useState(null);
     const movieId = movie.id;
+    const [color, setColor] = useState([0,0,0]);
+    useEffect(() => {
+        const img = new Image();
+        img.src = movie?.posterPath;
+        img.crossOrigin = 'Anonymous'; // Ensure the image can be accessed
+        img.onload = () => {
+            const colorThief = new ColorThief();
+            const dominantColor = colorThief.getColor(img);
+            setColor(dominantColor);
+        };
+    }, [movie?.posterPath]);
     return (
         <div className="movie-page">
-            <div className="movie-header">
-                <img src={movie?.posterPath} alt={`${movie?.name} Poster`} className="movie-poster" />
-                <div className="movie-details">
-                    <h1>{movie?.name}</h1>
-                    <p><strong>Year:</strong> {movie?.year}</p>
-                    <p><strong>Runtime:</strong> {movie?.runtime} minutes</p>
-                    {movie?.averageRating ?
-                        <>
-                            <p>
-                                <strong>Rating:</strong> {movie?.averageRating}/100 </p>
-                            <p>({movie?.totalRatings} Reviewers)</p>
-                        </>
-                        : <p> Not yet Rated </p>
-                    }
-                    <UserMovieRating movieId={movieId} setUserMovieReview={setUserMovieReview} userMovieReview={userMovieReview} />
+            <div style={{
+                backgroundImage: `url(${movie?.backdropPath})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                width: '100%',
+            }}>
+                <div className="movie-header" style={{
+                    backgroundImage: `linear-gradient(to right, rgba(${color[0]}, ${color[1]}, ${color[2]}, 1), rgba(${color[0]}, ${color[1]}, ${color[2]}, 0.84) 50%, rgba(${color[0]}, ${color[1]}, ${color[2]}, 0.84) 100%)`
+                }}>
+                    <img src={movie?.posterPath} alt={`${movie?.name} Poster`} className="movie-poster" />
+                    <div className="movie-details">
+                        <h1>{movie?.name} ({movie?.year})</h1>
+                        <div className="movie-main-info">
+                            {movie?.releaseDate?.length === 3 &&
+                                <span>
+                                    {movie?.releaseDate[2]}/{movie?.releaseDate[1]}/{movie?.releaseDate[0]}
+                                </span>
+                            }
+                            <span>
+                                {movie?.runtime?.formattedText}
+                            </span>
+                        </div>
+                        {movie?.averageRating ?
+                            <>
+                                <p>
+                                    <strong>Rating:</strong> {movie?.averageRating}% </p>
+                                <p>({movie?.totalRatings} Reviewers)</p>
+                            </>
+                            : <p> Not yet Rated </p>
+                        }
+                        <UserMovieRating movieId={movieId} setUserMovieReview={setUserMovieReview} userMovieReview={userMovieReview} />
+                        <div className="movie-synopsis">
+                            <h2>Synopsis</h2>
+                            <p>{movie?.synopsis || 'To Be Determined'}</p>
+                        </div>
+                    </div>
+                    <LoadProductOptions movieId={movieId} />
                 </div>
-                <LoadProductOptions movieId={movieId} />
-            </div>
-            <div className="movie-synopsis">
-                <h2>Synopsis</h2>
-                <p>{movie?.synopsis || 'To Be Determined'}</p>
             </div>
             <div className="movie-cast">
                 <h2>Directors</h2>
