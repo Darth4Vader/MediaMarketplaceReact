@@ -49,6 +49,35 @@
     //z-index: -1;
 }
 
+.movie-rating-circle {
+    height: 8rem;
+    width: 8rem;
+    background-color: #1e3645;
+    border-radius: 50%;
+    font-weight: bold;
+}
+
+.CircularProgressbarWithChildren {
+    stroke: green;
+    color: green;
+    pathColor: green;
+}
+
+.movie-rating {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+}
+
+.movie-rating .movie-rating-container {
+    display: flex;
+}
+
+.movie-rating .rating-percentage {
+    font-size: 0.5em;
+}
+
 /*
 .movie-main-info span:not(:first-child):before {
     content: "•";

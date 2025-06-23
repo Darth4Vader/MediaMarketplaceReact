@@ -9,6 +9,8 @@ import { useApi } from "../http/api";
 import './MoviePage.css';
 import {NotFoundErrorBoundary} from "./ApiErrorUtils";
 import ColorThief from "colorthief/dist/color-thief";
+import { CircularProgressbarWithChildren  } from 'react-circular-progressbar';
+import 'react-circular-progressbar/dist/styles.css';
 
 export default function LoadMoviePage() {
     const { getMovie } = useApi();
@@ -61,11 +63,21 @@ const MoviePage = ({ moviePromise}) => {
                             </span>
                         </div>
                         {movie?.averageRating ?
-                            <>
-                                <p>
-                                    <strong>Rating:</strong> {movie?.averageRating}% </p>
-                                <p>({movie?.totalRatings} Reviewers)</p>
-                            </>
+                            <div>
+                                <strong>Rating:</strong>
+                                <div className="movie-rating-circle">
+                                    <CircularProgressbarWithChildren value={movie?.averageRating}>
+                                        <div className="movie-rating">
+                                            <div className="movie-rating-container">
+                                                {movie?.averageRating}
+                                                <span className="rating-percentage">
+                                                    %
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </CircularProgressbarWithChildren>
+                                </div>
+                            </div>
                             : <p> Not yet Rated </p>
                         }
                         <UserMovieRating movieId={movieId} setUserMovieReview={setUserMovieReview} userMovieReview={userMovieReview} />
