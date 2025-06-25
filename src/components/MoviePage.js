@@ -231,7 +231,29 @@ const UserMovieRating = ({ movieId, isRatingMovie, setIsRatingMovie }) => {
                     </button>
                 </>
             ): (
-                userRating !== null && <p>Your Rating: {userRating}/100</p>
+                userRating !== null && (<>
+                <p>Your Rating: </p>
+                    <div className="user-movie-rating-circle">
+                        <div className="user-movie-rating-circle-inner">
+                            <CircularProgressbarWithChildren value={userRating} styles={{
+                                path: {stroke: "#2222D2"},
+                                trail: {stroke: "#202146"}
+                            }}>
+                                <div className="movie-rating">
+                                    <div className="movie-rating-container">
+                                        <text className="rating-number">
+                                            {userRating}
+                                        </text>
+                                        <span className="rating-percentage">
+                                            %
+                                        </span>
+                                    </div>
+                                </div>
+                            </CircularProgressbarWithChildren>
+                        </div>
+                    </div>
+                </>
+                )
             )}
         </div>
     );

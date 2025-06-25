@@ -72,9 +72,11 @@
     border-radius: 50%;
 }
 
+/*
 .CircularProgressbar .CircularProgressbar-path {
     stroke: #21d07a;
 }
+ */
 
 .movie-rating {
     display: flex;
@@ -107,6 +109,23 @@
 }
 
  */
+
+.user-movie-rating-circle {
+    height: 6rem;
+    width: 6rem;
+    background-color: #1e3645;
+    border-radius: 50%;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.user-movie-rating-circle .user-movie-rating-circle-inner {
+    height: 90%;
+    width: 90%;
+    border-radius: 50%;
+}
 
 .movie-details {
     flex: 1;
