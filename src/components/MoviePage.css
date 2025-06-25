@@ -49,18 +49,31 @@
     //z-index: -1;
 }
 
+.movie-main-rating {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
 .movie-rating-circle {
     height: 8rem;
     width: 8rem;
     background-color: #1e3645;
     border-radius: 50%;
     font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.CircularProgressbarWithChildren {
-    stroke: green;
-    color: green;
-    pathColor: green;
+.movie-rating-circle .movie-rating-circle-inner {
+    height: 90%;
+    width: 90%;
+    border-radius: 50%;
+}
+
+.CircularProgressbar .CircularProgressbar-path {
+    stroke: #21d07a;
 }
 
 .movie-rating {
@@ -74,8 +87,13 @@
     display: flex;
 }
 
+.movie-rating .rating-number:hover {
+    cursor: pointer;
+}
+
 .movie-rating .rating-percentage {
     font-size: 0.5em;
+    user-select: none
 }
 
 /*

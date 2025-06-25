@@ -6,11 +6,11 @@ import { useMutation, useQuery } from 'react-query';
 import { ErrorBoundary } from "react-error-boundary";
 import { useFetchRequests } from '../http/requests';
 import { useApi } from "../http/api";
+import 'react-circular-progressbar/dist/styles.css';
 import './MoviePage.css';
 import {NotFoundErrorBoundary} from "./ApiErrorUtils";
 import ColorThief from "colorthief/dist/color-thief";
 import { CircularProgressbarWithChildren  } from 'react-circular-progressbar';
-import 'react-circular-progressbar/dist/styles.css';
 
 export default function LoadMoviePage() {
     const { getMovie } = useApi();
@@ -24,9 +24,9 @@ export default function LoadMoviePage() {
 
 const MoviePage = ({ moviePromise}) => {
     const movie = use(moviePromise);
-    const [ userMovieReview, setUserMovieReview] = useState(null);
     const movieId = movie.id;
     const [color, setColor] = useState([0,0,0]);
+    const [isRatingMovie, setIsRatingMovie] = useState(false);
     useEffect(() => {
         const img = new Image();
         img.src = movie?.posterPath;
@@ -62,25 +62,56 @@ const MoviePage = ({ moviePromise}) => {
                                 {movie?.runtime?.formattedText}
                             </span>
                         </div>
-                        {movie?.averageRating ?
-                            <div>
-                                <strong>Rating:</strong>
-                                <div className="movie-rating-circle">
-                                    <CircularProgressbarWithChildren value={movie?.averageRating}>
-                                        <div className="movie-rating">
-                                            <div className="movie-rating-container">
-                                                {movie?.averageRating}
-                                                <span className="rating-percentage">
-                                                    %
-                                                </span>
-                                            </div>
+                        <div>
+                            <strong>Rating:</strong>
+                                <div className="movie-main-rating">
+                                    <div className="movie-rating-circle">
+                                        <div className="movie-rating-circle-inner">
+                                            <CircularProgressbarWithChildren value={movie?.averageRating} styles={{
+                                                path: {
+                                                    stroke: movie?.averageRating > 65 ? "#21d07a"
+                                                        : movie?.averageRating > 30 ? "#d2d531"
+                                                        : movie?.averageRating > 0 ? "#db2360"
+                                                        : "#d4d4d4"
+                                                },
+
+                                                trail: {
+                                                    stroke: movie?.averageRating > 65 ? "#204529"
+                                                        : movie?.averageRating > 30 ? "#423d0f"
+                                                        : movie?.averageRating > 0 ? "#571435"
+                                                        : "#666666"
+                                                }
+                                            }}>
+                                                <div className="movie-rating">
+                                                    {movie?.averageRating ?
+                                                        <div className="movie-rating-container">
+                                                            <text className="rating-number" onClick={(e) => {
+                                                                e.preventDefault();
+                                                                setIsRatingMovie(true);
+                                                            }}>
+                                                                {movie?.averageRating}
+                                                            </text>
+                                                            <span className="rating-percentage">
+                                                                %
+                                                            </span>
+                                                        </div>
+                                                        :
+                                                        <div className="movie-rating-container">
+                                                            <text className="rating-number" onClick={(e) => {
+                                                                e.preventDefault();
+                                                                setIsRatingMovie(true);
+                                                            }}>
+                                                                N/A
+                                                            </text>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </CircularProgressbarWithChildren>
                                         </div>
-                                    </CircularProgressbarWithChildren>
+                                    </div>
+                                    <UserMovieRating movieId={movieId} isRatingMovie={isRatingMovie} setIsRatingMovie={setIsRatingMovie} />
                                 </div>
                             </div>
-                            : <p> Not yet Rated </p>
-                        }
-                        <UserMovieRating movieId={movieId} setUserMovieReview={setUserMovieReview} userMovieReview={userMovieReview} />
                         <div className="movie-synopsis">
                             <h2>Synopsis</h2>
                             <p>{movie?.synopsis || 'To Be Determined'}</p>
@@ -108,7 +139,8 @@ const MoviePage = ({ moviePromise}) => {
     );
 };
 
-const UserMovieRating = ({ movieId, userMovieReview, setUserMovieReview }) => {
+const UserMovieRating = ({ movieId, isRatingMovie, setIsRatingMovie }) => {
+    const [ userMovieReview, setUserMovieReview] = useState(null);
     const { getUserMovieReview } = useApi();
     const requests = useFetchRequests();
     const [userLoggedIn, setUserLoggedIn] = useState(false);
@@ -121,6 +153,7 @@ const UserMovieRating = ({ movieId, userMovieReview, setUserMovieReview }) => {
                 const data = await getUserMovieReview(movieId);
                 console.log(data);
                 setUserMovieReview(data);
+                setUserRating(data?.rating);
                 setUserLoggedIn(true);
             } catch (e) {
                 setUserLoggedIn(false);
@@ -159,9 +192,7 @@ const UserMovieRating = ({ movieId, userMovieReview, setUserMovieReview }) => {
 
     return (
         <div className="user-movie-rating">
-            {userMovieReview?.rating ? (
-                <p>Your Rating: {userMovieReview?.rating}/100</p>
-            ) : (
+            {isRatingMovie ? (
                 <>
                     <p>Rate Movie: </p>
                     <input
@@ -193,11 +224,14 @@ const UserMovieRating = ({ movieId, userMovieReview, setUserMovieReview }) => {
                         }}
                     />
                     <button onClick={(e) => {
+                        setIsRatingMovie(false);
                         addToCart(e, userRating);
                     }}>
                         Submit Rating
                     </button>
                 </>
+            ): (
+                userRating !== null && <p>Your Rating: {userRating}/100</p>
             )}
         </div>
     );
