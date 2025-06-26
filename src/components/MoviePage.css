@@ -11,6 +11,10 @@
     display: flex;
     gap: 20px;
     margin-bottom: 20px;
+    //color: white;
+}
+
+.movie-header * {
     color: white;
 }
 
@@ -53,6 +57,7 @@
     display: flex;
     flex-direction: row;
     align-items: center;
+    //justify-content: center;
 }
 
 .movie-rating-circle {
@@ -64,6 +69,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-right: 20px;
 }
 
 .movie-rating-circle .movie-rating-circle-inner {
@@ -89,8 +95,17 @@
     display: flex;
 }
 
+.movie-rating .rating-number {
+    font-weight: bold;
+    transition: all 250ms;
+}
+
 .movie-rating .rating-number:hover {
     cursor: pointer;
+}
+
+.movie-rating .rating-number:hover {
+    color: #b2afaf;
 }
 
 .movie-rating .rating-percentage {
@@ -125,6 +140,24 @@
     height: 90%;
     width: 90%;
     border-radius: 50%;
+}
+
+.user-movie-rating-add {
+    display: flex;
+    color: white;
+    background-color: #1e3645;
+    align-items: center;
+}
+
+.user-movie-rating-add .Button {
+}
+
+.user-movie-rating-add-button {
+    //color: white;
+    //background: white;
+    /*& label {
+        color: white;
+    }*/
 }
 
 .movie-details {

@@ -1,7 +1,7 @@
-import {useState, use, Suspense, useEffect} from 'react';
+import React, {useState, use, Suspense, useEffect} from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
-import { Fade } from "@mui/material";
+import {Button, Fade} from "@mui/material";
 import { useMutation, useQuery } from 'react-query';
 import { ErrorBoundary } from "react-error-boundary";
 import { useFetchRequests } from '../http/requests';
@@ -11,6 +11,7 @@ import './MoviePage.css';
 import {NotFoundErrorBoundary} from "./ApiErrorUtils";
 import ColorThief from "colorthief/dist/color-thief";
 import { CircularProgressbarWithChildren  } from 'react-circular-progressbar';
+import TextField from "@mui/material/TextField";
 
 export default function LoadMoviePage() {
     const { getMovie } = useApi();
@@ -87,7 +88,7 @@ const MoviePage = ({ moviePromise}) => {
                                                         <div className="movie-rating-container">
                                                             <text className="rating-number" onClick={(e) => {
                                                                 e.preventDefault();
-                                                                setIsRatingMovie(true);
+                                                                setIsRatingMovie(!isRatingMovie);
                                                             }}>
                                                                 {movie?.averageRating}
                                                             </text>
@@ -99,7 +100,7 @@ const MoviePage = ({ moviePromise}) => {
                                                         <div className="movie-rating-container">
                                                             <text className="rating-number" onClick={(e) => {
                                                                 e.preventDefault();
-                                                                setIsRatingMovie(true);
+                                                                setIsRatingMovie(false);
                                                             }}>
                                                                 N/A
                                                             </text>
@@ -145,7 +146,9 @@ const UserMovieRating = ({ movieId, isRatingMovie, setIsRatingMovie }) => {
     const requests = useFetchRequests();
     const [userLoggedIn, setUserLoggedIn] = useState(false);
     const [userRating , setUserRating] = useState(null);
+    const [tempUserRating , setTempUserRating] = useState(null);
     const [message, setMessage] = useState('');
+    const [userRatingError, setUserRatingError] = useState('');
 
     useEffect(() => {
         const fetching = async () => {
@@ -162,6 +165,13 @@ const UserMovieRating = ({ movieId, isRatingMovie, setIsRatingMovie }) => {
         fetching();
     }, [movieId]);
 
+    useEffect(() => {
+        setUserRatingError("");
+        if(isRatingMovie) {
+            setTempUserRating(userRating);
+        }
+    }, [isRatingMovie]);
+
     const { mutate: addUserRatingRequest } = useMutation({
         mutationFn: async ({ rating }) => {
             return await requests.postWithAuth(`/api/main/movie-reviews/ratings/${movieId}/current-user`,
@@ -171,19 +181,30 @@ const UserMovieRating = ({ movieId, isRatingMovie, setIsRatingMovie }) => {
             console.log(response);
             if (response.ok) {
                 setMessage("Updated Successfully");
+                setUserRating(tempUserRating)
+                setIsRatingMovie(false);
             }
             else {
-                if( response.status === 401) {
+                if(response.status === 400) {
+                    // problem with input fields
+                    const vals = await response.json();
+                    console.log(vals);
+                    if(vals?.fields) {
+                        if(vals.fields.rating) {
+                            setUserRatingError(vals.fields.rating);
+                        }
+                    }
+                }
+                else if( response.status === 401) {
                     throw response;
                 }
-                //setMessage(await response.text());
             }
         },
         useErrorBoundary: true,
         throwOnError: true,
     });
 
-    const addToCart = async (e, rating) => {
+    const addUserRating = async (e, rating) => {
         e.preventDefault();
         const response = await addUserRatingRequest({ rating });
     };
@@ -193,19 +214,23 @@ const UserMovieRating = ({ movieId, isRatingMovie, setIsRatingMovie }) => {
     return (
         <div className="user-movie-rating">
             {isRatingMovie ? (
-                <>
-                    <p>Rate Movie: </p>
-                    <input
+                <div className="user-movie-rating-add">
+                    <TextField
                         type="number"
+                        value={tempUserRating}
+                        autoComplete="off"
                         min={0}
                         max={100}
-                        value={userRating}
+                        label={"User Rating"}
+                        variant="outlined"
+                        error={!!userRatingError}
+                        helperText={userRatingError ? userRatingError : ""}
                         onKeyDown={(e) => {
                             // prevent the user from entering scientific notation
                             // regex pattern for only numbers
                             const regex = /^[0-9]*$/;
                             if (!regex.test(e.key) && e.key !== 'Backspace' && e.key !== 'Delete'
-                            && e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key != "ArrowUp" && e.key != "ArrowDown") {
+                                && e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key != "ArrowUp" && e.key != "ArrowDown") {
                                 e.preventDefault();
                             }
                         }}
@@ -215,21 +240,40 @@ const UserMovieRating = ({ movieId, isRatingMovie, setIsRatingMovie }) => {
                             const value = e.target.value;
                             console.log(value);
                             if (value < 0) {
-                                setUserRating(0);
+                                setTempUserRating(0);
                             } else if (value > 100) {
-                                setUserRating(100);
+                                setTempUserRating(100);
                             } else {
-                                setUserRating(value);
+                                setTempUserRating(value);
                             }
+                            setUserRatingError("");
+                        }}
+                        sx={{
+                            "& label": {
+                                color: "white"
+                            },
+                            "& .MuiOutlinedInput-root": {
+                                color: "white",
+                                "&.Mui-focused": {
+                                    color: "white",
+                                }
+                            },
+                            /*"& .MuiInputLabel-outlined": {
+                                color: "white"
+                            }*/
                         }}
                     />
-                    <button onClick={(e) => {
-                        setIsRatingMovie(false);
-                        addToCart(e, userRating);
-                    }}>
+                    <Button onClick={(e) => {
+                        addUserRating(e, tempUserRating);
+                    }} variant="outlined" className="user-movie-rating-add-button"
+                    sx={{
+                        color: "white",
+                        borderColor: "white",
+                    }}
+                    >
                         Submit Rating
-                    </button>
-                </>
+                    </Button>
+                </div>
             ): (
                 userRating !== null && (<>
                 <p>Your Rating: </p>
@@ -241,7 +285,10 @@ const UserMovieRating = ({ movieId, isRatingMovie, setIsRatingMovie }) => {
                             }}>
                                 <div className="movie-rating">
                                     <div className="movie-rating-container">
-                                        <text className="rating-number">
+                                        <text className="rating-number" onClick={(e) => {
+                                            e.preventDefault();
+                                            setIsRatingMovie(true);
+                                        }}>
                                             {userRating}
                                         </text>
                                         <span className="rating-percentage">
