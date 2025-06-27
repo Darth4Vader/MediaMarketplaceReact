@@ -10,7 +10,7 @@
 .movie-header {
     display: flex;
     gap: 20px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     //color: white;
 }
 
@@ -150,14 +150,6 @@
 }
 
 .user-movie-rating-add .Button {
-}
-
-.user-movie-rating-add-button {
-    //color: white;
-    //background: white;
-    /*& label {
-        color: white;
-    }*/
 }
 
 .movie-details {

@@ -1,7 +1,7 @@
 import React, {useState, use, Suspense, useEffect} from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
-import {Button, Fade} from "@mui/material";
+import {Button, createTheme, Fade, ThemeProvider} from "@mui/material";
 import { useMutation, useQuery } from 'react-query';
 import { ErrorBoundary } from "react-error-boundary";
 import { useFetchRequests } from '../http/requests';
@@ -13,12 +13,29 @@ import ColorThief from "colorthief/dist/color-thief";
 import { CircularProgressbarWithChildren  } from 'react-circular-progressbar';
 import TextField from "@mui/material/TextField";
 
+const theme = createTheme({
+    components: {
+        // Name of the component
+        MuiButton: {
+            styleOverrides: {
+                root: {
+                    color: "white",
+                    borderColor: "white",
+                    backgroundColor: "#1e3645"
+                }
+            }
+        },
+    },
+});
+
 export default function LoadMoviePage() {
     const { getMovie } = useApi();
     const { id } = useParams();
     return (
         <Suspense fallback={<div>Loading...</div>}>
-            <MoviePage moviePromise={getMovie(id)} />
+            <ThemeProvider theme={theme}>
+                <MoviePage moviePromise={getMovie(id)} />
+            </ThemeProvider>
         </Suspense>
     );
 }
@@ -118,8 +135,10 @@ const MoviePage = ({ moviePromise}) => {
                             <p>{movie?.synopsis || 'To Be Determined'}</p>
                         </div>
                     </div>
-                    <LoadProductOptions movieId={movieId} />
                 </div>
+            </div>
+            <div>
+                <LoadProductOptions movieId={movieId} />
             </div>
             <div className="movie-cast">
                 <h2>Directors</h2>
@@ -263,14 +282,9 @@ const UserMovieRating = ({ movieId, isRatingMovie, setIsRatingMovie }) => {
                             }*/
                         }}
                     />
-                    <Button onClick={(e) => {
+                    <Button variant="outlined" onClick={(e) => {
                         addUserRating(e, tempUserRating);
-                    }} variant="outlined" className="user-movie-rating-add-button"
-                    sx={{
-                        color: "white",
-                        borderColor: "white",
-                    }}
-                    >
+                    }}>
                         Submit Rating
                     </Button>
                 </div>
@@ -355,25 +369,24 @@ const ProductOptions = ({ id }) => {
     };
     return (
         <div className="product-options">
-                <Fade
-                    in={openAlert}
-                    //timeout={{ enter: 500, exit: 200 }}
-                    timeout={1000}
-                    addEndListener={() => {
-                        setTimeout(() => {
-                            setOpenAlert(false)
-                        }, 1000);
-                    }}
-                    >
-                    <Alert severity={severity} onClose={closeAlert} >{message}</Alert>
-                </Fade>
-
             {(isRented || isBought) &&
-                <button>
+                <Button variant="outlined">
                     Watch Movie
-                </button>
+                </Button>
             }
             <ProductPurchaseOptions id={id} isRented={isRented} isBought={isBought} setOpenAlert={setOpenAlert} setMessage={setMessage} setSeverity={setSeverity} />
+            <Fade
+                in={openAlert}
+                //timeout={{ enter: 500, exit: 200 }}
+                timeout={1000}
+                addEndListener={() => {
+                    setTimeout(() => {
+                        setOpenAlert(false)
+                    }, 1000);
+                }}
+            >
+                <Alert severity={severity} onClose={closeAlert} >{message}</Alert>
+            </Fade>
         </div>
     );
 };
@@ -414,14 +427,14 @@ const ProductPurchaseOptions = ({ id, isRented, isBought, setOpenAlert, setMessa
     return (
         <div className="product-options">
             {!isBought &&
-                <button className="buy-button" onClick={(e) => addToCart(e, product.id, "buy")}>
+                <Button variant="outlined" className="buy-button" onClick={(e) => addToCart(e, product.id, "buy")}>
                     Buy for: {product?.finalBuyPrice}
-                </button>
+                </Button>
             }
             {(!isBought && !isRented) &&
-                <button className="rent-button" onClick={(e)  => addToCart(e, product.id, "rent")}>
+                <Button variant="outlined" className="rent-button" onClick={(e)  => addToCart(e, product.id, "rent")}>
                     Rent for: {product?.finalRentPrice}
-                </button>
+                </Button>
             }
         </div>
     );
