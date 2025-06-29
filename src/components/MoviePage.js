@@ -13,29 +13,12 @@ import ColorThief from "colorthief/dist/color-thief";
 import { CircularProgressbarWithChildren  } from 'react-circular-progressbar';
 import TextField from "@mui/material/TextField";
 
-const theme = createTheme({
-    components: {
-        // Name of the component
-        MuiButton: {
-            styleOverrides: {
-                root: {
-                    color: "white",
-                    borderColor: "white",
-                    backgroundColor: "#1e3645"
-                }
-            }
-        },
-    },
-});
-
 export default function LoadMoviePage() {
     const { getMovie } = useApi();
     const { id } = useParams();
     return (
         <Suspense fallback={<div>Loading...</div>}>
-            <ThemeProvider theme={theme}>
                 <MoviePage moviePromise={getMovie(id)} />
-            </ThemeProvider>
         </Suspense>
     );
 }
@@ -267,20 +250,6 @@ const UserMovieRating = ({ movieId, isRatingMovie, setIsRatingMovie }) => {
                             }
                             setUserRatingError("");
                         }}
-                        sx={{
-                            "& label": {
-                                color: "white"
-                            },
-                            "& .MuiOutlinedInput-root": {
-                                color: "white",
-                                "&.Mui-focused": {
-                                    color: "white",
-                                }
-                            },
-                            /*"& .MuiInputLabel-outlined": {
-                                color: "white"
-                            }*/
-                        }}
                     />
                     <Button variant="outlined" onClick={(e) => {
                         addUserRating(e, tempUserRating);
@@ -487,7 +456,11 @@ const DirectorCell = ({ castMember }) => {
         <li key={castMember.id} className="cast-cell">
             <img src={castMember?.person?.imagePath} alt={`${castMember?.name} Poster`} />
             <div>
-                <p>{castMember?.person?.name}</p>
+                <p>
+                    <Link to={`/person/${castMember?.person?.id}`}>
+                        {castMember?.person?.name}
+                    </Link>
+                </p>
             </div>
         </li>
     );

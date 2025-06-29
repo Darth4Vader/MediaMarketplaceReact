@@ -6,6 +6,7 @@ import './RegisterPage.css'
 import {AuthLink, ShowHidePassword, useReturnToParam} from "./UtilsComponents";
 import {FormHelperText, TextField} from "@mui/material";
 import {SwitchTransition, CSSTransition} from "react-transition-group";
+import {useAuthContext} from "../AuthProvider";
 
 function importAll(r) {
     return r.keys().map(r);
@@ -28,6 +29,8 @@ const RegisterPage = () => {
     const [loaded, setLoaded] = useState(false);
     const returnTo = useReturnToParam();
 
+    const { userLogged } = useAuthContext();
+
     useEffect(() => {
         setLoaded(true);
     }, []);
@@ -46,6 +49,7 @@ const RegisterPage = () => {
         const response = await register(username, password, passwordConfirm);
         if (response.ok) {
             alert("Registration successful!");
+            await userLogged(true);
             // Redirect to the returnTo URL
             navigate(returnTo);
         } else {

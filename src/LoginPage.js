@@ -7,6 +7,7 @@ import "./components/RegisterPage.css";
 import TextField from "@mui/material/TextField";
 import {FormHelperText} from "@mui/material";
 import {useApi} from "./http/api";
+import {useAuthContext} from "./AuthProvider";
 
 const LoginPage = () => {
     const { login } = useApi();
@@ -18,11 +19,14 @@ const LoginPage = () => {
     const navigate = useNavigate();
     const returnTo = useReturnToParam();
 
+    const { userLogged } = useAuthContext();
+
     const handleLogin = async (e) => {
         e.preventDefault();
         const response = await login(username, password);
         if (response.ok) {
             console.log("Login successful");
+            await userLogged(true);
             // Redirect to the returnTo URL
             navigate(returnTo);
 

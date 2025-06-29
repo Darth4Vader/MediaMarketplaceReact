@@ -1,9 +1,10 @@
 /* General styling for the movie page */
 .movie-page {
     font-family: Arial, sans-serif;
-    background-color: #f9f9f9;
-    color: #333;
+    //background-color: #f9f9f9;
+    //color: #333;
     width: 100%;
+    color: white;
 }
 
 /* Header section with the movie poster and details */
@@ -14,9 +15,11 @@
     //color: white;
 }
 
+/*
 .movie-header * {
     color: white;
 }
+ */
 
 .movie-poster {
     width: 200px;

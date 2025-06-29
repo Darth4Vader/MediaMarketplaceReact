@@ -24,6 +24,9 @@ import LoadUserOrdersPage from "./components/UserOrdersPage";
 
 import Cookies from "js-cookie";
 import SearchPage from "./components/SearchPage";
+import {createTheme, ThemeProvider} from "@mui/material";
+import {AuthProvider} from "./AuthProvider";
+import {apiBaseUrl} from "./http/requests";
 
 const HomeTemplate = () => {
     const [position, setPosition] = useState(window.scrollY);
@@ -76,7 +79,13 @@ const AuthRoute = () => {
             if (response.ok) {
                 //user is logged in
                 // go to previous page
-                navigate(-1);
+                // check if the previous page is at the same site
+                if(document.referrer && document.referrer.length > 0 && document.referrer.startsWith(apiBaseUrl)) {
+                    navigate(-1);
+                }
+                else {
+                    navigate("/");
+                }
             }
         })
         .catch(err => {
@@ -113,6 +122,71 @@ function setupCookies() {
     });
 }
 
+const theme = createTheme({
+    components: {
+        // Name of the component
+        MuiButton: {
+            styleOverrides: {
+                root: {
+                    color: "white",
+                    borderColor: "white",
+                    backgroundColor: "#1e3645"
+                }
+            }
+        },
+        MuiTextField: {
+            styleOverrides: {
+                root: {
+                    color: "white",
+                    "& label": {
+                        color: "white"
+                    },
+                    "& .MuiOutlinedInput-root": {
+                        color: "white",
+                        "&.Mui-focused": {
+                            color: "white",
+                        }
+                    },
+                }
+            }
+        },
+        MuiSelect: {
+            styleOverrides: {
+                root: {
+                    color: "white",
+                    "& .MuiSvgIcon-root": {
+                        color: "white",
+                    },
+                    '.MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgb(255, 255, 255,0.3)',
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'white',
+                    },
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'white',
+                    },
+                }
+            }
+        }
+    },
+
+});
+
+/*
+                            "& label": {
+                                color: "white"
+                            },
+                            "& .MuiOutlinedInput-root": {
+                                color: "white",
+                                "&.Mui-focused": {
+                                    color: "white",
+                                }
+                            },
+                            /*"& .MuiInputLabel-outlined": {
+                                color: "white"
+                            }*/
+
 function App() {
     useEffect(() => {
         setupCookies();
@@ -132,34 +206,38 @@ function App() {
         }
     });
     return (
-        <div className="App">
-            <header className="App-header">
-                <QueryClientProvider client={queryClient}>
-                    <AuthenticationBoundary>
-                        <Routes>
-                            <Route path="" element={<HomeTemplate />}>
-                                <Route path="/" element={<HomePage />} />
-                                <Route path="/search" element={<SearchPage />} />
-                                <Route path="/cart" element={<LoadCartPage />} />
-                                <Route path="/movie/:id" element={<LoadMoviePage />} />
-                                <Route path="/movie/:id/reviews" element={<LoadReviewPage />} />
-                                <Route path="user" element={<UserPageTemplate/>}>
-                                    <Route index element={<Navigate to="orders" replace />} />
-                                    <Route path="orders" element={<LoadUserOrdersPage />} />
-                                    <Route path="./watch" element={<MediaCollectionPage />} />
-                                    <Route path="./information" element={<UserInformationPage />} />
-                                </Route>
-                            </Route>
-                            <Route path="" element={<AuthRoute />}>
-                                <Route path="/login" element={<LoginPage />} />
-                                <Route path="/register" element={<RegisterPage />} />
-                            </Route>
-                        </Routes>
-                    </AuthenticationBoundary>
-                    {/*<ReactQueryDevtools initialIsOpen={true} />*/}
-                </QueryClientProvider>
-            </header>
-        </div>
+        <ThemeProvider theme={theme}>
+            <div className="App">
+                <header className="App-header">
+                    <AuthProvider>
+                        <QueryClientProvider client={queryClient}>
+                            <AuthenticationBoundary>
+                                <Routes>
+                                    <Route path="" element={<HomeTemplate />}>
+                                        <Route path="/" element={<HomePage />} />
+                                        <Route path="/search" element={<SearchPage />} />
+                                        <Route path="/cart" element={<LoadCartPage />} />
+                                        <Route path="/movie/:id" element={<LoadMoviePage />} />
+                                        <Route path="/movie/:id/reviews" element={<LoadReviewPage />} />
+                                        <Route path="user" element={<UserPageTemplate/>}>
+                                            <Route index element={<Navigate to="orders" replace />} />
+                                            <Route path="orders" element={<LoadUserOrdersPage />} />
+                                            <Route path="./watch" element={<MediaCollectionPage />} />
+                                            <Route path="information" element={<UserInformationPage />} />
+                                        </Route>
+                                    </Route>
+                                    <Route path="" element={<AuthRoute />}>
+                                        <Route path="/login" element={<LoginPage />} />
+                                        <Route path="/register" element={<RegisterPage />} />
+                                    </Route>
+                                </Routes>
+                            </AuthenticationBoundary>
+                            {/*<ReactQueryDevtools initialIsOpen={true} />*/}
+                        </QueryClientProvider>
+                    </AuthProvider>
+                </header>
+            </div>
+        </ThemeProvider>
     );
 }
 

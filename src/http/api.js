@@ -18,6 +18,7 @@ export function useApi() {
         getUserMovieReview,
         handleResponse,
         checkIfUserLogged,
+        getLoggedUserName,
         purchaseCart,
         login,
         register,
@@ -119,6 +120,10 @@ export function useApi() {
 
     async function checkIfUserLogged() {
         return await requests.getWithAuth('/api/users/authenticate');
+    }
+
+    async function getLoggedUserName() {
+        return handleResponse(await requests.getWithAuth(`/api/users/current`));
     }
 
     async function purchaseCart() {

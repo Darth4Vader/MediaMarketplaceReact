@@ -7,13 +7,15 @@ import { Link } from 'react-router-dom'
 import { useApi } from '../http/api';
 import { logoutTokens } from '../http/requests';
 import './AppBar.css';
+import { useAuthContext } from "../AuthProvider";
 
 export default function AppBar() {
+
+    const { userMessage, userLogged } = useAuthContext();
 
     const { logout } = useApi();
 
     const [searchText, setSearchText] = useState('');
-    const [userMessage, setUserMessage] = useState('User Not Logged');
 
 
     const handleSearch = () => {
@@ -31,6 +33,17 @@ export default function AppBar() {
     const enterUserPage = () => {
         //App.getApplicationInstance().changeAppPanel(UserPageController.PATH);
     };
+
+    const logoutButton = () => {
+        logout()
+            .then(() => {
+                userLogged(false);
+            })
+            .catch((error) => {
+                console.error("Logout failed:", error);
+            });
+    };
+
     return (
         <div className="app-bar">
             <Link to="/cart">
@@ -62,17 +75,13 @@ export default function AppBar() {
                 />
             </div>
 
-            <div className="user-section" style={
-                {
-                    height: '100%',
-                }
-            }>
+            <div className="user-section">
                 <Link to="/user">
-                    <img src={userIcon} alt="User" className="user-icon" onClick={enterUserPage} height="100%"/>
+                    <img src={userIcon} alt="User" className="user-icon" onClick={enterUserPage} />
                 </Link>
-                <label>{userMessage}</label>
+                <label className="user-message">{userMessage}</label>
             </div>
-            <button onClick={() => { logout(); }}>Logout</button>
+            <button onClick={() => { logoutButton(); }}>Logout</button>
         </div>
     );
 }

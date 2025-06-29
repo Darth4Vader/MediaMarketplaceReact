@@ -23,12 +23,14 @@ const UserPageMenuBar = () => {
                         Media Collection
                     </label>}
                 </div>
-                <div className="side-bar-item">
-                    <img src={UserInformationImage} alt="User information image" className="user-logo"/>
-                    <label>
-                        User Information
-                    </label>
-                </div>
+                <Link to="./information">
+                    <div className="side-bar-item">
+                        <img src={UserInformationImage} alt="User information image" className="user-logo"/>
+                        <label>
+                            User Information
+                        </label>
+                    </div>
+                </Link>
             </div>
         </div>
     );
