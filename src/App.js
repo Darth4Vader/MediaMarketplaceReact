@@ -27,6 +27,65 @@ import SearchPage from "./components/SearchPage";
 import {createTheme, ThemeProvider} from "@mui/material";
 import {AuthProvider} from "./AuthProvider";
 import {apiBaseUrl} from "./http/requests";
+import {SearchInputProvider} from "./SearchInputProvider";
+
+const theme = createTheme({
+    components: {
+        // Name of the component
+        MuiButton: {
+            styleOverrides: {
+                root: {
+                    color: "white",
+                    borderColor: "white",
+                    backgroundColor: "#1e3645"
+                }
+            }
+        },
+        MuiTextField: {
+            styleOverrides: {
+                root: {
+                    color: "white",
+                    "& label": {
+                        color: "white"
+                    },
+                    "& .MuiOutlinedInput-root": {
+                        color: "white",
+                        "&.Mui-focused": {
+                            color: "white",
+                        }
+                    },
+                }
+            }
+        },
+        MuiSelect: {
+            styleOverrides: {
+                root: {
+                    color: "white",
+                    "& .MuiSvgIcon-root": {
+                        color: "white",
+                    },
+                    '.MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgb(255, 255, 255,0.3)',
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'white',
+                    },
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'white',
+                    },
+                }
+            }
+        },
+        MuiSvgIcon: {
+            styleOverrides: {
+                root: {
+                    color: 'white'
+                },
+            },
+        }
+    },
+
+});
 
 const HomeTemplate = () => {
     const [position, setPosition] = useState(window.scrollY);
@@ -44,12 +103,12 @@ const HomeTemplate = () => {
         })
     })
     return (
-        <div>
+        <ThemeProvider theme={theme}>
             <div className={`header-${visible ? "visible" : "hidden"}`}>
                 <AppBar/>
             </div>
             <Outlet/>
-        </div>
+        </ThemeProvider>
     );
 };
 
@@ -122,71 +181,6 @@ function setupCookies() {
     });
 }
 
-const theme = createTheme({
-    components: {
-        // Name of the component
-        MuiButton: {
-            styleOverrides: {
-                root: {
-                    color: "white",
-                    borderColor: "white",
-                    backgroundColor: "#1e3645"
-                }
-            }
-        },
-        MuiTextField: {
-            styleOverrides: {
-                root: {
-                    color: "white",
-                    "& label": {
-                        color: "white"
-                    },
-                    "& .MuiOutlinedInput-root": {
-                        color: "white",
-                        "&.Mui-focused": {
-                            color: "white",
-                        }
-                    },
-                }
-            }
-        },
-        MuiSelect: {
-            styleOverrides: {
-                root: {
-                    color: "white",
-                    "& .MuiSvgIcon-root": {
-                        color: "white",
-                    },
-                    '.MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'rgb(255, 255, 255,0.3)',
-                    },
-                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'white',
-                    },
-                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'white',
-                    },
-                }
-            }
-        }
-    },
-
-});
-
-/*
-                            "& label": {
-                                color: "white"
-                            },
-                            "& .MuiOutlinedInput-root": {
-                                color: "white",
-                                "&.Mui-focused": {
-                                    color: "white",
-                                }
-                            },
-                            /*"& .MuiInputLabel-outlined": {
-                                color: "white"
-                            }*/
-
 function App() {
     useEffect(() => {
         setupCookies();
@@ -206,38 +200,38 @@ function App() {
         }
     });
     return (
-        <ThemeProvider theme={theme}>
-            <div className="App">
-                <header className="App-header">
-                    <AuthProvider>
-                        <QueryClientProvider client={queryClient}>
-                            <AuthenticationBoundary>
-                                <Routes>
-                                    <Route path="" element={<HomeTemplate />}>
-                                        <Route path="/" element={<HomePage />} />
-                                        <Route path="/search" element={<SearchPage />} />
-                                        <Route path="/cart" element={<LoadCartPage />} />
-                                        <Route path="/movie/:id" element={<LoadMoviePage />} />
-                                        <Route path="/movie/:id/reviews" element={<LoadReviewPage />} />
-                                        <Route path="user" element={<UserPageTemplate/>}>
-                                            <Route index element={<Navigate to="orders" replace />} />
-                                            <Route path="orders" element={<LoadUserOrdersPage />} />
-                                            <Route path="./watch" element={<MediaCollectionPage />} />
-                                            <Route path="information" element={<UserInformationPage />} />
-                                        </Route>
+        <div className="App">
+            <header className="App-header">
+                <AuthProvider>
+                    <SearchInputProvider>
+                    <QueryClientProvider client={queryClient}>
+                        <AuthenticationBoundary>
+                            <Routes>
+                                <Route path="" element={<HomeTemplate />}>
+                                    <Route path="/" element={<HomePage />} />
+                                    <Route path="/search" element={<SearchPage />} />
+                                    <Route path="/cart" element={<LoadCartPage />} />
+                                    <Route path="/movie/:id" element={<LoadMoviePage />} />
+                                    <Route path="/movie/:id/reviews" element={<LoadReviewPage />} />
+                                    <Route path="user" element={<UserPageTemplate/>}>
+                                        <Route index element={<Navigate to="orders" replace />} />
+                                        <Route path="orders" element={<LoadUserOrdersPage />} />
+                                        <Route path="./watch" element={<MediaCollectionPage />} />
+                                        <Route path="information" element={<UserInformationPage />} />
                                     </Route>
-                                    <Route path="" element={<AuthRoute />}>
-                                        <Route path="/login" element={<LoginPage />} />
-                                        <Route path="/register" element={<RegisterPage />} />
-                                    </Route>
-                                </Routes>
-                            </AuthenticationBoundary>
-                            {/*<ReactQueryDevtools initialIsOpen={true} />*/}
-                        </QueryClientProvider>
-                    </AuthProvider>
-                </header>
-            </div>
-        </ThemeProvider>
+                                </Route>
+                                <Route path="" element={<AuthRoute />}>
+                                    <Route path="/login" element={<LoginPage />} />
+                                    <Route path="/register" element={<RegisterPage />} />
+                                </Route>
+                            </Routes>
+                        </AuthenticationBoundary>
+                        {/*<ReactQueryDevtools initialIsOpen={true} />*/}
+                    </QueryClientProvider>
+                    </SearchInputProvider>
+                </AuthProvider>
+            </header>
+        </div>
     );
 }
 

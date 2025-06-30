@@ -1,5 +1,5 @@
 import {useApi} from "../http/api";
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import './SearchPage.css'
 import {Checkbox, Grid, IconButton, MenuItem, Select, Skeleton} from "@mui/material";
 import {
@@ -11,6 +11,7 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import Movie from "./Movie";
 import {useEffectAfterPageRendered} from "./UseEffectAfterPageRendered";
 import {changeItemCheckedValue, isItemChecked, removeFromSelectedItems} from "./FilterUtils";
+import {useSearchInputContext} from "../SearchInputProvider";
 
 export default function SearchPage() {
     console.log("search");
@@ -28,12 +29,17 @@ export default function SearchPage() {
 
     const [sortOption, setSortOption] = useState("");
 
+    const { searchInput, isSearching } = useSearchInputContext();
+
     const search = async (pageNumber) => {
         let searchParams = "";
         /*const searchParams = {};
         if (selectedActors.length > 0) {
             searchParams.actors = selectedActors;
         }*/
+        if( searchInput && searchInput.length > 0) {
+            searchParams = `&name=${searchInput}`;
+        }
         console.log("Search Params: ", selectedActors);
         if(selectedGenres.length > 0) {
             const stringData = selectedGenres.map((genre) => `${genre.id}`).join(',');
@@ -80,16 +86,28 @@ export default function SearchPage() {
         await infiniteScrollFetchWrapper(fetchMoviesFunction, pageNumber, loading, setLoading, setHasMore);
     };
 
+    const fetchMoviesFirstPage = async () => {
+        setMovies([]);
+        if(page === 0)
+            fetchMovies(0);
+        else
+            setPage(0);
+    };
+
+    // when page loads for the first time, check if there is a search input
+    useEffect(() => {
+        if(searchInput && searchInput.length > 0) {
+            fetchMoviesFirstPage();
+        }
+    }, [isSearching]);
+
     useEffectAfterPageRendered(() => {
         console.log("search page");
         fetchMovies(page);
     }, [page]);
 
     useEffectAfterPageRendered(() => {
-        if(page === 0)
-            fetchMovies(0);
-        else
-            setPage(0);
+        fetchMoviesFirstPage();
     }, [sortOption]);
 
     return (
@@ -124,11 +142,7 @@ export default function SearchPage() {
                         <ActorsFilter selectedActors={selectedActors} setSelectedActors={setSelectedActors}/>
                         <DirectorsFilter selectedDirectors={selectedDirectors} setSelectedDirectors={setSelectedDirectors}/>
                         <button onClick={() => {
-                            setMovies([]);
-                            if(page === 0)
-                                fetchMovies(0);
-                            else
-                                setPage(0);
+                            fetchMoviesFirstPage();
                         }} style={{ height: "50px"}}>
                             Search
                         </button>
