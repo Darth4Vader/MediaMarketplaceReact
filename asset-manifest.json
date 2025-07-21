@@ -1,23 +1,23 @@
 {
   "files": {
-    "main.css": "/mediamarketplacereact/static/css/main.33073dab.css",
-    "main.js": "/mediamarketplacereact/static/js/main.37e8aac8.js",
-    "static/js/453.a0c470f5.chunk.js": "/mediamarketplacereact/static/js/453.a0c470f5.chunk.js",
-    "static/js/312.10442830.chunk.js": "/mediamarketplacereact/static/js/312.10442830.chunk.js",
-    "static/media/5vDuLrjJXFS9PTF7Q1xzobmYKR9.png": "/mediamarketplacereact/static/media/5vDuLrjJXFS9PTF7Q1xzobmYKR9.0d4d4d2a61e55cb692ad.png",
-    "static/media/9wXPKruA6bWYk2co5ix6fH59Qr8.png": "/mediamarketplacereact/static/media/9wXPKruA6bWYk2co5ix6fH59Qr8.b500323f2ee595116e11.png",
-    "static/media/2u7zbn8EudG6kLlBzUYqP8RyFU4.png": "/mediamarketplacereact/static/media/2u7zbn8EudG6kLlBzUYqP8RyFU4.fab4f33db745ed5da343.png",
-    "static/media/cart.png": "/mediamarketplacereact/static/media/cart.237762d67f4a933140b2.png",
-    "static/media/marketplace_logo.png": "/mediamarketplacereact/static/media/marketplace_logo.ed0a7315d68ece97f703.png",
-    "static/media/user.png": "/mediamarketplacereact/static/media/user.557587208eb9e232f2ca.png",
-    "index.html": "/mediamarketplacereact/index.html",
-    "main.33073dab.css.map": "/mediamarketplacereact/static/css/main.33073dab.css.map",
-    "main.37e8aac8.js.map": "/mediamarketplacereact/static/js/main.37e8aac8.js.map",
-    "453.a0c470f5.chunk.js.map": "/mediamarketplacereact/static/js/453.a0c470f5.chunk.js.map",
-    "312.10442830.chunk.js.map": "/mediamarketplacereact/static/js/312.10442830.chunk.js.map"
+    "main.css": "/MediaMarketplaceReact/static/css/main.33073dab.css",
+    "main.js": "/MediaMarketplaceReact/static/js/main.2ead35dd.js",
+    "static/js/453.a0c470f5.chunk.js": "/MediaMarketplaceReact/static/js/453.a0c470f5.chunk.js",
+    "static/js/312.10442830.chunk.js": "/MediaMarketplaceReact/static/js/312.10442830.chunk.js",
+    "static/media/5vDuLrjJXFS9PTF7Q1xzobmYKR9.png": "/MediaMarketplaceReact/static/media/5vDuLrjJXFS9PTF7Q1xzobmYKR9.0d4d4d2a61e55cb692ad.png",
+    "static/media/9wXPKruA6bWYk2co5ix6fH59Qr8.png": "/MediaMarketplaceReact/static/media/9wXPKruA6bWYk2co5ix6fH59Qr8.b500323f2ee595116e11.png",
+    "static/media/2u7zbn8EudG6kLlBzUYqP8RyFU4.png": "/MediaMarketplaceReact/static/media/2u7zbn8EudG6kLlBzUYqP8RyFU4.fab4f33db745ed5da343.png",
+    "static/media/cart.png": "/MediaMarketplaceReact/static/media/cart.237762d67f4a933140b2.png",
+    "static/media/marketplace_logo.png": "/MediaMarketplaceReact/static/media/marketplace_logo.ed0a7315d68ece97f703.png",
+    "static/media/user.png": "/MediaMarketplaceReact/static/media/user.557587208eb9e232f2ca.png",
+    "index.html": "/MediaMarketplaceReact/index.html",
+    "main.33073dab.css.map": "/MediaMarketplaceReact/static/css/main.33073dab.css.map",
+    "main.2ead35dd.js.map": "/MediaMarketplaceReact/static/js/main.2ead35dd.js.map",
+    "453.a0c470f5.chunk.js.map": "/MediaMarketplaceReact/static/js/453.a0c470f5.chunk.js.map",
+    "312.10442830.chunk.js.map": "/MediaMarketplaceReact/static/js/312.10442830.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.33073dab.css",
-    "static/js/main.37e8aac8.js"
+    "static/js/main.2ead35dd.js"
   ]
 }
