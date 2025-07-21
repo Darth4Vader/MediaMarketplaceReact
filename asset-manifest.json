@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/MediaMarketplaceReact/static/css/main.33073dab.css",
-    "main.js": "/MediaMarketplaceReact/static/js/main.4c2c53cf.js",
+    "main.js": "/MediaMarketplaceReact/static/js/main.e09357a7.js",
     "static/js/453.a0c470f5.chunk.js": "/MediaMarketplaceReact/static/js/453.a0c470f5.chunk.js",
     "static/js/312.10442830.chunk.js": "/MediaMarketplaceReact/static/js/312.10442830.chunk.js",
     "static/media/5vDuLrjJXFS9PTF7Q1xzobmYKR9.png": "/MediaMarketplaceReact/static/media/5vDuLrjJXFS9PTF7Q1xzobmYKR9.0d4d4d2a61e55cb692ad.png",
@@ -12,12 +12,12 @@
     "static/media/user.png": "/MediaMarketplaceReact/static/media/user.557587208eb9e232f2ca.png",
     "index.html": "/MediaMarketplaceReact/index.html",
     "main.33073dab.css.map": "/MediaMarketplaceReact/static/css/main.33073dab.css.map",
-    "main.4c2c53cf.js.map": "/MediaMarketplaceReact/static/js/main.4c2c53cf.js.map",
+    "main.e09357a7.js.map": "/MediaMarketplaceReact/static/js/main.e09357a7.js.map",
     "453.a0c470f5.chunk.js.map": "/MediaMarketplaceReact/static/js/453.a0c470f5.chunk.js.map",
     "312.10442830.chunk.js.map": "/MediaMarketplaceReact/static/js/312.10442830.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.33073dab.css",
-    "static/js/main.4c2c53cf.js"
+    "static/js/main.e09357a7.js"
   ]
 }
