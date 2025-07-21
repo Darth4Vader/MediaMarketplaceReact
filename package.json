@@ -2,6 +2,7 @@
   "name": "mediamarketplace",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://darth4vader.github.io/mediamarketplacereact",
   "dependencies": {
     "@ant-design/icons": "^5.6.1",
     "@emotion/react": "^11.14.0",
@@ -33,7 +34,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
@@ -52,5 +55,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "gh-pages": "^6.3.0"
   }
 }
