@@ -1,0 +1,12 @@
+
+.debug-error-page #webpack-dev-server-client-overlay-div {
+    display: none !important;
+}
+
+.debug-error-page #webpack-dev-server-client-overlay {
+    display: none !important;
+}
+
+.error-image {
+    font-size: 50px;
+}

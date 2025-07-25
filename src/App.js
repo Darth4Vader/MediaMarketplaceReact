@@ -27,6 +27,8 @@ import {createTheme, ThemeProvider} from "@mui/material";
 import {AuthProvider, useAuthenticationCheck} from "./AuthProvider";
 import {apiBaseUrl} from "./http/requests";
 import {SearchInputProvider} from "./SearchInputProvider";
+import {DefaultErrorBoundary, DefaultErrorPage} from "./DefaultErrorPage";
+import {NotFoundPage} from "./NotFoundPage";
 
 const theme = createTheme({
     components: {
@@ -117,7 +119,7 @@ const LogTemplate = () => {
     return (
         <div>
             <div className="auth-header">
-                <Link to="/">
+                <Link to="./">
                     <img src={logo} alt="Home" className="icon"/>
                 </Link>
             </div>
@@ -170,9 +172,9 @@ const AuthRoute = () => {
 
 function AuthenticationFallback({ error }) {
     console.log("Rendering...");
-    const returnTo = window.location.pathname;
+    const returnTo = window.location.pathname.replace("MediaMarketplaceReact/", "");
     if (error?.status === 401) {
-        return <Navigate to={`/login?return_to=${returnTo}`} replace/>;
+        return <Navigate to={`./login?return_to=${returnTo}`} replace/>;
     }
     throw error;
 }
@@ -213,6 +215,7 @@ function App() {
         }
     });
     return (
+        <DefaultErrorBoundary>
         <AuthProvider>
         <div className="App">
             <header className="App-header">
@@ -230,15 +233,17 @@ function App() {
                                     </Route>
                                     <Route path="user" element={<UserPageTemplate/>}>
                                         <Route index element={<Navigate to="orders" replace />} />
-                                        <Route path="orders" element={<LoadUserOrdersPage />} />
+                                        <Route path="orders" element={<UserOrdersPage />} />
                                         <Route path="./watch" element={<MediaCollectionPage />} />
                                         <Route path="information" element={<UserInformationPage />} />
                                     </Route>
                                 </Route>
                                 <Route path="" element={<AuthRoute />}>
-                                    <Route path="/login" element={<LoginPage />} />
-                                    <Route path="/register" element={<RegisterPage />} />
+                                    <Route path="login" element={<LoginPage />} />
+                                    <Route path="register" element={<RegisterPage />} />
                                 </Route>
+                                <Route path={"errorPage"} element={<DefaultErrorPage/>}/>
+                                <Route path='*' exact={true} element={<NotFoundPage />} />
                             </Routes>
                         </AuthenticationBoundary>
                         {/*<ReactQueryDevtools initialIsOpen={true} />*/}
@@ -247,6 +252,7 @@ function App() {
             </header>
         </div>
         </AuthProvider>
+        </DefaultErrorBoundary>
     );
 }
 
