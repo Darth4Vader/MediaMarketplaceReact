@@ -11,31 +11,25 @@ export const AuthProvider = ({ children }) => {
     const { getLoggedUserName } = useApi();
 
     const [userMessage, setUserMessage] = useState('User Not Logged');
+    const [isLogged, setIsLogged] = useState(false);
 
     const userLogged = useCallback(async (isLogged) => {
         console.log("LOGGer")
-        if( isLogged) {
-            const info = await getLoggedUserName();
-            console.log("Too Buy");
-            console.log(info.name);
-            //navigate(-1);
-            setUserMessage(info.name);
+        if(isLogged) {
+            await getLoggedUserName()
+                .then((name) => {
+                    setUserMessage(name.name);
+                    setIsLogged(true);
+                })
+                .catch((error) => {
+                    setUserMessage("User Not Logged");
+                    setIsLogged(false);
+                })
         }
         else {
             setUserMessage("User Not Logged");
+            setIsLogged(false);
         }
-    }, []);
-
-    useEffect(() => {
-        getLoggedUserName()
-            .then((name) => {
-                console.log("User Logged In");
-                console.log(name);
-                setUserMessage(name.name);
-            })
-            .catch((error) => {
-                setUserMessage("User Not Logged");
-            })
     }, []);
 
     /*
@@ -46,8 +40,22 @@ export const AuthProvider = ({ children }) => {
 
      */
     return (
-        <AuthContext.Provider value={{userMessage, userLogged}}>
+        <AuthContext.Provider value={{userMessage, userLogged, isLogged}}>
             {children}
         </AuthContext.Provider>
     );
+}
+
+export function useAuthenticationCheck() {
+    const { userLogged } = useAuthContext();
+    const [isFinished, setIsFinished] = useState(false);
+
+    useEffect(() => {
+        const checkIfUserLogged = async () => {
+            await userLogged(true); // check if user is logged in
+            setIsFinished(true);
+        }
+        checkIfUserLogged();
+    }, []);
+    return isFinished;
 }

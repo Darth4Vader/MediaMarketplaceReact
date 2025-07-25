@@ -6,6 +6,7 @@ import {Outlet} from "react-router";
 import {Link} from "react-router-dom";
 import './UserPage.css'
 import {useApi} from "../http/api";
+import {useAuthenticationCheck} from "../AuthProvider";
 
 const UserPageMenuBar = () => {
     return (
@@ -37,11 +38,13 @@ const UserPageMenuBar = () => {
 }
 
 const UserPageTemplate = () => {
+    const isFinished = useAuthenticationCheck();
+
     return (
         <div className='user-page'>
             <UserPageMenuBar />
             <div className="main-user-page">
-                <Outlet/>
+                {isFinished && <Outlet/>}
             </div>
         </div>
     );

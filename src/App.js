@@ -20,12 +20,11 @@ import UserPageTemplate from "./components/UserPage";
 import UserOrdersPage from "./components/UserOrdersPage";
 import MediaCollectionPage from "./components/MediaCollectionPage";
 import UserInformationPage from "./components/UserInformationPage";
-import LoadUserOrdersPage from "./components/UserOrdersPage";
 
 import Cookies from "js-cookie";
 import SearchPage from "./components/SearchPage";
 import {createTheme, ThemeProvider} from "@mui/material";
-import {AuthProvider} from "./AuthProvider";
+import {AuthProvider, useAuthenticationCheck} from "./AuthProvider";
 import {apiBaseUrl} from "./http/requests";
 import {SearchInputProvider} from "./SearchInputProvider";
 
@@ -87,7 +86,7 @@ const theme = createTheme({
 
 });
 
-const HomeTemplate = () => {
+const AppTemplate = () => {
     const [position, setPosition] = useState(window.scrollY);
     const [visible, setVisible] = useState(true)
     useEffect(()=> {
@@ -127,6 +126,16 @@ const LogTemplate = () => {
     );
 };
 
+const DefaultTemplate = () => {
+    const isFinished = useAuthenticationCheck();
+
+    return (
+        <>
+            {isFinished && <Outlet/>}
+        </>
+    );
+};
+
 const AuthRoute = () => {
     const { checkIfUserLogged } = useApi();
     const navigate = useNavigate();
@@ -145,6 +154,10 @@ const AuthRoute = () => {
                 else {
                     navigate("/");
                 }
+            }
+            else {
+                // it's ok
+                // that means user is not authenticated
             }
         })
         .catch(err => {
@@ -200,19 +213,21 @@ function App() {
         }
     });
     return (
+        <AuthProvider>
         <div className="App">
             <header className="App-header">
-                <AuthProvider>
                     <SearchInputProvider>
                     <QueryClientProvider client={queryClient}>
                         <AuthenticationBoundary>
                             <Routes>
-                                <Route path="" element={<HomeTemplate />}>
-                                    <Route path="/" element={<HomePage />} />
-                                    <Route path="/search" element={<SearchPage />} />
-                                    <Route path="/cart" element={<LoadCartPage />} />
-                                    <Route path="/movie/:id" element={<LoadMoviePage />} />
-                                    <Route path="/movie/:id/reviews" element={<LoadReviewPage />} />
+                                <Route path="" element={<AppTemplate />}>
+                                    <Route path="" element={<DefaultTemplate />}>
+                                        <Route index element={<HomePage />} />
+                                        <Route path="search" element={<SearchPage />} />
+                                        <Route path="cart" element={<LoadCartPage />} />
+                                        <Route path="movie/:id" element={<LoadMoviePage />} />
+                                        <Route path="movie/:id/reviews" element={<LoadReviewPage />} />
+                                    </Route>
                                     <Route path="user" element={<UserPageTemplate/>}>
                                         <Route index element={<Navigate to="orders" replace />} />
                                         <Route path="orders" element={<LoadUserOrdersPage />} />
@@ -229,9 +244,9 @@ function App() {
                         {/*<ReactQueryDevtools initialIsOpen={true} />*/}
                     </QueryClientProvider>
                     </SearchInputProvider>
-                </AuthProvider>
             </header>
         </div>
+        </AuthProvider>
     );
 }
 
