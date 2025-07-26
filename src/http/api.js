@@ -24,6 +24,7 @@ export function useApi() {
         register,
         logout,
         getCurrentUserOrders,
+        getCurrentUserMovieCollection,
         searchGenres,
         searchActors,
         searchDirectors,
@@ -144,6 +145,10 @@ export function useApi() {
 
     async function getCurrentUserOrders(page=0, size=1) {
         return handleResponse(await requests.getWithAuth(`/api/users/current/orders?page=${page}&size=${size}`));
+    }
+
+    async function getCurrentUserMovieCollection(page=0, size=1) {
+        return handleResponse(await requests.getWithAuth(`/api/users/current/movie-purchased/actives?page=${page}&size=${size}`));
     }
 
     async function searchGenres(name, page=0, size=1) {

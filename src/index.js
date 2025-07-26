@@ -6,14 +6,18 @@ import reportWebVitals from './reportWebVitals';
 import {DevSupport} from "@react-buddy/ide-toolbox";
 import {ComponentPreviews, useInitial} from "./dev";
 import {BrowserRouter} from "react-router-dom";
+import {CookieManager} from "react-cookie-manager";
+import "react-cookie-manager/style.css";
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
         <DevSupport ComponentPreviews={ComponentPreviews}
                     useInitialHook={useInitial}
         >
-            <BrowserRouter>
-            <App/>
+            <BrowserRouter basename="MediaMarketplaceReact">
+                <CookieManager>
+                    <App/>
+                </CookieManager>
             </BrowserRouter>
         </DevSupport>
 );

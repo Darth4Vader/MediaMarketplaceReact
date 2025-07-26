@@ -4,40 +4,25 @@ import {ErrorBoundary, useErrorBoundary} from "react-error-boundary";
 import React, {Suspense, use, useEffect, useState} from "react";
 import {PaginationNavigatePage, useCurrentPage} from "./Pagination";
 import './UserOrdersPage.css';
+import {Skeleton} from "@mui/material";
 
-export default function LoadUserOrdersPage() {
-    const { getCurrentUserOrders } = useApi();
-    const { id } = useParams();
-    const [searchParams, setSearchParams] = useSearchParams();
-    const page = Number(searchParams.get("page")) || 1;
-    return (
-            <Suspense key="orders" fallback={<div>Loading Orders...</div>}>
-                <UserOrdersPage /*ordersPromise={getCurrentUserOrders(page-1)}*/ />
-            </Suspense>
-    );
+function formatDate(dateArray) {
+    if (!dateArray) return '';
+    return `${dateArray[2]}/${dateArray[1]}/${dateArray[0]}, ${dateArray[3]}:${dateArray[4]}:${dateArray[5]}`;
 }
 
-function formatDate(dateStr) {
-    if (!dateStr) return '';
-    const date = new Date(dateStr);
-    return date.toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-    });
-}
-
-const UserOrdersPage = ({ ordersPromise }) => {
+const UserOrdersPage = () => {
     const { getCurrentUserOrders } = useApi();
     const page = useCurrentPage();
     const [orders, setOrders] = useState(null);
+    const [pageLoaded, setPageLoaded] = useState(false);
 
     const errorBoundary = useErrorBoundary();
 
     useEffect(() => {
         const fetchOrders = async () => {
             try {
-                const orders = await getCurrentUserOrders(page - 1);
+                const orders = await getCurrentUserOrders(page - 1, 10);
                 setOrders(orders);
             } catch (error) {
                 errorBoundary.showBoundary(error);
@@ -49,24 +34,9 @@ const UserOrdersPage = ({ ordersPromise }) => {
         <div key="orders">
             {orders?.content?.length > 0 ? (
                 orders?.content?.map((order) => (
-                    <div key={order?.id} className="order">
-                        <div>
-                            Order Number:
-                            {order?.id}
-                            {' - Date: '}
-                            {formatDate(order?.purchasedDate)}
-                        </div>
-                        <div>
-                            <strong>Products:</strong>
-                            {order?.purchasedItems.map((purchasedItem) => (
-                                <PurchasedProductItem key={purchasedItem.id} purchasedItem={purchasedItem} />
-                            ))}
-                        </div>
-                        <text>{order?.price}</text>
-                    </div>
-                ))
-            ) : (
-                <p>No reviews yet.</p>
+                    <Order order={order} setPageLoaded={setPageLoaded} />
+            ))) : (
+                <p>No products yet.</p>
             )}
             <div className="pagination">
                 <PaginationNavigatePage paginationResult={orders} />
@@ -75,28 +45,83 @@ const UserOrdersPage = ({ ordersPromise }) => {
     );
 };
 
-const PurchasedProductItem = ({ purchasedItem }) => {
-    const movie = purchasedItem.movie;
-    console.log(purchasedItem);
+const Order = ({ order, setPageLoaded }) => {
+    console.log("Order:", order);
     return (
+        <div key={order?.id} className="order">
+            <div>
+                Order: {order?.id}
+                {' - Date: '}
+                {formatDate(order?.purchasedDate)}
+            </div>
+            <div>
+                <strong>Products:</strong>
+                <ul style={{ listStyle: 'none', padding: 0 }}>
+                    {order?.purchasedItems.map((purchasedItem, index) => (
+                        <li key={index}>
+                            <PurchasedProductItem
+                                purchasedItem={purchasedItem}
+                                setPageLoaded={setPageLoaded}
+                            />
+                        </li>
+                    ))}
+                </ul>
+            </div>
+            <span>Total Price: {order?.totalPrice}</span>
+        </div>
+    )
+}
+
+const PurchasedProductItem = ({ purchasedItem, setPageLoaded }) => {
+    const [loaded, setLoaded] = useState(true);
+    const movie = purchasedItem?.movie;
+    console.log(purchasedItem);
+
+    useEffect(() => {
+        setPageLoaded(loaded);
+    }, [loaded]);
+
+    return loaded ? (
         <div className="purchased-item">
+            <Link to={"/movie/" + movie?.id} className="product-link">
+                <img src={movie?.posterPath} alt={movie?.name} className="product-poster"/>
+            </Link>
             <div>
                 <Link to={"/movie/" + movie?.id} className="product-link">
                     <div className="product-name">{movie?.name}</div>
                 </Link>
-                -
-                {purchasedItem.purchaseType === 'RENT' ? 'Rented' : 'Bought'}
-                {" "}
-                (
-                {purchasedItem.isUsable ?
-                    <p style={{color: 'green'}}>Active</p>
-                    : <p style = {{color: 'red'}}>Expired</p>
-                }
-                )
+                <div className="product-purchase-panel">
+                    {purchasedItem.isRented ? 'Rented' : 'Bought'}
+                    {" "}
+                    (
+                    {purchasedItem.isUseable ?
+                        <span style={{color: 'green'}}>Active</span>
+                        : <span style = {{color: 'red'}}>Expired</span>
+                    }
+                    )
+                </div>
+                <div style={{ color: 'gray' }}>
+                    Price: {purchasedItem.purchasePrice}
+                </div>
             </div>
+        </div>
+    ): (
+        <CartProductItemSkeleton/>
+    );
+};
+
+const CartProductItemSkeleton = () => {
+    return (
+        <div className="cart-product">
+            <Skeleton variant="rectangular" className="product-poster"/>
             <div>
-                {purchasedItem.purchasePrice}
+                <Skeleton variant="text" width={200} height={30} />
+                <Skeleton variant="text" width={100} height={30} />
+                <Skeleton variant="text" width={100} height={30} />
+                <Skeleton variant="text" width={100} height={30} />
             </div>
         </div>
     );
 }
+
+export default UserOrdersPage;

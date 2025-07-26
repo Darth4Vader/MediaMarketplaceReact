@@ -18,7 +18,7 @@ import {useApi} from "./http/api";
 import {ReactQueryDevtools} from "react-query/devtools";
 import UserPageTemplate from "./components/UserPage";
 import UserOrdersPage from "./components/UserOrdersPage";
-import MediaCollectionPage from "./components/MediaCollectionPage";
+import UserMediaCollectionPage from "./components/UserMediaCollectionPage";
 import UserInformationPage from "./components/UserInformationPage";
 
 import Cookies from "js-cookie";
@@ -234,7 +234,7 @@ function App() {
                                     <Route path="user" element={<UserPageTemplate/>}>
                                         <Route index element={<Navigate to="orders" replace />} />
                                         <Route path="orders" element={<UserOrdersPage />} />
-                                        <Route path="./watch" element={<MediaCollectionPage />} />
+                                        <Route path="collection" element={<UserMediaCollectionPage />} />
                                         <Route path="information" element={<UserInformationPage />} />
                                     </Route>
                                 </Route>

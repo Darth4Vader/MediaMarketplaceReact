@@ -16,12 +16,23 @@
     text-align: start;
     //direction: rtl;
     //justify-content: start;
+    color: black;
+}
+
+.user-side-bar img, a {
+    user-drag: none;
+    -webkit-user-drag: none;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
 }
 
 .user-page .user-side-bar-scroll {
-    height: 100%;
+    //height: 100%;
     overflow-y: auto;
     overscroll-behavior: none;
+    background-color: white;
 }
 
 .user-side-bar .side-bar-item {
@@ -35,6 +46,11 @@
 .user-page .user-side-bar .user-logo {
     height: 100%;
     width: 20%;
+}
+
+.user-page .user-side-bar a {
+    text-decoration: unset;
+    color: unset;
 }
 
 .user-page .main-user-page {
