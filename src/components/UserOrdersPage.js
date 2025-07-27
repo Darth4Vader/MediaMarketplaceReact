@@ -2,7 +2,7 @@ import {useApi} from "../http/api";
 import {Link, useParams, useSearchParams} from "react-router-dom";
 import {ErrorBoundary, useErrorBoundary} from "react-error-boundary";
 import React, {Suspense, use, useEffect, useState} from "react";
-import {PaginationNavigatePage, useCurrentPage} from "./Pagination";
+import {PaginationNavigatePage, useCurrentPage, usePagination} from "./Pagination";
 import './UserOrdersPage.css';
 import {Skeleton} from "@mui/material";
 
@@ -16,6 +16,7 @@ const UserOrdersPage = () => {
     const page = useCurrentPage();
     const [orders, setOrders] = useState(null);
     const [pageLoaded, setPageLoaded] = useState(false);
+    const { pagination, setPaginationResult } = usePagination();
 
     const errorBoundary = useErrorBoundary();
 
@@ -23,7 +24,8 @@ const UserOrdersPage = () => {
         const fetchOrders = async () => {
             try {
                 const orders = await getCurrentUserOrders(page - 1, 10);
-                setOrders(orders);
+                setPaginationResult(orders);
+                setOrders(orders?.content);
             } catch (error) {
                 errorBoundary.showBoundary(error);
             }
@@ -32,14 +34,14 @@ const UserOrdersPage = () => {
     }, [page]);
     return (
         <div key="orders">
-            {orders?.content?.length > 0 ? (
-                orders?.content?.map((order) => (
+            {orders?.length > 0 ? (
+                orders?.map((order) => (
                     <Order order={order} setPageLoaded={setPageLoaded} />
             ))) : (
                 <p>No products yet.</p>
             )}
             <div className="pagination">
-                <PaginationNavigatePage paginationResult={orders} />
+                <PaginationNavigatePage paginationResult={pagination} />
             </div>
         </div>
     );

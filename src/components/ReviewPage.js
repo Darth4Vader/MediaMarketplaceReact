@@ -2,7 +2,7 @@ import {useParams, useSearchParams} from "react-router-dom";
 import React, {Suspense, use, useEffect} from "react";
 import AppBar from "./AppBar";
 import { useApi } from "../http/api";
-import {PaginationNavigatePage} from "./Pagination";
+import {PaginationNavigatePage, usePagination} from "./Pagination";
 import {ErrorBoundary} from "react-error-boundary";
 
 export default function LoadReviewPage() {
@@ -37,12 +37,15 @@ function formatDate(dateStr) {
 }
 
 const ReviewsList = ({ reviewsPromise }) => {
-    const reviews = use(reviewsPromise);
+    const reviewsResult = use(reviewsPromise);
+    const reviews = reviewsResult?.content;
+    const { pagination, setPaginationResult } = usePagination();
+    setPaginationResult(reviewsResult);
     console.log(reviews);
     return (
         <div>
-            {reviews?.content?.length > 0 ? (
-                reviews?.content?.map((review) => (
+            {reviews?.length > 0 ? (
+                reviews?.map((review) => (
                     <div key={review.id} className="review">
                         <h3>{review.title}</h3>
                         <p>{review.content}</p>
@@ -53,7 +56,7 @@ const ReviewsList = ({ reviewsPromise }) => {
                 <p>No reviews yet.</p>
             )}
             <div className="pagination">
-                <PaginationNavigatePage paginationResult={reviews} />
+                <PaginationNavigatePage paginationResult={pagination} />
             </div>
         </div>
 );

@@ -1,5 +1,5 @@
 import {useApi} from "../http/api";
-import {PaginationNavigatePage, useCurrentPage} from "./Pagination";
+import {PaginationNavigatePage, useCurrentPage, usePagination} from "./Pagination";
 import React, {useEffect, useState} from "react";
 import {useErrorBoundary} from "react-error-boundary";
 import MovieGrid from "./MovieGrid";
@@ -10,6 +10,7 @@ const UserMediaCollectionPage = () => {
     const page = useCurrentPage();
     const [movies, setMovies] = useState(null);
     const [pageLoaded, setPageLoaded] = useState(false);
+    const { pagination, setPaginationResult } = usePagination();
 
     const errorBoundary = useErrorBoundary();
 
@@ -18,7 +19,8 @@ const UserMediaCollectionPage = () => {
             try {
                 const movies = await getCurrentUserMovieCollection(page - 1, 10);
                 console.log("Movies:", movies);
-                setMovies(movies);
+                setPaginationResult(movies);
+                setMovies(movies?.content);
             } catch (error) {
                 console.log("Hate")
                 errorBoundary.showBoundary(error);
@@ -29,9 +31,9 @@ const UserMediaCollectionPage = () => {
 
     return (
         <div key="movie_collection">
-            { movies?.content && <MovieGrid movies={movies?.content} />}
+            { movies && <MovieGrid movies={movies} />}
             <div className="pagination">
-                <PaginationNavigatePage paginationResult={movies} />
+                <PaginationNavigatePage paginationResult={pagination} />
             </div>
         </div>
     );

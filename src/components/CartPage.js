@@ -7,7 +7,7 @@ import './CartPage.css';
 import {NotFoundErrorBoundary} from "./ApiErrorUtils";
 import {Fade, IconButton, MenuItem, Select, Skeleton} from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Pagination } from "./Pagination";
+import {Pagination, usePagination} from "./Pagination";
 import {Link, useNavigate, useNavigation, useSearchParams} from "react-router-dom";
 import Alert from "@mui/material/Alert";
 
@@ -35,7 +35,7 @@ const CartPage = () => {
     const [cartProducts, setCartProducts] = useState([]);
     const [totalPrice, setTotalPrice] = useState(0);
     const [totalItems, setTotalItems] = useState(0);
-    const [cartPageable, setCartPageable] = useState({});
+    const { pagination, setPaginationResult } = usePagination();
     const [page, setPage] = useState(0);
     const [pageLoaded, setPageLoaded] = useState(false);
     const requests = useFetchRequests();
@@ -59,7 +59,7 @@ const CartPage = () => {
                 setCartProducts(cart?.cartProducts?.content || []);
                 setTotalPrice(cart?.totalPrice || 0);
                 setTotalItems(cart?.totalItems || 0);
-                setCartPageable(cart?.cartProducts);
+                setPaginationResult(cart?.cartProducts);
             }
             catch (error) {
                 errorBoundary.showBoundary(error);
@@ -192,7 +192,7 @@ const CartPage = () => {
                         ))}
                     </ul>
                     <div className="pagination">
-                        <Pagination paginationResult={cartPageable} changePageAction={(e, newPage) => {
+                        <Pagination paginationResult={pagination} changePageAction={(e, newPage) => {
                             e.preventDefault();
                             setPage(newPage);
                         }}/>

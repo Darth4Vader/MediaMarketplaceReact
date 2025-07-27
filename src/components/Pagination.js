@@ -1,5 +1,6 @@
 import { useSearchParams } from "react-router-dom";
 import './Pagination.css';
+import {useState} from "react";
 
 export function useCurrentPage() {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -26,6 +27,19 @@ const ChangePageButton = ({page, text, changePageAction}) => {
         </a>
     ) : null;
 };
+
+export function usePagination() {
+    const [pagination, setPagination] = useState(null);
+    const setPaginationResult = (result) => {
+        const paginationResult = {};
+        paginationResult.number = result?.number;
+        paginationResult.totalPages = result?.totalPages;
+        paginationResult.first = result?.first;
+        paginationResult.last = result?.last;
+        setPagination(paginationResult);
+    }
+    return { pagination, setPaginationResult };
+}
 
 export const Pagination = ({ paginationResult, changePageAction }) => {
     const page = paginationResult?.number != null ? paginationResult.number + 1 : null;
