@@ -14,7 +14,7 @@ root.render(
         <DevSupport ComponentPreviews={ComponentPreviews}
                     useInitialHook={useInitial}
         >
-            <BrowserRouter basename="MediaMarketplaceReact">
+            <BrowserRouter>
                 <CookieManager>
                     <App/>
                 </CookieManager>

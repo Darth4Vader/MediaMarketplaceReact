@@ -8,13 +8,16 @@ const debugMode = true; // Set to true for development mode
 
 export function DefaultErrorBoundary({ children }) {
     const location =  useLocation();
-    return (
+    return (<>{ debugMode ? <>{children}</> : (
         <ErrorBoundary key={location.pathname} fallbackRender={({ error, resetErrorBoundary }) => {
+            /*const returnTo = window.location.pathname.replace("MediaMarketplaceReact/", "");
+            return <Navigate to={`./login?return_to=${returnTo}`} replace/>;*/
             resetErrorBoundary(error);
             return ( <Navigate to={'/errorPage'}/> );
         }}>
             {children}
-        </ErrorBoundary>
+        </ErrorBoundary>)}
+        </>
     );
 }
 
@@ -43,6 +46,8 @@ function useCanNavigateFromError() {
 
 export function DefaultErrorPage({ error }) {
     const navigate = useCanNavigateFromError();
+    if(debugMode)
+        return (<> </>);
     if(navigate) {
         return <Navigate to={'/'} replace/>;
     }

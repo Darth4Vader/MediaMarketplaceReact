@@ -1,5 +1,5 @@
 
-export const apiBaseUrl = 'http://localhost:8080';
+export const apiBaseUrl = process.env.NODE_ENV == 'dev' ? 'http://localhost:8080' : '';
 
 export function useFetchRequests() {
     return {
@@ -112,6 +112,11 @@ export function useFetchRequests() {
                                         // the refresh token is not found
                                         // throw the original response unauthorized
                                         throw response;
+                                    }
+                                    // bad request - refresh tokeen is missing
+                                    if (refreshTokenResponse.status === 400) {
+                                        console.log("Bad Request");
+                                        return Promise.reject(response);
                                     }
                                 }
                                 console.log("Post failed");
