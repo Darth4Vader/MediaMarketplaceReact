@@ -6,7 +6,7 @@ import LoadMoviePage from "./components/MoviePage";
 import LoadCartPage from "./components/CartPage";
 import Movie from "./components/Movie";
 import LoadReviewPage from "./components/ReviewPage";
-import AppBar from "./components/AppBar";
+import MyAppBar from "./components/MyAppBar";
 import LoginPage from "./LoginPage";
 import RegisterPage from "./components/RegisterPage";
 
@@ -106,7 +106,7 @@ const AppTemplate = () => {
     return (
         <ThemeProvider theme={theme}>
             <div className={`header-${visible ? "visible" : "hidden"}`}>
-                <AppBar/>
+                <MyAppBar/>
             </div>
             <Outlet/>
         </ThemeProvider>

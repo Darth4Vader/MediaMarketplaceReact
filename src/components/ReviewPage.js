@@ -1,6 +1,6 @@
 import {useParams, useSearchParams} from "react-router-dom";
 import React, {Suspense, use, useEffect} from "react";
-import AppBar from "./AppBar";
+import MyAppBar from "./MyAppBar";
 import { useApi } from "../http/api";
 import {PaginationNavigatePage, usePagination} from "./Pagination";
 import {ErrorBoundary} from "react-error-boundary";

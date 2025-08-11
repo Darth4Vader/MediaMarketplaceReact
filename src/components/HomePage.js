@@ -1,6 +1,6 @@
 import React, {Suspense, useEffect, useState, use} from 'react';
 import MovieGrid from './MovieGrid';
-import AppBar from './AppBar';
+import MyAppBar from './MyAppBar';
 import { useApi } from '../http/api';
 
 function LoadHomePage({dataPromise}) {

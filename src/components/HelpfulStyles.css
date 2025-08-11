@@ -1,0 +1,78 @@
+:root {
+    --rg-shadow-gradient-teal: linear-gradient(123deg, #008559 0%, #007e94 50%, #006ce0 100%);
+    --rg-color-background-object: #f3f3f7;
+}
+
+
+.glow-background {
+    transition: transform 0.3s ease;
+    transform-style: preserve-3d;
+
+    //background: unset !important;
+    //background-color: var(--rg-color-background-object, #F3F3F7) !important;
+    background-color: unset !important;
+}
+
+.glow-background:before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--rg-shadow-gradient-teal, linear-gradient(123deg, #008559 0%, #007e94 50%, #006ce0 100%));
+    border-radius: inherit;
+    transform: translateZ(-1px);
+    pointer-events: none;
+    padding: 1px;
+    transition-property: filter, inset;
+    transition-duration: .3s;
+    filter: blur(0px);
+}
+
+.glow-background:hover:before {
+//background: var(--rg-shadow-gradient-teal, linear-gradient(123deg, #008559 0%, #007e94 50%, #006ce0 100%));
+    filter: blur(10px);
+}
+
+.glow-background:hover {
+    transform: scale(1.02);
+    box-shadow: /* glowing border */
+            0 0 12px 4px rgba(255, 255, 255, 0.4);  /* soft outer glow */
+}
+
+
+
+.fade-in {
+    opacity: 0;
+    transform: translateY(20px); /* Start from the bottom */
+    transition: opacity 1s ease-in, transform 1s ease-in; /* Smooth transition for both */
+}
+
+/* When element becomes visible, fade-in occurs */
+.fade-in.visible {
+    opacity: 1; /* Fully visible */
+    transform: translateY(0); /* Move from bottom to top */
+}
+
+.fade-in2 {
+    opacity: 0;
+    transform: translateY(80px); /* Start from the bottom */
+    animation:
+            fadeInPosition 0.4s cubic-bezier(0.2, 0.6, 0.4, 1) forwards,
+            fadeInOpacity 0.4s cubic-bezier(0.4, 0.6, 0.6, 1) forwards;
+
+    animation-delay: 0.4s;  /* Delay both animations */
+}
+
+/* First animation (Position Rise) */
+@keyframes fadeInPosition {
+    to {
+        opacity: 1;
+        transform: translateY(0);  /* Move from bottom to top */
+    }
+}
+
+/* Second animation (Opacity Fade) */
+@keyframes fadeInOpacity {
+    to {
+        opacity: 1;  /* Fade in fully */
+    }
+}

@@ -1,6 +1,6 @@
 "use client"
 
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {EyeInvisibleOutlined, EyeOutlined} from "@ant-design/icons";
 import './UtilsComponents.css'
 import {IconButton, InputAdornment, TextField} from "@mui/material";
@@ -100,3 +100,33 @@ export function ImageSwapper({ images, timeout }) {
         </div>
     )
 }
+
+// Custom hook to handle fade-in effect when elements are in view
+export const useFadeInOnScroll = () => {
+    const [isVisible, setIsVisible] = useState(false);
+    const elementRef = useRef(null);
+
+    // Set up Intersection Observer to detect when element comes into view
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setIsVisible(true); // Set to true when element is visible in the viewport
+                }
+            },
+            { threshold: 0.1 } // Trigger when 10% of the element is visible
+        );
+
+        if (elementRef.current) {
+            observer.observe(elementRef.current); // Observe the element
+        }
+
+        return () => {
+            if (elementRef.current) {
+                observer.unobserve(elementRef.current); // Clean up observer on unmount
+            }
+        };
+    }, []);
+
+    return { isVisible, elementRef }; // Return visibility state and ref
+};

@@ -1,5 +1,5 @@
 
-export const apiBaseUrl = process.env.NODE_ENV == 'dev' ? 'http://localhost:8080' : '';
+export const apiBaseUrl = process.env.NODE_ENV == 'prod' ? '': 'http://localhost:8080';
 
 export function useFetchRequests() {
     return {

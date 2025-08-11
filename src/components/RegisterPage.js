@@ -7,6 +7,7 @@ import {AuthLink, ShowHidePassword, useReturnToParam} from "./UtilsComponents";
 import {FormHelperText, TextField} from "@mui/material";
 import {SwitchTransition, CSSTransition} from "react-transition-group";
 import {useAuthContext} from "../AuthProvider";
+import {useApi} from "../http/api";
 
 function importAll(r) {
     return r.keys().map(r);
@@ -15,7 +16,7 @@ function importAll(r) {
 const images = importAll(require.context('../assets/register-page', false, /\.(png|jpe?g|svg)$/));
 
 const RegisterPage = () => {
-    const { register } = useFetchRequests();
+    const { register } = useApi();
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [passwordConfirm, setPasswordConfirm] = useState("");
@@ -47,6 +48,7 @@ const RegisterPage = () => {
     const handleRegister = async (e) => {
         e.preventDefault();
         const response = await register(username, password, passwordConfirm);
+        console.log(response);
         if (response.ok) {
             alert("Registration successful!");
             await userLogged(true);

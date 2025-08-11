@@ -4,6 +4,7 @@ import App from "../App";
 import LoginPage from "../LoginPage";
 import LoadMoviePage from "../components/MoviePage";
 import LoadCartPage from "../components/CartPage";
+import HomePage from "../components/HomePage";
 
 const ComponentPreviews = () => {
     return (
@@ -19,6 +20,9 @@ const ComponentPreviews = () => {
             </ComponentPreview>
             <ComponentPreview path="/LoadCartPage">
                 <LoadCartPage/>
+            </ComponentPreview>
+            <ComponentPreview path="/HomePage">
+                <HomePage/>
             </ComponentPreview>
         </Previews>
     )
