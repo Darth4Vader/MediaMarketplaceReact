@@ -23,7 +23,7 @@ import UserInformationPage from "./components/UserInformationPage";
 
 import Cookies from "js-cookie";
 import SearchPage from "./components/SearchPage";
-import {createTheme, ThemeProvider} from "@mui/material";
+import {createTheme, CssBaseline, ThemeProvider} from "@mui/material";
 import {AuthProvider, useAuthenticationCheck} from "./AuthProvider";
 import {apiBaseUrl} from "./http/requests";
 import {SearchInputProvider} from "./SearchInputProvider";
@@ -31,6 +31,9 @@ import {DefaultErrorBoundary, DefaultErrorPage} from "./DefaultErrorPage";
 import {NotFoundPage} from "./NotFoundPage";
 
 const theme = createTheme({
+    palette: {
+        mode: 'dark'
+    },
     components: {
         // Name of the component
         MuiButton: {
@@ -89,25 +92,10 @@ const theme = createTheme({
 });
 
 const AppTemplate = () => {
-    const [position, setPosition] = useState(window.scrollY);
-    const [visible, setVisible] = useState(true)
-    useEffect(()=> {
-        const handleScroll = () => {
-            let moving = window.scrollY;
-
-            setVisible(position > moving);
-            setPosition(moving)
-        };
-        window.addEventListener("scroll", handleScroll);
-        return(() => {
-            window.removeEventListener("scroll", handleScroll);
-        })
-    })
     return (
         <ThemeProvider theme={theme}>
-            <div className={`header-${visible ? "visible" : "hidden"}`}>
-                <MyAppBar/>
-            </div>
+            <CssBaseline />
+            <MyAppBar/>
             <Outlet/>
         </ThemeProvider>
     );
@@ -117,14 +105,15 @@ const LogTemplate = () => {
     // we first check if the user is logged
     // if so then we redirect them back
     return (
-        <div>
+        <ThemeProvider theme={theme}>
+            <CssBaseline />
             <div className="auth-header">
                 <Link to="./">
                     <img src={logo} alt="Home" className="icon"/>
                 </Link>
             </div>
             <Outlet/>
-        </div>
+        </ThemeProvider>
     );
 };
 

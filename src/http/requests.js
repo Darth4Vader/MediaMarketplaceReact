@@ -1,5 +1,7 @@
 
-export const apiBaseUrl = process.env.NODE_ENV == 'prod' ? '': 'http://localhost:8080';
+export const apiBaseUrl = process.env.NODE_ENV == 'prod' ? '':
+    'http://localhost:8080';
+    //'http://192.168.1.237:8080'; used for phone, there is a bug that login not working, needs to check
 
 export function useFetchRequests() {
     return {

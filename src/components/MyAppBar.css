@@ -1,16 +1,15 @@
 
 .app-bar {
-    display: flex;
-    align-items: center;
-    background-color: #1f1f1f !important;
     height: 10vh;
-    gap: 10px;
-    text-align: center;
-    align-content: center;
-    margin-inline: auto;
-    color: black;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2) !important;
-    justify-content: space-between;
+}
+
+.user-menu-popup a {
+    text-decoration: unset !important;
+    color: inherit !important;
+}
+
+.search-input {
+    flex-grow: 1;
 }
 
 .app-bar img, a {
@@ -28,34 +27,19 @@
     gap: 2px;
     height: 50%;
     border: 1px solid #ccc;
-    flex-grow: 1;
 }
 
 .icon {
-    height: 10vh;
+    height: 100% !important;
+    margin-left: 2px;
+    margin-right: 2px;
 }
 
 .mui-icon {
-    height: 100% !important;
+    font-size: 3rem !important;
 }
 
 .icon-wrapper {
-    gap: 50px;
-}
-
-.user-section {
-    height: 100%;
-    /*display: flex;
-    flex-direction: column;*/
-}
-
-.user-icon {
-    /*flex: 2;
-    overflow: auto;
-    width: 10%;*/
-    height: 100%;
-}
-
-.user-message {
-    //flex: 1 1 auto;
+    margin-left: 2px;
+    margin-right: 2px;
 }
