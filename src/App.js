@@ -23,7 +23,7 @@ import UserInformationPage from "./components/UserInformationPage";
 
 import Cookies from "js-cookie";
 import SearchPage from "./components/SearchPage";
-import {createTheme, CssBaseline, ThemeProvider} from "@mui/material";
+import {createTheme, CssBaseline, Stack, styled, ThemeProvider} from "@mui/material";
 import {AuthProvider, useAuthenticationCheck} from "./AuthProvider";
 import {apiBaseUrl} from "./http/requests";
 import {SearchInputProvider} from "./SearchInputProvider";
@@ -32,87 +32,54 @@ import {NotFoundPage} from "./NotFoundPage";
 
 const theme = createTheme({
     palette: {
-        mode: 'dark'
+        mode: 'dark',
     },
-    components: {
-        // Name of the component
-        MuiButton: {
-            styleOverrides: {
-                root: {
-                    color: "white",
-                    borderColor: "white",
-                    backgroundColor: "#1e3645"
-                }
-            }
-        },
-        MuiTextField: {
-            styleOverrides: {
-                root: {
-                    color: "white",
-                    "& label": {
-                        color: "white"
-                    },
-                    "& .MuiOutlinedInput-root": {
-                        color: "white",
-                        "&.Mui-focused": {
-                            color: "white",
-                        }
-                    },
-                }
-            }
-        },
-        MuiSelect: {
-            styleOverrides: {
-                root: {
-                    color: "white",
-                    "& .MuiSvgIcon-root": {
-                        color: "white",
-                    },
-                    '.MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'rgb(255, 255, 255,0.3)',
-                    },
-                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'white',
-                    },
-                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'white',
-                    },
-                }
-            }
-        },
-        MuiSvgIcon: {
-            styleOverrides: {
-                root: {
-                    color: 'white'
-                },
-            },
-        }
-    },
-
 });
 
 const AppTemplate = () => {
     return (
         <ThemeProvider theme={theme}>
-            <CssBaseline />
+            <CssBaseline enableColorScheme/>
             <MyAppBar/>
             <Outlet/>
         </ThemeProvider>
     );
 };
 
+const SignUpContainer = styled(Stack)(({ theme }) => ({
+    height: 'calc((1 - var(--template-frame-height, 0)) * 100dvh)',
+    minHeight: '100%',
+    padding: theme.spacing(2),
+    [theme.breakpoints.up('sm')]: {
+        padding: theme.spacing(4),
+    },
+    '&::before': {
+        content: '""',
+        display: 'block',
+        position: 'absolute',
+        zIndex: -1,
+        inset: 0,
+        backgroundImage:
+            'radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))',
+        backgroundRepeat: 'no-repeat',
+        ...theme.applyStyles('dark', {
+            backgroundImage:
+                'radial-gradient(at 50% 50%, hsla(210, 100%, 16%, 0.5), hsl(220, 30%, 5%))',
+        }),
+    },
+}));
+
+
+
 const LogTemplate = () => {
     // we first check if the user is logged
     // if so then we redirect them back
     return (
         <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <div className="auth-header">
-                <Link to="./">
-                    <img src={logo} alt="Home" className="icon"/>
-                </Link>
-            </div>
-            <Outlet/>
+            <CssBaseline enableColorScheme />
+            <SignUpContainer direction="column" justifyContent="center">
+                <Outlet/>
+            </SignUpContainer>
         </ThemeProvider>
     );
 };

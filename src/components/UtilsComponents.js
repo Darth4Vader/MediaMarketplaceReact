@@ -39,6 +39,7 @@ export function ShowHidePassword({ name, value, placeholder, onChange, autocompl
                 variant="outlined"
                 error={!!mainErrorMessage}
                 helperText={mainErrorMessage ? mainErrorMessage : ""}
+                color={mainErrorMessage ? "error" : "primary"}
                 slotProps={{
                 input: {
                     endAdornment: (
@@ -47,9 +48,7 @@ export function ShowHidePassword({ name, value, placeholder, onChange, autocompl
                                 edge="end"
                                 onClick={toggle}
                             >
-                                {isVisible ?
-                                    <VisibilityIcon />
-                                    : <VisibilityOffIcon />}
+                                {isVisible ? <VisibilityIcon /> : <VisibilityOffIcon />}
                             </IconButton>
                         </InputAdornment>
                     )
@@ -65,15 +64,17 @@ export function useReturnToParam() {
     return searchParams.get("return_to") || "/";
 }
 
-export function AuthLink({ children, to }) {
+/**
+ * Input "to" Field and adds to it the return_to parameter
+ */
+export function AuthLink(props) {
     const returnTo = useReturnToParam();
+    const {to, ...rest} = props;
     return (
         <Link to={{
             pathname: to,
             search: `?return_to=${returnTo}`
-        }}>
-            {children}
-        </Link>
+        }} {...rest}/>
     );
 }
 

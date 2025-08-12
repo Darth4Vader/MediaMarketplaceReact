@@ -4,16 +4,47 @@ import {saveTokens, useFetchRequests} from '../http/requests';
 import {Link, useNavigate} from "react-router-dom";
 import './RegisterPage.css'
 import {AuthLink, ShowHidePassword, useReturnToParam} from "./UtilsComponents";
-import {FormHelperText, TextField} from "@mui/material";
+import {
+    Box, Button,
+    Card,
+    FormControl,
+    FormHelperText,
+    IconButton, Link as LinkBase,
+    styled,
+    SvgIcon,
+    TextField,
+    Typography
+} from "@mui/material";
 import {SwitchTransition, CSSTransition} from "react-transition-group";
 import {useAuthContext} from "../AuthProvider";
 import {useApi} from "../http/api";
+import { ReactComponent as MarketplaceLogo} from '../marketplace_logo.svg';
+import Divider from '@mui/material/Divider';
+import { ReactComponent as GoogleIcon} from '../google_logo.svg';
 
 function importAll(r) {
     return r.keys().map(r);
 }
 
 const images = importAll(require.context('../assets/register-page', false, /\.(png|jpe?g|svg)$/));
+
+const LoginCard = styled(Card)(({ theme }) => ({
+    display: 'flex',
+    flexDirection: 'column',
+    alignSelf: 'center',
+    width: '100%',
+    padding: theme.spacing(4),
+    gap: theme.spacing(2),
+    boxShadow:
+        'hsla(220, 30%, 5%, 0.05) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.05) 0px 15px 35px -5px',
+    [theme.breakpoints.up('sm')]: {
+        width: '450px',
+    },
+    ...theme.applyStyles('dark', {
+        boxShadow:
+            'hsla(220, 30%, 5%, 0.5) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.08) 0px 15px 35px -5px',
+    }),
+}));
 
 const RegisterPage = () => {
     const { register } = useApi();
@@ -109,57 +140,106 @@ const RegisterPage = () => {
                     </div>
                 </CSSTransition>
             </SwitchTransition>
-            <div className="register-panel">
-                <h2>Register</h2>
-                <div className="signIn-link">
-                    <span>
-                        <span>Already have an account? </span>
-                        <AuthLink to="/login">
-                            Sign in
-                        </AuthLink>
-                    </span>
-                </div>
-                <form onSubmit={handleRegister} className="register-form">
-                    <TextField
-                        type={"text"}
-                        autoComplete="off"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        required
-                        label="Username"
-                        variant="outlined"
-                    />
-                    <ShowHidePassword
-                        name="password"
-                        value={password}
-                        placeholder="Password"
-                        onChange={(e) => setPassword(e.target.value)}
-                        autocomplete="new-password"
-                        errorMessage={passwordError}
-                        setErrorMessage={setPasswordError}
-                    />
-                    <ShowHidePassword
-                        name="password-confirm"
-                        placeholder="Confirm Password"
-                        value={passwordConfirm}
-                        onChange={(e) => setPasswordConfirm(e.target.value)}
-                        autocomplete="new-password"
-                        errorMessage={passwordConfirmError}
-                        setErrorMessage={setPasswordConfirmError}
-                    />
-                    <button type="submit" className="w-full">
+            <LoginCard variant="outlined">
+                <Box sx={{ display: { xs: 'flex', md: 'flex'} }}>
+                    <IconButton component={AuthLink} to='/'>
+                        <SvgIcon fontSize="large">
+                            <MarketplaceLogo />
+                        </SvgIcon>
+                    </IconButton>
+                </Box>
+                <Typography
+                    component="h1"
+                    variant="h4"
+                    sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}
+                >
+                    Register
+                </Typography>
+                <Box
+                    component="form"
+                    onSubmit={handleRegister}
+                    noValidate
+                    sx={{ display: 'flex', flexDirection: 'column', width: '100%', gap: 2 }}
+                >
+                    <FormControl>
+                        <TextField
+                            type={"text"}
+                            autoComplete="off"
+                            value={username}
+                            onChange={(e) => {
+                                setUsername(e.target.value);
+                                setUsernameError("");
+                            }}
+                            required
+                            label="Username"
+                            variant="outlined"
+                            error={!!usernameError}
+                            helperText={usernameError ? usernameError : ""}
+                        />
+                    </FormControl>
+                    <FormControl>
+                        <ShowHidePassword
+                            name="password"
+                            value={password}
+                            placeholder="Password"
+                            onChange={(e) => setPassword(e.target.value)}
+                            autocomplete="new-password"
+                            errorMessage={passwordError}
+                            setErrorMessage={setPasswordError}
+                        />
+                    </FormControl>
+                    <FormControl>
+                        <ShowHidePassword
+                            name="password-confirm"
+                            placeholder="Confirm Password"
+                            value={passwordConfirm}
+                            onChange={(e) => setPasswordConfirm(e.target.value)}
+                            autocomplete="new-password"
+                            errorMessage={passwordConfirmError}
+                            setErrorMessage={setPasswordConfirmError}
+                        />
+                    </FormControl>
+                    <Button
+                        type="submit"
+                        variant="contained"
+                    >
                         Register
-                    </button>
+                    </Button>
                     {error && (
                         <FormHelperText error>
                             {error}
                         </FormHelperText>
                     )}
-                </form>
-            </div>
+                    <Typography sx={{ textAlign: 'center' }}>
+                        Already have an account?{' '}
+                        <span>
+                        <LinkBase
+                            component={AuthLink}
+                            to='/login'
+                            variant="body2"
+                            sx={{ alignSelf: 'center' }}
+                        >
+                            Sign in
+                        </LinkBase>
+                    </span>
+                    </Typography>
+                    <Divider>or</Divider>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <Button
+                            fullWidth
+                            variant="outlined"
+                            onClick={() => alert('Sign in with Google')}
+                            startIcon={<SvgIcon color="primary"> <GoogleIcon /> </SvgIcon>}
+                        >
+                            Sign in with Google
+                        </Button>
+                    </Box>
+                </Box>
+            </LoginCard>
         </div>
         </motion.div>
     );
 };
+
 
 export default RegisterPage;

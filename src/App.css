@@ -10,6 +10,8 @@
 .auth-header {
   height: 10vh;
   margin-bottom: 20px;
+  display: flex;
+  flex-direction: row;
 }
 
 .auth-header .icon {
