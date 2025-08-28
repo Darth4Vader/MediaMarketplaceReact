@@ -48,10 +48,10 @@ const LoginCard = styled(Card)(({ theme }) => ({
 
 const RegisterPage = () => {
     const { register } = useApi();
-    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [passwordConfirm, setPasswordConfirm] = useState("");
-    const [usernameError, setUsernameError] = useState("");
+    const [emailError, setEmailError] = useState("");
     const [passwordError, setPasswordError] = useState("");
     const [passwordConfirmError, setPasswordConfirmError] = useState("");
     const [error, setError] = useState("");
@@ -78,7 +78,7 @@ const RegisterPage = () => {
 
     const handleRegister = async (e) => {
         e.preventDefault();
-        const response = await register(username, password, passwordConfirm);
+        const response = await register(email, password, passwordConfirm);
         console.log(response);
         if (response.ok) {
             alert("Registration successful!");
@@ -92,8 +92,8 @@ const RegisterPage = () => {
                 console.log(vals);
                 setError(vals.error);
                 if(vals?.fields) {
-                    if(vals.fields.username) {
-                        setUsernameError(vals.fields.username);
+                    if(vals.fields.email) {
+                        setEmailError(vals.fields.email);
                     }
                     if(vals.fields.password) {
                         setPasswordError(vals.fields.password);
@@ -165,16 +165,16 @@ const RegisterPage = () => {
                         <TextField
                             type={"text"}
                             autoComplete="off"
-                            value={username}
+                            value={email}
                             onChange={(e) => {
-                                setUsername(e.target.value);
-                                setUsernameError("");
+                                setEmail(e.target.value);
+                                setEmailError("");
                             }}
                             required
-                            label="Username"
+                            label="Email"
                             variant="outlined"
-                            error={!!usernameError}
-                            helperText={usernameError ? usernameError : ""}
+                            error={!!emailError}
+                            helperText={emailError ? emailError : ""}
                         />
                     </FormControl>
                     <FormControl>

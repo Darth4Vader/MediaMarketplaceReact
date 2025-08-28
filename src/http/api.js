@@ -131,12 +131,12 @@ export function useApi() {
         return handleResponseRejection(await requests.postWithAuth(`/api/users/current/orders/place-order`));
     }
 
-    async function login(username, password) {
-        return await requests.postWithCookies('/api/users/login', { username, password });
+    async function login(email, password) {
+        return await requests.postWithCookies('/api/users/login', { email, password });
     }
 
-    async function register(username, password, passwordConfirm) {
-        return await requests.postWithCookies('/api/users/register', { username, password, passwordConfirm });
+    async function register(email, password, passwordConfirm) {
+        return await requests.postWithCookies('/api/users/register', { email, password, passwordConfirm });
     }
 
     async function logout() {

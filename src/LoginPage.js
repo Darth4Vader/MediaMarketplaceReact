@@ -5,6 +5,8 @@ import {useNavigate} from "react-router-dom";
 import {AuthLink, ShowHidePassword, useReturnToParam} from "./components/UtilsComponents";
 import "./components/RegisterPage.css";
 import TextField from "@mui/material/TextField";
+import {apiBaseUrl} from "./http/requests";
+
 import {
     Box,
     Button,
@@ -43,9 +45,9 @@ const LoginCard = styled(Card)(({ theme }) => ({
 
 const LoginPage = () => {
     const { login } = useApi();
-    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [usernameError, setUsernameError] = useState("");
+    const [emailError, setEmailError] = useState("");
     const [passwordError, setPasswordError] = useState("");
     const [error, setError] = useState("");
     const navigate = useNavigate();
@@ -55,7 +57,7 @@ const LoginPage = () => {
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        const response = await login(username, password);
+        const response = await login(email, password);
         if (response.ok) {
             console.log("Login successful");
             await userLogged(true);
@@ -68,8 +70,8 @@ const LoginPage = () => {
                 const vals = await response.json();
                 setError(vals.error);
                 if(vals?.fields) {
-                    if(vals.fields.username) {
-                        setUsernameError(vals.fields.username);
+                    if(vals.fields.email) {
+                        setEmailError(vals.fields.email);
                     }
                     if(vals.fields.password) {
                         setPasswordError(vals.fields.password);
@@ -84,7 +86,7 @@ const LoginPage = () => {
             else if(response.status === 404) {
                 //user was not found
                 const err = await response.text();
-                setUsernameError(err);
+                setEmailError(err);
                 setError("Problem with siging in");
             }
             else {
@@ -93,6 +95,16 @@ const LoginPage = () => {
             }
         }
     };
+
+    const googleLogin = () => {
+        const googleOAuthUrl = `/oauth2/authorization/google?redirect_uri=${window.location.origin}`;
+        if(apiBaseUrl === "http://localhost:8080") {
+            window.location.href = apiBaseUrl + googleOAuthUrl;
+        }
+        else {
+            navigate(googleOAuthUrl);
+        }
+    }
 
     return (
         <LoginCard variant="outlined">
@@ -119,16 +131,16 @@ const LoginPage = () => {
                 <FormControl>
                     <TextField
                         type="text"
-                        autoComplete="username"
-                        value={username}
+                        autoComplete="email"
+                        value={email}
                         onChange={(e) => {
-                            setUsername(e.target.value);
-                            setUsernameError("");
+                            setEmail(e.target.value);
+                            setEmailError("");
                         }}
-                        label={"Username"}
+                        label={"Email"}
                         variant="outlined"
-                        error={!!usernameError}
-                        helperText={usernameError ? usernameError : ""}
+                        error={!!emailError}
+                        helperText={emailError ? emailError : ""}
                     />
                 </FormControl>
                 <FormControl>
@@ -175,7 +187,7 @@ const LoginPage = () => {
                     <Button
                         fullWidth
                         variant="outlined"
-                        onClick={() => alert('Sign in with Google')}
+                        onClick={googleLogin}
                         startIcon={<SvgIcon color="primary"> <GoogleIcon /> </SvgIcon>}
                     >
                         Sign in with Google

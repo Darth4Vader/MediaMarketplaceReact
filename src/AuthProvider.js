@@ -17,8 +17,9 @@ export const AuthProvider = ({ children }) => {
         console.log("LOGGer")
         if(isLogged) {
             await getLoggedUserName()
-                .then((name) => {
-                    setUserMessage(name.name);
+                .then((user) => {
+
+                    setUserMessage(user.name);
                     setIsLogged(true);
                 })
                 .catch((error) => {
