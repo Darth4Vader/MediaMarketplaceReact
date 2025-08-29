@@ -22,6 +22,7 @@ export function useApi() {
         purchaseCart,
         login,
         register,
+        verifyAccount,
         logout,
         getCurrentUserOrders,
         getCurrentUserMovieCollection,
@@ -137,8 +138,8 @@ export function useApi() {
         return await requests.postWithCookies('/api/users/login', { email, password });
     }
 
-    async function register(email, password, passwordConfirm) {
-        return await requests.postWithCookies('/api/users/register', { email, password, passwordConfirm });
+    async function register(email, password, passwordConfirm, redirectUrl) {
+        return await requests.postWithCookies('/api/users/register', { email, password, passwordConfirm, redirectUrl });
     }
 
     async function logout() {
@@ -171,6 +172,10 @@ export function useApi() {
     async function searchMovies(page=0, size=1, searchParams) {
         return handleResponse(await requests.get(`/api/main/movies/search?page=${page}&size=${size}${searchParams}`))
             .then(sleeper(3000));
+    }
+
+    async function verifyAccount(token) {
+        return await requests.post('/api/users/verify', { token });
     }
 
     async function requestResetPassword(email, redirectUrl) {

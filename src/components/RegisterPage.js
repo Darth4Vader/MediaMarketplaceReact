@@ -6,7 +6,7 @@ import './RegisterPage.css'
 import {AuthLink, ShowHidePassword, useReturnToParam} from "./UtilsComponents";
 import {
     Box, Button,
-    Card,
+    Card, CircularProgress,
     FormControl,
     FormHelperText,
     IconButton, Link as LinkBase,
@@ -22,6 +22,8 @@ import { ReactComponent as MarketplaceLogo} from '../marketplace_logo.svg';
 import Divider from '@mui/material/Divider';
 import { ReactComponent as GoogleIcon} from '../google_logo.svg';
 import {LoginCard} from "./UserLogUtils";
+import {Turnstile} from "@marsidev/react-turnstile";
+import {TURNSTILE_SITE_KEY} from "../http/requests";
 
 function importAll(r) {
     return r.keys().map(r);
@@ -38,10 +40,12 @@ const RegisterPage = () => {
     const [passwordError, setPasswordError] = useState("");
     const [passwordConfirmError, setPasswordConfirmError] = useState("");
     const [error, setError] = useState("");
+    const [turnstileToken, setTurnstileToken] = useState(null);
     const navigate = useNavigate();
     const [currentIndex, setCurrentIndex] = useState(0);
     const nodeRef = useRef(null);
     const [loaded, setLoaded] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
     const returnTo = useReturnToParam();
 
     const { userLogged } = useAuthContext();
@@ -61,11 +65,13 @@ const RegisterPage = () => {
 
     const handleRegister = async (e) => {
         e.preventDefault();
-        const response = await register(email, password, passwordConfirm);
+        setSubmitted(true); // Lock button
+        const response = await register(email, password, passwordConfirm, window.location.origin + "/verifyAccount?token=");
         console.log(response);
         if (response.ok) {
-            alert("Registration successful!");
-            await userLogged(true);
+            const text = await response.text();
+            setSubmitted(false);
+            alert(text);
             // Redirect to the returnTo URL
             navigate(returnTo);
         } else {
@@ -92,10 +98,21 @@ const RegisterPage = () => {
                 setPasswordError(err);
                 setPasswordConfirmError(err);
             }
+            else if(response.status === 409) {
+                // email already registered
+                const err = await response.text();
+                setEmailError(err);
+            }
+            else if(response.status === 500) {
+                // verification email not sent
+                const err = await response.text();
+                setError(err);
+            }
             else {
                 // unkown error
                 throw response;
             }
+            setSubmitted(false);
         }
     };
 
@@ -182,9 +199,30 @@ const RegisterPage = () => {
                             setErrorMessage={setPasswordConfirmError}
                         />
                     </FormControl>
+
+                    {/* Turnstile CAPTCHA */}
+                    <FormControl>
+                        <Turnstile
+                            siteKey={TURNSTILE_SITE_KEY} // <-- replace with your key
+                            onSuccess={(token) => {
+                                setTurnstileToken(token);
+                                setError("");
+                            }}
+                            onExpire={() => {
+                                setTurnstileToken(null);
+                                setError("CAPTCHA expired, please verify again.");
+                            }}
+                            onError={() => {
+                                setTurnstileToken(null);
+                                setError("CAPTCHA verification failed, please try again.");
+                            }}
+                        />
+                    </FormControl>
                     <Button
                         type="submit"
                         variant="contained"
+                        disabled={!turnstileToken || submitted} // disable submit until CAPTCHA is solved
+                        startIcon={submitted ? <CircularProgress size={20} color="inherit" /> : null}
                     >
                         Register
                     </Button>

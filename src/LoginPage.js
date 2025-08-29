@@ -82,6 +82,16 @@ const LoginPage = () => {
                 setEmailError(err);
                 setError("Problem with siging in");
             }
+            else if(response.status === 403) {
+                // user not verified
+                const err = await response.text();
+                setError(err);
+            }
+            else if(response.status === 500) {
+                // email not sent
+                const err = await response.text();
+                setError(err);
+            }
             else {
                 // unkown error
                 throw response;
@@ -231,6 +241,13 @@ const ForgotPasswordDialog = ({ open, handleClose }) => {
                 //user was not found
                 const err = await response.text();
                 setEmailError(err);
+            }
+            else if(response.status === 403) {
+                // user not verified
+                const err = await response.text();
+                setSeverity("error");
+                setMessage(err);
+                setOpenAlert(true);
             }
             else if(response.status === 429) {
                 // cooldown period

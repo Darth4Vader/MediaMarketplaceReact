@@ -30,6 +30,7 @@ import {SearchInputProvider} from "./SearchInputProvider";
 import {DefaultErrorBoundary, DefaultErrorPage} from "./DefaultErrorPage";
 import {NotFoundPage} from "./NotFoundPage";
 import ResetPasswordPage from "./components/ResetPasswordPage";
+import EmailVerificationPage from "./components/EmailVerificationPage";
 
 const theme = createTheme({
     palette: {
@@ -198,8 +199,9 @@ function App() {
                                 <Route path="" element={<AuthRoute />}>
                                     <Route path="login" element={<LoginPage />} />
                                     <Route path="register" element={<RegisterPage />} />
-                                    <Route path="resetPassword" element={<ResetPasswordPage />} />
+                                    <Route path="verifyAccount" element={<EmailVerificationPage />}></Route>
                                 </Route>
+                                <Route path="resetPassword" element={<ResetPasswordPage />} />
                                 <Route path={"errorPage"} element={<DefaultErrorPage/>}/>
                                 <Route path='*' exact={true} element={<NotFoundPage />} />
                             </Routes>
