@@ -29,6 +29,8 @@ export function useApi() {
         searchActors,
         searchDirectors,
         searchMovies,
+        requestResetPassword,
+        resetPassword
     }
 
     async function handleResponseRejection(response) {
@@ -169,5 +171,13 @@ export function useApi() {
     async function searchMovies(page=0, size=1, searchParams) {
         return handleResponse(await requests.get(`/api/main/movies/search?page=${page}&size=${size}${searchParams}`))
             .then(sleeper(3000));
+    }
+
+    async function requestResetPassword(email, redirectUrl) {
+        return await requests.post('/api/users/reset-password/request', { email, redirectUrl });
+    }
+
+    async function resetPassword(token, password, passwordConfirm) {
+        return await requests.post('/api/users/reset-password', { token, password, passwordConfirm });
     }
 }

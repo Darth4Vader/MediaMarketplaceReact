@@ -11,10 +11,10 @@ import {
     Box,
     Button,
     Card,
-    Checkbox,
+    Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
     FormControl,
     FormControlLabel,
-    FormHelperText, IconButton, styled,
+    FormHelperText, IconButton, OutlinedInput, styled,
     SvgIcon,
     Typography
 } from "@mui/material";
@@ -24,24 +24,8 @@ import { ReactComponent as MarketplaceLogo} from './marketplace_logo.svg';
 import Divider from '@mui/material/Divider';
 import { ReactComponent as GoogleIcon} from './google_logo.svg';
 import { Link as LinkBase } from '@mui/material';
-
-const LoginCard = styled(Card)(({ theme }) => ({
-    display: 'flex',
-    flexDirection: 'column',
-    alignSelf: 'center',
-    width: '100%',
-    padding: theme.spacing(4),
-    gap: theme.spacing(2),
-    boxShadow:
-        'hsla(220, 30%, 5%, 0.05) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.05) 0px 15px 35px -5px',
-    [theme.breakpoints.up('sm')]: {
-        width: '450px',
-    },
-    ...theme.applyStyles('dark', {
-        boxShadow:
-            'hsla(220, 30%, 5%, 0.5) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.08) 0px 15px 35px -5px',
-    }),
-}));
+import Alert from "@mui/material/Alert";
+import {LoginCard} from "./components/UserLogUtils";
 
 const LoginPage = () => {
     const { login } = useApi();
@@ -52,6 +36,15 @@ const LoginPage = () => {
     const [error, setError] = useState("");
     const navigate = useNavigate();
     const returnTo = useReturnToParam();
+    const [open, setOpen] = React.useState(false);
+
+    const handleClickOpen = () => {
+        setOpen(true);
+    };
+
+    const handleClose = () => {
+        setOpen(false);
+    };
 
     const { userLogged } = useAuthContext();
 
@@ -130,7 +123,7 @@ const LoginPage = () => {
             >
                 <FormControl>
                     <TextField
-                        type="text"
+                        type="email"
                         autoComplete="email"
                         value={email}
                         onChange={(e) => {
@@ -144,6 +137,15 @@ const LoginPage = () => {
                     />
                 </FormControl>
                 <FormControl>
+                    <LinkBase
+                        component="button"
+                        type="button"
+                        onClick={handleClickOpen}
+                        variant="body2"
+                        sx={{ alignSelf: 'baseline', mb: 1 }}
+                    >
+                        Forgot your password?
+                    </LinkBase>
                     <ShowHidePassword
                         name="current-password"
                         value={password}
@@ -158,6 +160,7 @@ const LoginPage = () => {
                     control={<Checkbox value="remember" color="primary" />}
                     label="Remember me"
                 />
+                <ForgotPasswordDialog open={open} handleClose={handleClose} />
                 <Button
                     type="submit"
                     variant="contained"
@@ -197,5 +200,117 @@ const LoginPage = () => {
         </LoginCard>
     );
 };
+
+const ForgotPasswordDialog = ({ open, handleClose }) => {
+    const { requestResetPassword } = useApi();
+    const [email, setEmail] = useState("");
+    const [emailError, setEmailError] = useState("");
+    const [openAlert, setOpenAlert] = useState(false);
+    const [message, setMessage] = useState('');
+    const [severity, setSeverity] = useState('info');
+
+    const handleResetPasswordRequest = async (e) => {
+        e.preventDefault();
+        const response = await requestResetPassword(email, window.location.origin + "/resetPassword?token=");
+        if (response.ok) {
+            const msg = await response.text();
+            setSeverity("success");
+            setMessage(msg);
+            setOpenAlert(true);
+        } else {
+            if(response.status === 400) {
+                // problem with input fields
+                const vals = await response.json();
+                if(vals?.fields) {
+                    if(vals.fields.email) {
+                        setEmailError(vals.fields.email);
+                    }
+                }
+            }
+            else if(response.status === 404) {
+                //user was not found
+                const err = await response.text();
+                setEmailError(err);
+            }
+            else if(response.status === 429) {
+                // cooldown period
+                const err = await response.text();
+                setSeverity("error");
+                setMessage(err);
+                setOpenAlert(true);
+            }
+            else if(response.status === 500) {
+                // server error, like problem sending email
+                const err = await response.text();
+                setSeverity("error");
+                setMessage(err);
+                setOpenAlert(true);
+            }
+            else {
+                // unkown error
+                throw response;
+            }
+        }
+    };
+
+    return (
+        <Dialog
+            open={open}
+            onClose={handleClose}
+            slotProps={{
+                paper: {
+                    component: 'form',
+                    onSubmit: (event) => {
+                        event.preventDefault();
+                        handleClose();
+                    },
+                    sx: { backgroundImage: 'none' },
+                },
+            }}
+        >
+            <DialogTitle>Reset password</DialogTitle>
+            <DialogContent
+                sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%' }}
+            >
+                <DialogContentText>
+                    Enter your account&apos;s email address, and we&apos;ll send you a link to
+                    reset your password.
+                </DialogContentText>
+                <TextField
+                    autoFocus
+                    required
+                    type="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => {
+                        setEmail(e.target.value);
+                        setEmailError("");
+                        setOpenAlert(false);
+                        setMessage("")
+                    }}
+                    label={"Email"}
+                    variant="outlined"
+                    error={!!emailError}
+                    helperText={emailError ? emailError : ""}
+                />
+            </DialogContent>
+            <DialogActions sx={{ pb: 3, px: 3 }}>
+                <Button onClick={handleClose}>Cancel</Button>
+                <Button
+                    variant="contained" type="submit"
+                    onClick={handleResetPasswordRequest}
+                    disabled={!email || !!emailError}
+                >
+                    Continue
+                </Button>
+            </DialogActions>
+            {openAlert && (
+                <Alert severity={severity} sx={{ m: 2 }}>
+                    {message}
+                </Alert>
+            )}
+        </Dialog>
+    );
+}
 
 export default LoginPage;

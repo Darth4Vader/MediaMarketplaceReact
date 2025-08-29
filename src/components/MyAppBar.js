@@ -8,7 +8,7 @@ import './MyAppBar.css';
 import { useAuthContext } from "../AuthProvider";
 import {useSearchInputContext} from "../SearchInputProvider";
 import {
-    AppBar, Box,
+    AppBar, Avatar, Box,
     createTheme, CssBaseline,
     IconButton,
     InputBase,
@@ -56,8 +56,10 @@ HideOnScroll.propTypes = {
 
 export default function MyAppBar(props) {
     const { logout } = useApi();
-    const { userMessage, userLogged, isLogged } = useAuthContext();
+    const { userInfo, userLogged, isLogged } = useAuthContext();
     const { searchInput, setSearchInput, setIsSearching } = useSearchInputContext();
+
+    console.log(userInfo)
 
     const [anchorEl, setAnchorEl] = useState(null);
 
@@ -142,7 +144,10 @@ export default function MyAppBar(props) {
                             aria-controls="menu-appbar"
                             aria-haspopup="true"
                         >
-                            <AccountCircle className="mui-icon" height="100%"/>
+                            {userInfo !== null && userInfo?.profilePicture ?
+                                <Avatar alt={userInfo?.name} src={userInfo?.profilePicture} />
+                                : <AccountCircle className="mui-icon" height="100%"/>
+                            }
                         </IconButton>
                     <Menu
                         id="menu-appbar"
@@ -192,7 +197,10 @@ export default function MyAppBar(props) {
                         component="div"
                         sx={{ display: { xs: 'none', sm: 'block' } }}
                     >
-                        {userMessage}
+                        {userInfo !== null ?
+                            userInfo?.name
+                            : "User Not Logged"
+                        }
                     </Typography>
                 </Toolbar>
             </AppBar>

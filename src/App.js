@@ -29,6 +29,7 @@ import {apiBaseUrl} from "./http/requests";
 import {SearchInputProvider} from "./SearchInputProvider";
 import {DefaultErrorBoundary, DefaultErrorPage} from "./DefaultErrorPage";
 import {NotFoundPage} from "./NotFoundPage";
+import ResetPasswordPage from "./components/ResetPasswordPage";
 
 const theme = createTheme({
     palette: {
@@ -197,6 +198,7 @@ function App() {
                                 <Route path="" element={<AuthRoute />}>
                                     <Route path="login" element={<LoginPage />} />
                                     <Route path="register" element={<RegisterPage />} />
+                                    <Route path="resetPassword" element={<ResetPasswordPage />} />
                                 </Route>
                                 <Route path={"errorPage"} element={<DefaultErrorPage/>}/>
                                 <Route path='*' exact={true} element={<NotFoundPage />} />

@@ -10,7 +10,7 @@ export const useAuthContext = () => {
 export const AuthProvider = ({ children }) => {
     const { getLoggedUserName } = useApi();
 
-    const [userMessage, setUserMessage] = useState('User Not Logged');
+    const [userInfo, setUserInfo] = useState(null);
     const [isLogged, setIsLogged] = useState(false);
 
     const userLogged = useCallback(async (isLogged) => {
@@ -19,16 +19,16 @@ export const AuthProvider = ({ children }) => {
             await getLoggedUserName()
                 .then((user) => {
 
-                    setUserMessage(user.name);
+                    setUserInfo(user);
                     setIsLogged(true);
                 })
                 .catch((error) => {
-                    setUserMessage("User Not Logged");
+                    setUserInfo(null);
                     setIsLogged(false);
                 })
         }
         else {
-            setUserMessage("User Not Logged");
+            setUserInfo(null);
             setIsLogged(false);
         }
     }, []);
@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }) => {
 
      */
     return (
-        <AuthContext.Provider value={{userMessage, userLogged, isLogged}}>
+        <AuthContext.Provider value={{userInfo, userLogged, isLogged}}>
             {children}
         </AuthContext.Provider>
     );
