@@ -4,14 +4,14 @@ import React from "react";
 
 export function AuthenticationFallback({ error }) {
     console.log("Rendering...");
-    const returnTo = window.location.pathname;
+    const returnTo = window.location.pathname.replace("MediaMarketplaceReact/", "");
     if (error?.status === 401) {
-        return <Navigate to={`/login?return_to=${returnTo}`} replace/>;
+        return <Navigate to={`./login?return_to=${returnTo}`} />;
     }
     throw error;
 }
 
-export function AuthenticationBoundary({ children, }) {
+export function AuthenticationBoundary({ children }) {
     const location =  useLocation();
     return (
         <ErrorBoundary key={location.pathname} fallbackRender={({ error, resetErrorBoundary }) => {

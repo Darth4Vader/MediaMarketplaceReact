@@ -31,6 +31,7 @@ import {DefaultErrorBoundary, DefaultErrorPage} from "./DefaultErrorPage";
 import {NotFoundPage} from "./NotFoundPage";
 import ResetPasswordPage from "./components/ResetPasswordPage";
 import EmailVerificationPage from "./components/EmailVerificationPage";
+import {AuthenticationBoundary} from "./components/ApiErrorUtils";
 
 const theme = createTheme({
     palette: {
@@ -127,26 +128,6 @@ const AuthRoute = () => {
 
     return <LogTemplate />;
 };
-
-function AuthenticationFallback({ error }) {
-    console.log("Rendering...");
-    const returnTo = window.location.pathname.replace("MediaMarketplaceReact/", "");
-    if (error?.status === 401) {
-        return <Navigate to={`./login?return_to=${returnTo}`} replace/>;
-    }
-    throw error;
-}
-
-function AuthenticationBoundary({ children }) {
-    const location =  useLocation();
-    return (
-        <ErrorBoundary key={location.pathname} fallbackRender={({ error, resetErrorBoundary }) => {
-            return ( <AuthenticationFallback error={error}/> );
-        }}>
-            {children}
-        </ErrorBoundary>
-    );
-}
 
 function setupCookies() {
     Cookies.set('timezone', Intl.DateTimeFormat().resolvedOptions().timeZone, {

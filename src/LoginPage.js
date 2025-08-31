@@ -100,7 +100,15 @@ const LoginPage = () => {
     };
 
     const googleLogin = () => {
-        const googleOAuthUrl = `/oauth2/authorization/google?redirect_uri=${window.location.origin}`;
+        let redirectUri = "";
+        if(returnTo) {
+            redirectUri = window.location.origin + returnTo;
+        }
+        else {
+            redirectUri = window.location.origin;
+        }
+
+        const googleOAuthUrl = `/oauth2/authorization/google?returnUrl=${redirectUri}`;
         if(apiBaseUrl === "http://localhost:8080") {
             window.location.href = apiBaseUrl + googleOAuthUrl;
         }

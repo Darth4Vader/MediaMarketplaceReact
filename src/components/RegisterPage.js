@@ -40,7 +40,8 @@ const RegisterPage = () => {
     const [passwordError, setPasswordError] = useState("");
     const [passwordConfirmError, setPasswordConfirmError] = useState("");
     const [error, setError] = useState("");
-    const [turnstileToken, setTurnstileToken] = useState(null);
+    const [cfTurnstileToken, setCfTurnstileToken] = useState(null);
+    const [cfTurnstileError, setCfTurnstileError] = useState(null);
     const navigate = useNavigate();
     const [currentIndex, setCurrentIndex] = useState(0);
     const nodeRef = useRef(null);
@@ -65,8 +66,9 @@ const RegisterPage = () => {
 
     const handleRegister = async (e) => {
         e.preventDefault();
+        setCfTurnstileError("");
         setSubmitted(true); // Lock button
-        const response = await register(email, password, passwordConfirm, window.location.origin + "/verifyAccount?token=");
+        const response = await register(email, password, passwordConfirm, window.location.origin + "/verifyAccount?token=", cfTurnstileToken);
         console.log(response);
         if (response.ok) {
             const text = await response.text();
@@ -89,6 +91,9 @@ const RegisterPage = () => {
                     }
                     if(vals.fields.passwordConfirm) {
                         setPasswordConfirmError(vals.fields.passwordConfirm);
+                    }
+                    if(vals.fields.humanVerification) {
+                        setCfTurnstileError(vals.fields.humanVerification);
                     }
                 }
             }
@@ -205,23 +210,29 @@ const RegisterPage = () => {
                         <Turnstile
                             siteKey={TURNSTILE_SITE_KEY} // <-- replace with your key
                             onSuccess={(token) => {
-                                setTurnstileToken(token);
+                                setCfTurnstileToken(token);
                                 setError("");
+                                setCfTurnstileError(null);
                             }}
                             onExpire={() => {
-                                setTurnstileToken(null);
-                                setError("CAPTCHA expired, please verify again.");
+                                setCfTurnstileToken(null);
+                                setCfTurnstileError("CAPTCHA expired, please verify again.");
                             }}
                             onError={() => {
-                                setTurnstileToken(null);
-                                setError("CAPTCHA verification failed, please try again.");
+                                setCfTurnstileToken(null);
+                                setCfTurnstileError("CAPTCHA verification failed, please try again.");
                             }}
                         />
+                        {cfTurnstileError && (
+                            <FormHelperText error>
+                                {cfTurnstileError}
+                            </FormHelperText>
+                        )}
                     </FormControl>
                     <Button
                         type="submit"
                         variant="contained"
-                        disabled={!turnstileToken || submitted} // disable submit until CAPTCHA is solved
+                        //disabled={!cfTurnstileToken || submitted} // disable submit until CAPTCHA is solved
                         startIcon={submitted ? <CircularProgress size={20} color="inherit" /> : null}
                     >
                         Register

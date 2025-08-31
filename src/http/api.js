@@ -138,8 +138,8 @@ export function useApi() {
         return await requests.postWithCookies('/api/users/login', { email, password });
     }
 
-    async function register(email, password, passwordConfirm, redirectUrl) {
-        return await requests.postWithCookies('/api/users/register', { email, password, passwordConfirm, redirectUrl });
+    async function register(email, password, passwordConfirm, redirectUrl, cfTurnstileToken) {
+        return await requests.postWithCookies('/api/users/register', { email, password, passwordConfirm, redirectUrl, cfTurnstileToken });
     }
 
     async function logout() {
