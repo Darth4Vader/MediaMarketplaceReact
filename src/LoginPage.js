@@ -26,6 +26,7 @@ import { ReactComponent as GoogleIcon} from './google_logo.svg';
 import { Link as LinkBase } from '@mui/material';
 import Alert from "@mui/material/Alert";
 import {LoginCard} from "./components/UserLogUtils";
+import {doGoogleLogin} from "./components/OAuthUtils";
 
 const LoginPage = () => {
     const { login } = useApi();
@@ -98,24 +99,6 @@ const LoginPage = () => {
             }
         }
     };
-
-    const googleLogin = () => {
-        let redirectUri = "";
-        if(returnTo) {
-            redirectUri = window.location.origin + returnTo;
-        }
-        else {
-            redirectUri = window.location.origin;
-        }
-
-        const googleOAuthUrl = `/oauth2/authorization/google?returnUrl=${redirectUri}`;
-        if(apiBaseUrl === "http://localhost:8080") {
-            window.location.href = apiBaseUrl + googleOAuthUrl;
-        }
-        else {
-            navigate(googleOAuthUrl);
-        }
-    }
 
     return (
         <LoginCard variant="outlined">
@@ -208,7 +191,10 @@ const LoginPage = () => {
                     <Button
                         fullWidth
                         variant="outlined"
-                        onClick={googleLogin}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            doGoogleLogin(returnTo, navigate)
+                        }}
                         startIcon={<SvgIcon color="primary"> <GoogleIcon /> </SvgIcon>}
                     >
                         Sign in with Google

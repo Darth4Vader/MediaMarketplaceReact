@@ -8,7 +8,7 @@ import {
     Dialog, DialogActions,
     DialogContent, DialogContentText,
     DialogTitle,
-    Fade,
+    Fade, Skeleton, Stack,
     ThemeProvider,
     Typography
 } from "@mui/material";
@@ -23,6 +23,7 @@ import ColorThief from "colorthief/dist/color-thief";
 import { CircularProgressbarWithChildren  } from 'react-circular-progressbar';
 import TextField from "@mui/material/TextField";
 import {useAuthContext} from "../AuthProvider";
+import MuiLink from '@mui/material/Link';
 
 export default function LoadMoviePage() {
     const { getMovie } = useApi();
@@ -90,11 +91,6 @@ const MoviePage = ({ moviePromise}) => {
                             <span>
                                 {movie?.runtime?.formattedText}
                             </span>
-                        </div>
-                        <p>{movie?.synopsis || 'To Be Determined'}</p>
-                        <div>
-                            <strong>Rating:</strong>
-                            <div className="movie-main-rating">
                                 <div className="movie-rating-circle">
                                     <div className="movie-rating-circle-inner">
                                         <CircularProgressbarWithChildren value={movie?.averageRating} styles={{
@@ -112,6 +108,7 @@ const MoviePage = ({ moviePromise}) => {
                                                             : "#666666"
                                             }
                                         }}>
+                                            {/**/}
                                             <div className="movie-rating">
                                                 {movie?.averageRating ?
                                                     <div className="movie-rating-container">
@@ -136,155 +133,37 @@ const MoviePage = ({ moviePromise}) => {
                                                     </div>
                                                 }
                                             </div>
+                                            {/**/}
                                         </CircularProgressbarWithChildren>
-                                    </div>
                                 </div>
-                                <UserMovieRating movieId={movieId} isRatingMovie={isRatingMovie} open={isRatingMovie} handleClose={handleClose} />
+                                <UserMovieRating movieId={movieId} isRatingMovie={isRatingMovie} handleClose={handleClose} />
                             </div>
                         </div>
+                        <p>{movie?.synopsis || 'To Be Determined'}</p>
+                        <LoadProductOptions movieId={movieId} />
                     </div>
                 </div>
             </div>
-            <div>
-                <LoadProductOptions movieId={movieId} />
-            </div>
-            <div className="movie-cast">
-                <h2>Directors</h2>
-                <Suspense fallback={<div>Loading Directors...</div>}>
-                    <DirectorList id={movieId} />
-                </Suspense>
-                <h2>Actors</h2>
-                <Suspense fallback={<div>Loading Actors...</div>}>
-                    <ActorList id={movieId} />
-                </Suspense>
-            </div>
-            <div className="movie-reviews">
-                <Link to="./reviews">
-                    <h2>Reviews</h2>
-                </Link>
+            <div className="movie-page-content">
+                <div className="movie-cast">
+                    <h2>Directors</h2>
+                    <Suspense fallback={<CastListSkeleton/>}>
+                        <DirectorList id={movieId} />
+                    </Suspense>
+                    <h2>Actors</h2>
+                    <Suspense fallback={<CastListSkeleton/>}>
+                        <ActorList id={movieId} />
+                    </Suspense>
+                </div>
+                <div className="movie-reviews">
+                    <Link to="./reviews">
+                        <h2>Reviews</h2>
+                    </Link>
+                </div>
             </div>
         </div>
     );
 };
-
-const ForgotPasswordDialog = ({ open, handleClose }) => {
-    const { requestResetPassword } = useApi();
-    const [email, setEmail] = useState("");
-    const [emailError, setEmailError] = useState("");
-    const [openAlert, setOpenAlert] = useState(false);
-    const [message, setMessage] = useState('');
-    const [severity, setSeverity] = useState('info');
-
-    const handleResetPasswordRequest = async (e) => {
-        e.preventDefault();
-        const response = await requestResetPassword(email, window.location.origin + "/resetPassword?token=");
-        if (response.ok) {
-            const msg = await response.text();
-            setSeverity("success");
-            setMessage(msg);
-            setOpenAlert(true);
-        } else {
-            if(response.status === 400) {
-                // problem with input fields
-                const vals = await response.json();
-                if(vals?.fields) {
-                    if(vals.fields.email) {
-                        setEmailError(vals.fields.email);
-                    }
-                }
-            }
-            else if(response.status === 404) {
-                //user was not found
-                const err = await response.text();
-                setEmailError(err);
-            }
-            else if(response.status === 403) {
-                // user not verified
-                const err = await response.text();
-                setSeverity("error");
-                setMessage(err);
-                setOpenAlert(true);
-            }
-            else if(response.status === 429) {
-                // cooldown period
-                const err = await response.text();
-                setSeverity("error");
-                setMessage(err);
-                setOpenAlert(true);
-            }
-            else if(response.status === 500) {
-                // server error, like problem sending email
-                const err = await response.text();
-                setSeverity("error");
-                setMessage(err);
-                setOpenAlert(true);
-            }
-            else {
-                // unkown error
-                throw response;
-            }
-        }
-    };
-
-    return (
-        <Dialog
-            open={open}
-            onClose={handleClose}
-            slotProps={{
-                paper: {
-                    component: 'form',
-                    onSubmit: (event) => {
-                        event.preventDefault();
-                        handleClose();
-                    },
-                    sx: { backgroundImage: 'none' },
-                },
-            }}
-        >
-            <DialogTitle>Reset password</DialogTitle>
-            <DialogContent
-                sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%' }}
-            >
-                <DialogContentText>
-                    Enter your account&apos;s email address, and we&apos;ll send you a link to
-                    reset your password.
-                </DialogContentText>
-                <TextField
-                    autoFocus
-                    required
-                    type="email"
-                    autoComplete="email"
-                    value={email}
-                    onChange={(e) => {
-                        setEmail(e.target.value);
-                        setEmailError("");
-                        setOpenAlert(false);
-                        setMessage("")
-                    }}
-                    label={"Email"}
-                    variant="outlined"
-                    error={!!emailError}
-                    helperText={emailError ? emailError : ""}
-                />
-            </DialogContent>
-            <DialogActions sx={{ pb: 3, px: 3 }}>
-                <Button onClick={handleClose}>Cancel</Button>
-                <Button
-                    variant="contained" type="submit"
-                    onClick={handleResetPasswordRequest}
-                    disabled={!email || !!emailError}
-                >
-                    Continue
-                </Button>
-            </DialogActions>
-            {openAlert && (
-                <Alert severity={severity} sx={{ m: 2 }}>
-                    {message}
-                </Alert>
-            )}
-        </Dialog>
-    );
-}
 
 const UserMovieRating = ({ movieId, isRatingMovie, handleClose }) => {
     const { getUserMovieReview } = useApi();
@@ -328,7 +207,6 @@ const UserMovieRating = ({ movieId, isRatingMovie, handleClose }) => {
                 if(response.status === 400) {
                     // problem with input fields
                     const vals = await response.json();
-                    console.log(vals);
                     if(vals?.fields) {
                         if(vals.fields.rating) {
                             setUserRatingError(vals.fields.rating);
@@ -434,84 +312,6 @@ const UserMovieRating = ({ movieId, isRatingMovie, handleClose }) => {
             )}
         </Dialog>
     );
-
-    /*
-    return (
-        <div className="user-movie-rating">
-            {isRatingMovie ? (
-                <div className="user-movie-rating-add">
-                    <TextField
-                        type="number"
-                        value={tempUserRating}
-                        autoComplete="off"
-                        min={0}
-                        max={100}
-                        label={"User Rating"}
-                        variant="outlined"
-                        error={!!userRatingError}
-                        helperText={userRatingError ? userRatingError : ""}
-                        onKeyDown={(e) => {
-                            // prevent the user from entering scientific notation
-                            // regex pattern for only numbers
-                            const regex = /^[0-9]*$/;
-                            if (!regex.test(e.key) && e.key !== 'Backspace' && e.key !== 'Delete'
-                                && e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key != "ArrowUp" && e.key != "ArrowDown") {
-                                e.preventDefault();
-                            }
-                        }}
-                        onChange={(e) => {
-                            // replace with regex the caracters "e", "E", "+", "-"
-                            // to prevent the user from entering scientific notation
-                            const value = e.target.value;
-                            console.log(value);
-                            if (value < 0) {
-                                setTempUserRating(0);
-                            } else if (value > 100) {
-                                setTempUserRating(100);
-                            } else {
-                                setTempUserRating(value);
-                            }
-                            setUserRatingError("");
-                        }}
-                    />
-                    <Button variant="outlined" onClick={(e) => {
-                        addUserRating(e, tempUserRating);
-                    }}>
-                        Submit Rating
-                    </Button>
-                </div>
-            ): (
-                userRating !== null && (<>
-                        <p>Your Rating: </p>
-                        <div className="user-movie-rating-circle">
-                            <div className="user-movie-rating-circle-inner">
-                                <CircularProgressbarWithChildren value={userRating} styles={{
-                                    path: {stroke: "#2222D2"},
-                                    trail: {stroke: "#202146"}
-                                }}>
-                                    <div className="movie-rating">
-                                        <div className="movie-rating-container">
-                                            <text className="rating-number" onClick={(e) => {
-                                                e.preventDefault();
-                                                setIsRatingMovie(true);
-                                            }}>
-                                                {userRating}
-                                            </text>
-                                            <span className="rating-percentage">
-                                            %
-                                        </span>
-                                        </div>
-                                    </div>
-                                </CircularProgressbarWithChildren>
-                            </div>
-                        </div>
-                    </>
-                )
-            )}
-        </div>
-    );
-
-     */
 }
 
 const LoadProductOptions = ({ movieId }) => {
@@ -523,7 +323,17 @@ const LoadProductOptions = ({ movieId }) => {
                 </div>
             );
         }}>
-            <Suspense fallback={<div>Loading Product Information...</div>}>
+            <Suspense fallback={
+                <div>
+                    <Stack direction="row" spacing={1} className="product-options">
+                        <Skeleton variant="rectangular" width={"100%"} sx={{ borderRadius: 1}} />
+                        <Skeleton variant="rectangular" width={"100%"} sx={{ borderRadius: 1 }} />
+                    </Stack>
+                    <Fade in={false}>
+                        <Alert/>
+                    </Fade>
+                </div>
+            }>
                 <ProductOptions id={movieId} />
             </Suspense>
         </NotFoundErrorBoundary>
@@ -562,13 +372,15 @@ const ProductOptions = ({ id }) => {
         setOpenAlert(false);
     };
     return (
-        <div className="product-options">
-            {(isRented || isBought) &&
-                <Button variant="outlined">
-                    Watch Movie
-                </Button>
-            }
-            <ProductPurchaseOptions id={id} isRented={isRented} isBought={isBought} setOpenAlert={setOpenAlert} setMessage={setMessage} setSeverity={setSeverity} />
+        <div>
+            <div className="product-options">
+                {(isRented || isBought) &&
+                    <Button variant="outlined">
+                        Watch Movie
+                    </Button>
+                }
+                <ProductPurchaseOptions id={id} isRented={isRented} isBought={isBought} setOpenAlert={setOpenAlert} setMessage={setMessage} setSeverity={setSeverity} />
+            </div>
             <Fade
                 in={openAlert}
                 //timeout={{ enter: 500, exit: 200 }}
@@ -619,7 +431,7 @@ const ProductPurchaseOptions = ({ id, isRented, isBought, setOpenAlert, setMessa
     console.log(isRented);
     console.log(isBought);
     return (
-        <div className="product-options">
+        <>
             {!isBought &&
                 <Button variant="outlined" className="buy-button" onClick={(e) => addToCart(e, product.id, "buy")}>
                     Buy for: {product?.finalBuyPrice}
@@ -630,9 +442,27 @@ const ProductPurchaseOptions = ({ id, isRented, isBought, setOpenAlert, setMessa
                     Rent for: {product?.finalRentPrice}
                 </Button>
             }
-        </div>
+        </>
     );
 };
+
+const CastListSkeleton = () => {
+    return (
+        <Stack direction="row" spacing={2} className="movie-cast-list">
+            {[...Array(5)].map((_, index) => (
+                <Skeleton
+                    variant="rectangular"
+                    width="150px"
+                    height="100%"
+                    animation="wave"
+                    className="cast-cell"
+                    key={index}
+                    sx={{ borderRadius: '8px' }}
+                />
+            ))}
+        </Stack>
+    );
+}
 
 const DirectorList = ({ id }) => {
     const { getDirectorsMovie } = useApi();
@@ -642,11 +472,11 @@ const DirectorList = ({ id }) => {
         suspense: true
     });
     return (
-        <ol>
-            {directors?.map((director) => {
-                return <DirectorCell castMember={director}/>;
+        <Stack direction="row" spacing={2} className="movie-cast-list">
+            {directors?.map((actor) => {
+                return <CastCell castMember={actor} isActor={false}/>;
             })}
-        </ol>
+        </Stack>
     );
 };
 
@@ -656,37 +486,30 @@ const ActorList = ({ id }) => {
         suspense: true
     });
     return (
-        <ol>
+        <Stack direction="row" spacing={2} className="movie-cast-list">
             {actors?.map((actor) => {
-                return <ActorCell castMember={actor}/>;
+                return <CastCell castMember={actor} isActor={true}/>;
             })}
-        </ol>
+        </Stack>
     );
 };
 
-const ActorCell = ({ castMember }) => {
+const CastCell = ({ castMember, isActor }) => {
     return (
-        <li key={castMember.id} className="cast-cell">
-            <img src={castMember?.person?.imagePath} alt={`${castMember?.name} Poster`} />
-            <div>
-                <p>{castMember?.person?.name}</p>
-                <p>{castMember?.roleName}</p>
+        <div className="cast-cell">
+            <Link to={`/person/${castMember?.person?.id}`} className="cell-image-link">
+                <img src={castMember?.person?.imagePath} alt={`${castMember?.name} Poster`} />
+            </Link>
+            <div className="cast-cell-name">
+                <MuiLink
+                    to={`/person/${castMember?.person?.id}`}
+                    className="cast-name"
+                    component={Link}
+                >
+                    {castMember?.person?.name}
+                </MuiLink>
+                {isActor && <text className="cast-character">{castMember?.roleName}</text>}
             </div>
-        </li>
-    );
-};
-
-const DirectorCell = ({ castMember }) => {
-    return (
-        <li key={castMember.id} className="cast-cell">
-            <img src={castMember?.person?.imagePath} alt={`${castMember?.name} Poster`} />
-            <div>
-                <p>
-                    <Link to={`/person/${castMember?.person?.id}`}>
-                        {castMember?.person?.name}
-                    </Link>
-                </p>
-            </div>
-        </li>
+        </div>
     );
 };

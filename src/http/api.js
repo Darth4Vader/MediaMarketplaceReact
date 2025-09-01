@@ -76,11 +76,11 @@ export function useApi() {
             return response;
         });*/
         // for testing. need to remove this and use the above version
-        return handleResponse(await requests.get(`/api/main/directors?movieId=${id}`))
-            .then(sleeper(3000))
+        return handleResponse(await requests.get(`/api/main/directors?movieId=${id}`));
+            /*.then(sleeper(3000))
             .catch((err) => {
                 console.log("Oh no catched error");
-            });
+            });*/
     }
 
     async function getReviewsOfMovie(id, page=0, size=1) {
@@ -107,8 +107,8 @@ export function useApi() {
     }
 
     async function getProductOfMovie(movieId) {
-        return handleResponse(await requests.get(`/api/main/products?movieId=${movieId}`))
-            .then(sleeper(3000))
+        return handleResponse(await requests.get(`/api/main/products?movieId=${movieId}`));
+            //.then(sleeper(3000))
             /*.catch((err) => {
                 console.log("Oh no catched error");
             });*/

@@ -24,6 +24,7 @@ import { ReactComponent as GoogleIcon} from '../google_logo.svg';
 import {LoginCard} from "./UserLogUtils";
 import {Turnstile} from "@marsidev/react-turnstile";
 import {TURNSTILE_SITE_KEY} from "../http/requests";
+import {doGoogleLogin} from "./OAuthUtils";
 
 function importAll(r) {
     return r.keys().map(r);
@@ -48,8 +49,6 @@ const RegisterPage = () => {
     const [loaded, setLoaded] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const returnTo = useReturnToParam();
-
-    const { userLogged } = useAuthContext();
 
     useEffect(() => {
         setLoaded(true);
@@ -260,7 +259,10 @@ const RegisterPage = () => {
                         <Button
                             fullWidth
                             variant="outlined"
-                            onClick={() => alert('Sign in with Google')}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                doGoogleLogin(returnTo, navigate)
+                            }}
                             startIcon={<SvgIcon color="primary"> <GoogleIcon /> </SvgIcon>}
                         >
                             Sign in with Google

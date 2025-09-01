@@ -7,6 +7,10 @@
     color: white;
 }
 
+.movie-page-content {
+    margin-inline-start: 15px;
+}
+
 /* Header section with the movie poster and details */
 .movie-header {
     display: flex;
@@ -16,23 +20,10 @@
     //color: white;
 }
 
-/*
-.movie-header * {
-    color: white;
-}
- */
-
-.movie-poster {
-    width: 200px;
-    height: auto;
-    border-radius: 5px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
 .movie-main-info {
     display: flex;
+    align-items: center;
 }
-
 
 .movie-main-info span+span {
     padding-left: 20px;
@@ -57,42 +48,30 @@
     //z-index: -1;
 }
 
-.movie-main-rating {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    //justify-content: center;
-}
-
+/* Movie Rating Information */
 .movie-rating-circle {
-    height: 8rem;
-    width: 8rem;
+    aspect-ratio: 1 / 1;
+    height: 3rem;
     background-color: #1e3645;
     border-radius: 50%;
     font-weight: bold;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-right: 20px;
+    margin-inline-start: 20px;
 }
 
 .movie-rating-circle .movie-rating-circle-inner {
     height: 90%;
     width: 90%;
-    border-radius: 50%;
 }
-
-/*
-.CircularProgressbar .CircularProgressbar-path {
-    stroke: #21d07a;
-}
- */
 
 .movie-rating {
     display: flex;
     align-items: center;
     text-align: center;
     justify-content: center;
+    font-size: 1rem;
 }
 
 .movie-rating .movie-rating-container {
@@ -117,45 +96,6 @@
     user-select: none
 }
 
-/*
-.movie-main-info span:not(:first-child):before {
-    content: "•";
-    display: inline-flex;
-    //position: absolute;
-    //top: 0;
-    //left: 7px;
-    align-items: center;
-}
-
- */
-
-.user-movie-rating-circle {
-    height: 6rem;
-    width: 6rem;
-    background-color: #1e3645;
-    border-radius: 50%;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.user-movie-rating-circle .user-movie-rating-circle-inner {
-    height: 90%;
-    width: 90%;
-    border-radius: 50%;
-}
-
-.user-movie-rating-add {
-    display: flex;
-    color: white;
-    background-color: #1e3645;
-    align-items: center;
-}
-
-.user-movie-rating-add .Button {
-}
-
 .movie-details {
     text-align: start;
     align-items: start;
@@ -168,13 +108,14 @@
 }
 
 .movie-details p {
-    margin: 5px 0;
     font-size: 16px;
+    margin-bottom: 12px;
 }
 
-.movie-details .rating {
-    font-weight: bold;
-    color: #ffcc00;
+/* Product options section (e.g., Buy, Rent) */
+.product-options {
+    display: flex;
+    gap: 10px;
 }
 
 .product-missing {
@@ -196,86 +137,68 @@
     //border: 1px solid #ffcc00;
 }
 
-/* Synopsis section */
-.movie-synopsis {
-    margin-top: 20px;
-    //width: 100%;
-    //text-wrap: wrap;
-}
-
-.movie-synopsis h2 {
-    font-size: 20px;
-    margin-bottom: 10px;
-}
-
-.movie-synopsis p {
-    font-size: 16px;
-    line-height: 1.5;
-}
-
 /* Cast section */
 .movie-cast {
     margin-top: 20px;
+    text-align: start;
 }
 
 .movie-cast h2 {
     font-size: 20px;
     margin-bottom: 10px;
+    text-decoration: underline;
 }
 
-.movie-cast ol {
-    display: flex;
-    flex-wrap: nowrap;
-    //justify-content: space-between;
-    list-style: none;
+.movie-cast-list {
     overflow: auto;
     white-space:nowrap;
-    padding: 0;
-    height: 30vh;
-    border-color: blueviolet;
+    height: 40vh;
     border: 1px solid;
 }
 
 .cast-cell {
-    //font-size: 16px;
-    //display: inline-block;
     display: flex;
     flex-direction: column;
-    //margin-bottom: 5px;
-    list-style-type:none;
     height: 100%;
-    border-color: #61dafb;
-    //border: 1px solid;
+    border: 1px solid;
+    border-radius: 10px;
+    overflow: clip;
+}
 
-    justify-content: center;
-    align-items: center;
-
-    margin-right: 10px;
+.cell-image-link {
+    height: 80%;
 }
 
 .cast-cell img {
-    //width: 50px;
-    height: 80%;
-    display: flex;
-    //border-radius: 5px;
-    //margin-right: 10px;
+    height: 100%;
 }
 
-.cast-cell div {
-    //display: flex;
-    //font-size: 8px;
-    //font-size: 1cqw;
-    height: 20%;
+.cast-cell .cast-cell-name {
+    display: flex;
+    flex-direction: column;
     width: 100%;
     text-align: start;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    border: 1px solid #61dafb;
-    font-size: 1cqw;
-
+    font-size: 14px;
     container-type: inline-size;
+    padding-left: 5px;
+}
 
+.cast-cell .cast-name {
+    text-wrap: wrap;
+    font-weight: bold;
+    text-decoration: none;
+    color: inherit;
+}
+
+.cast-cell .cast-name:hover {
+    color: #d7d6d6;
+}
+
+.cast-cell .cast-character {
+    font-size: 0.9em;
     text-wrap: wrap;
 }
 
