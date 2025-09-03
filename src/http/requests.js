@@ -1,7 +1,9 @@
 
-export const apiBaseUrl = process.env.NODE_ENV == 'prod' ? '':
+export const apiBaseUrl = process.env.NODE_ENV == 'production' ? '':
     'http://localhost:8080';
-    //'http://192.168.1.237:8080'; used for phone, there is a bug that login not working, needs to check
+    //'http://192.168.1.237:8080'; //used for phone, there is a bug that login not working, needs to check
+
+export const TURNSTILE_SITE_KEY = process.env.REACT_APP_TURNSTILE_SITE_KEY
 
 export function useFetchRequests() {
     return {
