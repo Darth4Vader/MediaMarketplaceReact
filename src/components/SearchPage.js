@@ -1,7 +1,19 @@
 import {useApi} from "../http/api";
 import React, {useEffect, useState} from "react";
 import './SearchPage.css'
-import {Checkbox, Grid, IconButton, MenuItem, Select, Skeleton} from "@mui/material";
+import {
+    AppBar,
+    Box, Button,
+    Checkbox, Collapse,
+    Drawer,
+    Grid,
+    IconButton, ListItem,
+    ListItemButton,
+    MenuItem,
+    Select,
+    Skeleton, SvgIcon,
+    Toolbar
+} from "@mui/material";
 import {
     infiniteScrollFetchWrapper,
     InfiniteScrollItem,
@@ -12,8 +24,18 @@ import Movie from "./Movie";
 import {useEffectAfterPageRendered} from "./UseEffectAfterPageRendered";
 import {changeItemCheckedValue, isItemChecked, removeFromSelectedItems} from "./FilterUtils";
 import {useSearchInputContext} from "../SearchInputProvider";
+import List from "@mui/material/List";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import ListItemText from "@mui/material/ListItemText";
+import ExpandLess from '@mui/icons-material/ExpandLess';
+import ExpandMore from '@mui/icons-material/ExpandMore';
+import { ReactComponent as DirectorImage} from '../director-profession-icon.svg';
+import { ReactComponent as ActorImage} from '../actor-profession-icon.svg';
+import { ReactComponent as MovieGenreImage} from '../movie-genre-icon.svg';
+import TextField from "@mui/material/TextField";
+import {HideOnScroll} from "./MyAppBar";
 
-export default function SearchPage() {
+export default function SearchPage(props) {
     console.log("search");
 
     const { searchMovies } = useApi();
@@ -111,68 +133,127 @@ export default function SearchPage() {
     }, [sortOption]);
 
     return (
-        <div style={{ width: "100%" }}>
-            <h1>Search Page</h1>
-            <p>This is the search page.</p>
-            <label>Sort By</label>
-            <Select
-                value={sortOption}
-                onChange={(e) => {
-                    console.log("Fast", e.target.value);
-                    setSortOption(e.target.value);
-                    setMovies([]);
-                    /*if(page === 0)
-                        fetchMovies(0);
-                    else
-                        setPage(0);*/
+        <Box className="search-page">
+            <Drawer
+                variant="permanent"
+                sx={{
+                    width: 240,
+                    flexShrink: 0,
+                    '& .MuiDrawer-paper': {
+                        width: 240,
+                        boxSizing: 'border-box',
+                    },
+                    zIndex: (theme) => theme.zIndex.drawer
                 }}
-
             >
-                <MenuItem value={"name,ASC"}>Name: Low to High</MenuItem>
-                <MenuItem value={"name,DESC"}>Name: High to Low</MenuItem>
-                <MenuItem value={"rating,ASC"}>Rating: Low to High</MenuItem>
-                <MenuItem value={"rating,DESC"}>Rating: High to Low</MenuItem>
+                <Toolbar className="app-bar" />
+                <Box sx={{ overflow: 'auto' }}>
+                    <List>
+                        <SearchPageListItem text="Genres" icon={<MovieGenreImage/>}>
+                            <GenreFilter selectedGenres={selectedGenres} setSelectedGenres={setSelectedGenres} />
+                        </SearchPageListItem>
+                        <SearchPageListItem text="Actors" icon={<ActorImage/>}>
+                            <ActorsFilter selectedActors={selectedActors} setSelectedActors={setSelectedActors}/>
+                        </SearchPageListItem>
+                        <SearchPageListItem text="Directors" icon={<DirectorImage/>}>
+                            <DirectorsFilter selectedDirectors={selectedDirectors} setSelectedDirectors={setSelectedDirectors}/>
+                        </SearchPageListItem>
+                    </List>
+                    <Button variant="outlined" onClick={() => {
+                        fetchMoviesFirstPage();
+                    }} style={{ height: "50px"}}>
+                        Search
+                    </Button>
+                </Box>
+            </Drawer>
+            <div className="main-search-page">
+                <h1>Search Page</h1>
+                <HideOnScroll {...props}>
+                <AppBar
+                    position="sticky"
+                    style={{
+                        top: "10vh"
+                    }
+                    }
+                    sx={{ zIndex: (theme) => theme.zIndex.drawer+1}}
+                >
+                    <Toolbar variant="dense">
+                        <label>Sort By</label>
+                        <Select
+                            style={{ marginLeft: '25px', width: '50%' }}
+                            value={sortOption}
+                            onChange={(e) => {
+                                console.log("Fast", e.target.value);
+                                setSortOption(e.target.value);
+                                setMovies([]);
+                                /*if(page === 0)
+                                    fetchMovies(0);
+                                else
+                                    setPage(0);*/
+                            }}
 
-            </Select>
-            <div className="search-page">
-                <div className="search-filters">
-                    <div className="search-filters-scroll">
-                        <p>This is the search page filters.</p>
-                        <GenreFilter selectedGenres={selectedGenres} setSelectedGenres={setSelectedGenres} />
-                        <ActorsFilter selectedActors={selectedActors} setSelectedActors={setSelectedActors}/>
-                        <DirectorsFilter selectedDirectors={selectedDirectors} setSelectedDirectors={setSelectedDirectors}/>
-                        <button onClick={() => {
-                            fetchMoviesFirstPage();
-                        }} style={{ height: "50px"}}>
-                            Search
-                        </button>
+                        >
+                            <MenuItem value={""} >None</MenuItem>
+                            <MenuItem value={"name,ASC"}>Name: Low to High</MenuItem>
+                            <MenuItem value={"name,DESC"}>Name: High to Low</MenuItem>
+                            <MenuItem value={"rating,ASC"}>Rating: Low to High</MenuItem>
+                            <MenuItem value={"rating,DESC"}>Rating: High to Low</MenuItem>
+
+                        </Select>
+                    </Toolbar>
+                </AppBar>
+                </HideOnScroll>
+                <div className="search-center-page">
+                    <div className="search-results">
+                        {(page === 0 && loading) ?
+                            <SearchMovieSkeleton num={16}/> :
+                            <div>
+                                <div className="search-results-items">
+                                    {movies.map((item, index) => {
+                                        const movie = item.movie || item; // handle both ProductDto and MovieReference
+
+                                        return (
+                                            <InfiniteScrollItem
+                                                idx={index}
+                                                length={movies.length}
+                                                infiniteScrollRef={infiniteScrollRef}
+                                            >
+                                                <Movie key={index} movie={movie} />
+                                            </InfiniteScrollItem>
+                                        );
+                                    })}
+                                </div>
+                                {loading && <SearchMovieSkeleton num={16}/>}
+                            </div>
+                        }
                     </div>
                 </div>
-                <div className="search-results">
-                    {(page === 0 && loading) ?
-                        <SearchMovieSkeleton num={16}/> :
-                        <div>
-                            <div className="search-results-items">
-                                {movies.map((item, index) => {
-                                    const movie = item.movie || item; // handle both ProductDto and MovieReference
-
-                                    return (
-                                        <InfiniteScrollItem
-                                            idx={index}
-                                            length={movies.length}
-                                            infiniteScrollRef={infiniteScrollRef}
-                                            //className="search-movie-cell-div"
-                                        >
-                                            <Movie key={index} movie={movie} />
-                                        </InfiniteScrollItem>
-                                    );
-                                })}
-                            </div>
-                            {loading && <SearchMovieSkeleton num={16}/>}
-                        </div>
-                    }
-                </div>
             </div>
+        </Box>
+    );
+}
+
+const SearchPageListItem = ({ text, icon, children }) => {
+    const [expanded, setExpanded] = useState(false);
+    const handleExpandClick = () => {
+        setExpanded(!expanded);
+    }
+    return (
+        <div style={{width: '100%'}}>
+            <ListItem key="text">
+                <ListItemButton onClick={handleExpandClick}>
+                    <ListItemIcon>
+                        <SvgIcon color="primary">
+                            {icon}
+                        </SvgIcon>
+                    </ListItemIcon>
+                    <ListItemText primary={text} />
+                    {expanded ? <ExpandLess /> : <ExpandMore />}
+                </ListItemButton>
+            </ListItem>
+            <Collapse in={expanded} timeout="auto" unmountOnExit>
+                {children}
+            </Collapse>
         </div>
     );
 }
@@ -224,40 +305,102 @@ function textChangePagination(setItems, setSearchText, setPage) {
 }
 
 const GenreFilter = ({ selectedGenres, setSelectedGenres }) => {
-    const removeFromFilter = removeFromSelectedItems(selectedGenres, setSelectedGenres);
-    const isItemInFilter = isItemChecked(selectedGenres);
-    const changeItemCheckInFilter = changeItemCheckedValue(selectedGenres, setSelectedGenres);
+    const { searchGenres } = useApi();
+    const fetchSearchGenres = async (text, pageNum) => await searchGenres(text, pageNum, 3);
+
+    return (
+        <CategoryFilter
+            selectedItems={selectedGenres}
+            setSelectedItems={setSelectedGenres}
+            getListItemBody={(genre) => {
+                return <ListItemText primary={genre?.name} />
+            }}
+            fetchSearchItems={fetchSearchGenres}
+            searchLabel="Search for genres..."
+        />
+    );
+}
+
+const ActorsFilter = ({ selectedActors, setSelectedActors }) => {
+    const { searchActors } = useApi();
+    const fetchSearchActors = async (text, pageNum) => await searchActors(text, pageNum, 3);
+
+    return (
+        <CategoryFilter
+            selectedItems={selectedActors}
+            setSelectedItems={setSelectedActors}
+            getListItemBody={(actor) => {
+                return (
+                    <>
+                        <img src={actor?.imagePath} alt={`${actor?.name} Poster`} width="10%" height="auto"/>
+                        <p>{actor?.name}</p>
+                    </>
+                )
+            }}
+            fetchSearchItems={fetchSearchActors}
+            searchLabel="Search for actors..."
+        />
+    );
+}
+
+const DirectorsFilter = ({ selectedDirectors, setSelectedDirectors }) => {
+    const { searchDirectors } = useApi();
+    const fetchSearchDirectors = async (text, pageNum) => await searchDirectors(text, pageNum, 3);
+
+    return (
+        <CategoryFilter
+            selectedItems={selectedDirectors}
+            setSelectedItems={setSelectedDirectors}
+            getListItemBody={(director) => {
+                return (
+                    <>
+                        <img src={director?.imagePath} alt={`${director?.name} Poster`} width="10%" height="auto"/>
+                        <p>{director?.name}</p>
+                    </>
+                )
+            }}
+            fetchSearchItems={fetchSearchDirectors}
+            searchLabel="Search for directors..."
+        />
+    );
+}
+
+const CategoryFilter = ({ selectedItems, setSelectedItems, getListItemBody, fetchSearchItems, searchLabel }) => {
+    const removeFromFilter = removeFromSelectedItems(selectedItems, setSelectedItems);
+    const isItemInFilter = isItemChecked(selectedItems);
+    const changeItemCheckInFilter = changeItemCheckedValue(selectedItems, setSelectedItems);
 
     return (
         <>
-            <SearchGenre
+            <SearchCategory
                 changeItemCheckInFilter={changeItemCheckInFilter}
                 isItemInFilter={isItemInFilter}
+                getListItemBody={getListItemBody}
+                fetchSearchItems={fetchSearchItems}
+                searchLabel={searchLabel}
             />
             <div className="search-actors-filter">
-                <p>This is the selected people filter.</p>
-                <ul>
-                    {selectedGenres?.map((genre, index) => {
+                <List>
+                    {selectedItems?.map((item, index) => {
                         return (
-                            <li key={genre.id} className="search-director-cell">
+                            <ListItem key={index}>
                                 <IconButton aria-label="delete" size="large" className="remove-product-button"
                                             onClick={() => removeFromFilter(index)} >
                                     <CancelIcon />
                                 </IconButton>
-                                <p>{genre?.name}</p>
-                            </li>
+                                {getListItemBody(item)}
+                            </ListItem>
                         );
                     })}
-                </ul>
+                </List>
             </div>
         </>
     );
 }
 
-const SearchGenre = ({ isItemInFilter, changeItemCheckInFilter }) => {
-    const { searchGenres } = useApi();
+const SearchCategory = ({ isItemInFilter, changeItemCheckInFilter, getListItemBody, fetchSearchItems, searchLabel }) => {
     const [searchText, setSearchText] = useState("");
-    const [genres, setGenres] = useState([]);
+    const [items, setItems] = useState([]);
 
     const [page, setPage] = useState(0);
     const [hasMore, setHasMore] = useState(true);
@@ -265,21 +408,22 @@ const SearchGenre = ({ isItemInFilter, changeItemCheckInFilter }) => {
     const infiniteScrollRef = useInfiniteScrollRefPage(setPage, loading, hasMore);
 
     useEffectAfterPageRendered( () => {
-        const fetchGenresFunction = async (text, pageNum) => await searchGenres(text, pageNum, 3);
-        const fetchGenres = fetchPagination(fetchGenresFunction, setGenres, setHasMore, loading, setLoading);
-        fetchGenres(searchText, page);
+        const fetchSearchPaginationItems = fetchPagination(fetchSearchItems, setItems, setHasMore, loading, setLoading);
+        fetchSearchPaginationItems(searchText, page);
     }, [searchText, page]);
 
-    const searchTextChange = textChangePagination(setGenres, setSearchText, setPage);
+    const searchTextChange = textChangePagination(setItems, setSearchText, setPage);
 
     return (
         <div className="search-actors-filter">
-            <p>This is the Genres filter.</p>
-            <input
-                type="text"
+            <TextField
+                label={searchLabel}
+                variant="outlined"
                 value={searchText}
                 onChange={(e) => searchTextChange(e)}
-                placeholder="Search for people..."
+                placeholder={searchLabel}
+                fullWidth
+                margin="normal"
             />
             {(page === 0 && loading) ?
                 <div className="search-actors-filter-skeleton">
@@ -287,230 +431,29 @@ const SearchGenre = ({ isItemInFilter, changeItemCheckInFilter }) => {
                     <Skeleton variant="rectangular"/>
                     <Skeleton variant="rectangular"/>
                 </div> :
-                <ul>
-                    {genres?.map((genre, index) => {
+                <List>
+                    {items?.map((item, index) => {
                         return (
                             <InfiniteScrollItem
                                 idx={index}
-                                length={genres.length}
+                                length={items.length}
                                 infiniteScrollRef={infiniteScrollRef}
                                 className="search-director-cell-div"
                             >
-                                <GenreCell genre={genre}
-                                            isChecked={isItemInFilter(genre)}
-                                            onChange={(checkValue) => changeItemCheckInFilter(genre, checkValue)}/>
+                                <ListItem key={item.id} className="search-director-cell">
+                                    <Checkbox
+                                        checked={isItemInFilter(item)}
+                                        onChange={(e) => changeItemCheckInFilter(item, e.target.checked)}
+                                    />
+                                    {getListItemBody(item)}
+                                </ListItem>
                             </InfiniteScrollItem>
                         );
                     })}
                     {hasMore && !loading && <div style={{height: '20px'}}></div>}
                     {loading && <Skeleton variant="rectangular"/>}
-                </ul>
+                </List>
             }
         </div>
     );
 }
-
-const ActorsFilter = ({ selectedActors, setSelectedActors }) => {
-    const removeFromFilter = removeFromSelectedItems(selectedActors, setSelectedActors);
-    const isItemInFilter = isItemChecked(selectedActors);
-    const changeItemCheckInFilter = changeItemCheckedValue(selectedActors, setSelectedActors);
-
-    return (
-        <>
-            <SearchActor
-                changeItemCheckInFilter={changeItemCheckInFilter}
-                isItemInFilter={isItemInFilter}
-            />
-            <div className="search-actors-filter">
-                <p>This is the selected people filter.</p>
-                <ul>
-                    {selectedActors?.map((actor, index) => {
-                        return (
-                            <li key={actor.id} className="search-director-cell">
-                                <IconButton aria-label="delete" size="large" className="remove-product-button"
-                                            onClick={() => removeFromFilter(index)} >
-                                    <CancelIcon />
-                                </IconButton>
-                                <img src={actor?.imagePath} alt={`${actor?.name} Poster`} width="10%" height="auto"/>
-                                <p>{actor?.name}</p>
-                            </li>
-                        );
-                    })}
-                </ul>
-            </div>
-        </>
-    );
-}
-
-const SearchActor = ({ isItemInFilter, changeItemCheckInFilter }) => {
-    const { searchActors } = useApi();
-    const [searchText, setSearchText] = useState("");
-    const [actors, setActors] = useState([]);
-
-    const [page, setPage] = useState(0);
-    const [hasMore, setHasMore] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const infiniteScrollRef = useInfiniteScrollRefPage(setPage, loading, hasMore);
-
-    useEffectAfterPageRendered(() => {
-        const fetchActorsFunction = async (text, pageNum) => await searchActors(text, pageNum, 3);
-        const fetchActors = fetchPagination(fetchActorsFunction, setActors, setHasMore, loading, setLoading);
-        fetchActors(searchText, page);
-        console.log("Is It Last", hasMore);
-    }, [searchText, page]);
-
-    const searchTextChange = textChangePagination(setActors, setSearchText, setPage);
-
-    return (
-        <div className="search-actors-filter">
-            <p>This is the Actors filter.</p>
-            <input
-                type="text"
-                value={searchText}
-                onChange={(e) => searchTextChange(e)}
-                placeholder="Search for people..."
-            />
-            {(page === 0 && loading) ?
-                <div className="search-actors-filter-skeleton">
-                    <Skeleton variant="rectangular"/>
-                    <Skeleton variant="rectangular"/>
-                    <Skeleton variant="rectangular"/>
-                </div> :
-                <ul>
-                    {actors?.map((actor, index) => {
-                        return (
-                            <InfiniteScrollItem
-                                idx={index}
-                                length={actors.length}
-                                infiniteScrollRef={infiniteScrollRef}
-                                className="search-director-cell-div"
-                            >
-                                <PersonCell person={actor}
-                                            isChecked={isItemInFilter(actor)}
-                                            onChange={(checkValue) => changeItemCheckInFilter(actor, checkValue)}/>
-                            </InfiniteScrollItem>
-                        );
-                    })}
-                    {hasMore && !loading && <div style={{height: '20px'}}></div>}
-                    {loading && <Skeleton variant="rectangular"/>}
-                </ul>
-            }
-        </div>
-    );
-}
-
-const DirectorsFilter = ({ selectedDirectors, setSelectedDirectors }) => {
-    const removeFromFilter = removeFromSelectedItems(selectedDirectors, setSelectedDirectors);
-    const isItemInFilter = isItemChecked(selectedDirectors);
-    const changeItemCheckInFilter = changeItemCheckedValue(selectedDirectors, setSelectedDirectors);
-
-    return (
-        <>
-            <SearchDirector
-                changeItemCheckInFilter={changeItemCheckInFilter}
-                isItemInFilter={isItemInFilter}
-            />
-            <div className="search-actors-filter">
-                <p>This is the selected people filter.</p>
-                <ul>
-                    {selectedDirectors?.map((director, index) => {
-                        return (
-                            <li key={director.id} className="search-director-cell">
-                                <IconButton aria-label="delete" size="large" className="remove-product-button"
-                                            onClick={() => removeFromFilter(index)} >
-                                    <CancelIcon />
-                                </IconButton>
-                                <img src={director?.imagePath} alt={`${director?.name} Poster`} width="10%" height="auto"/>
-                                <p>{director?.name}</p>
-                            </li>
-                        );
-                    })}
-                </ul>
-            </div>
-        </>
-    );
-}
-
-const SearchDirector = ({ isItemInFilter, changeItemCheckInFilter }) => {
-    const {searchDirectors} = useApi();
-    const [searchText, setSearchText] = useState("");
-    const [directors, setDirectors] = useState([]);
-
-    const [page, setPage] = useState(0);
-    const [hasMore, setHasMore] = useState(true);
-    const [loading, setLoading] = useState(false);
-    const infiniteScrollRef = useInfiniteScrollRefPage(setPage, loading, hasMore);
-
-    useEffectAfterPageRendered(() => {
-        const fetchDirectorsFunction = async (text, pageNum) => await searchDirectors(text, pageNum, 3);
-        const fetchDirectors = fetchPagination(fetchDirectorsFunction, setDirectors, setHasMore, loading, setLoading);
-        fetchDirectors(searchText, page);
-    }, [searchText, page]);
-
-    const searchTextChange = textChangePagination(setDirectors, setSearchText, setPage);
-
-    return (
-        <div className="search-actors-filter">
-            <p>This is the Directors filter.</p>
-            <input
-                type="text"
-                value={searchText}
-                onChange={(e) => searchTextChange(e)}
-                placeholder="Search for people..."
-            />
-            {(page === 0 && loading) ?
-                <div className="search-actors-filter-skeleton">
-                    <Skeleton variant="rectangular"/>
-                    <Skeleton variant="rectangular"/>
-                    <Skeleton variant="rectangular"/>
-                </div> :
-                <ul>
-                    {directors?.map((director, index) => {
-                        return (
-                            <InfiniteScrollItem
-                                idx={index}
-                                length={directors.length}
-                                infiniteScrollRef={infiniteScrollRef}
-                                className="search-director-cell-div"
-                            >
-                                <PersonCell person={director}
-                                            isChecked={isItemInFilter(director)}
-                                            onChange={(checkValue) => changeItemCheckInFilter(director, checkValue)}/>
-                            </InfiniteScrollItem>
-                        );
-                    })}
-                    {hasMore && !loading && <div style={{height: '20px'}}></div>}
-                    {loading && <Skeleton variant="rectangular"/>}
-                </ul>
-            }
-        </div>
-    );
-}
-
-const PersonCell = ({ person, isChecked, onChange }) => {
-    console.log(person);
-    console.log("AmI Checked", isChecked);
-    return (
-        <li key={person.id} className="search-director-cell">
-            <Checkbox
-                checked={isChecked}
-                onChange={(e) => onChange(e.target.checked)}
-            />
-            {<img src={person?.imagePath} alt={`${person?.name} Poster`} width="10%" height="auto"/>}
-            <p>{person?.name}</p>
-        </li>
-    );
-};
-
-const GenreCell = ({ genre, isChecked, onChange }) => {
-    console.log(genre);
-    return (
-        <li key={genre.id} className="search-director-cell">
-            <Checkbox
-                checked={isChecked}
-                onChange={(e) => onChange(e.target.checked)}
-            />
-            <p>{genre?.name}</p>
-        </li>
-    );
-};

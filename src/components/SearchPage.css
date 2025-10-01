@@ -1,5 +1,18 @@
 
+
 .search-page {
+    display: flex;
+//flex-direction: row;
+}
+
+.search-page .main-search-page {
+    flex-grow: 1;
+    display: inline-block;
+    float: none;
+}
+
+
+.search-center-page {
     display: flex;
     //flex-direction: row;
 

@@ -6,7 +6,7 @@ import LoadMoviePage from "./components/MoviePage";
 import LoadCartPage from "./components/CartPage";
 import Movie from "./components/Movie";
 import LoadReviewPage from "./components/ReviewPage";
-import MyAppBar from "./components/MyAppBar";
+import {MyAppBar} from "./components/MyAppBar";
 import LoginPage from "./LoginPage";
 import RegisterPage from "./components/RegisterPage";
 

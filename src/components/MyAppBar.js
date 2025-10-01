@@ -29,7 +29,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import {useState} from "react";
 import React from "react";
 
-function HideOnScroll(props) {
+export function HideOnScroll(props) {
     const { children, window } = props;
     // Note that you normally won't need to set the window ref as useScrollTrigger
     // will default to window.
@@ -54,7 +54,7 @@ HideOnScroll.propTypes = {
     window: PropTypes.func,
 };
 
-export default function MyAppBar(props) {
+export function MyAppBar(props) {
     const { logout } = useApi();
     const { userInfo, userLogged, isLogged } = useAuthContext();
     const { searchInput, setSearchInput, setIsSearching } = useSearchInputContext();
