@@ -1,5 +1,5 @@
 import {useApi} from "../http/api";
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import './SearchPage.css'
 import {
     AppBar,
@@ -34,11 +34,13 @@ import { ReactComponent as ActorImage} from '../actor-profession-icon.svg';
 import { ReactComponent as MovieGenreImage} from '../movie-genre-icon.svg';
 import TextField from "@mui/material/TextField";
 import {HideOnScroll} from "./MyAppBar";
+import {useSearchParams} from "react-router-dom";
+import {compareArrays, hasStringChanged, normalizeToArray, parseStringAsNumberArray} from "./UtilsFunctions";
 
 export default function SearchPage(props) {
     console.log("search");
 
-    const { searchMovies } = useApi();
+    const { searchMovies, getGenres, getPeople } = useApi();
     const [movies, setMovies] = useState([]);
     const [selectedGenres, setSelectedGenres] = useState([]);
     const [selectedActors, setSelectedActors] = useState([]);
@@ -51,53 +53,15 @@ export default function SearchPage(props) {
 
     const [sortOption, setSortOption] = useState("");
 
-    const { searchInput, isSearching } = useSearchInputContext();
+    const { searchInput, setSearchInput, isSearching } = useSearchInputContext();
 
-    const search = async (pageNumber) => {
-        let searchParams = "";
-        /*const searchParams = {};
-        if (selectedActors.length > 0) {
-            searchParams.actors = selectedActors;
-        }*/
-        if( searchInput && searchInput.length > 0) {
-            searchParams = `&name=${searchInput}`;
-        }
-        console.log("Search Params: ", selectedActors);
-        if(selectedGenres.length > 0) {
-            const stringData = selectedGenres.map((genre) => `${genre.id}`).join(',');
-            searchParams = searchParams + `&genres=${stringData}`;
-            //searchParams = `?genres=${stringData}`;
-            console.log(stringData);
-            console.log(`/api/main/movies/search?genres=${selectedGenres}`);
-        }
-        if(selectedActors.length > 0) {
-            const stringData = selectedActors.map((actor) => `${actor.id}`).join(',');
-            searchParams = searchParams + `&actors=${stringData}`;
-            //searchParams = searchParams + `?actors=${stringData}`;
-            console.log(stringData);
-            console.log(`/api/main/movies/search?actors=${selectedActors}`);
-        }
-        if(selectedDirectors.length > 0) {
-            const stringData = selectedDirectors.map((director) => `${director.id}`).join(',');
-            searchParams = searchParams + `&directors=${stringData}`;
-            //searchParams = searchParams + `?directors=${stringData}`;
-            console.log(stringData);
-            console.log(`/api/main/movies/search?directors=${selectedDirectors}`);
-        }
-        console.log(sortOption);
-        if(sortOption) {
-            searchParams = searchParams + `&sort=${sortOption}`;
-        }
-        //const url = `/api/main/movies/search${searchParams}`;
-        //const data = await handleResponse(requests.get(url));
-        return await searchMovies(pageNumber, 8, searchParams);
+    const [searchParams, setSearchParams] = useSearchParams({});
 
-        //console.log(`/api/main/movies/search?actors=${selectedActors}`);
-    };
+    const [loadPage, setLoadPage] = useState(false);
 
     const fetchMovies = async (pageNumber: number) => {
         const fetchMoviesFunction = async (pageNum) => {
-            const data = await search(pageNum);
+            const data = await searchMovies(pageNum, 8, searchParams)
             console.log(data);
             console.log(data?.last);
             setMovies((prevMovies) => {
@@ -118,19 +82,78 @@ export default function SearchPage(props) {
 
     // when page loads for the first time, check if there is a search input
     useEffect(() => {
-        if(searchInput && searchInput.length > 0) {
-            fetchMoviesFirstPage();
+        if(loadPage) {
+            if (searchInput && searchInput.length > 0) {
+                fetchMoviesFirstPage();
+            }
         }
     }, [isSearching]);
 
-    useEffectAfterPageRendered(() => {
+    const isUpdateSearchParams = useRef(false);
+
+    useEffect(() => {
+        const loadCategoryItemsAsync = async() => {
+            if(searchParams.get("name")) {
+                setSearchInput(searchParams.get("name"));
+            }
+            const newSearchParams = new URLSearchParams(searchParams);
+            await loadCategoryItems("genres", getGenres, setSelectedGenres, isUpdateSearchParams, newSearchParams);
+            await loadCategoryItems("actors", getPeople, setSelectedActors, isUpdateSearchParams, newSearchParams);
+            await loadCategoryItems("directors", getPeople, setSelectedDirectors, isUpdateSearchParams, newSearchParams);
+            if(isUpdateSearchParams.current) {
+                isUpdateSearchParams.current = false;
+                const newUrl = `${window.location.pathname}?${newSearchParams.toString()}`;
+                window.history.replaceState(null, '', newUrl);
+            }
+            else
+                setLoadPage(true);
+        }
+        loadCategoryItemsAsync();
+    }, [])
+
+    useEffectAfterPageRendered(async () => {
         console.log("search page");
-        fetchMovies(page);
+        if(loadPage)
+            await fetchMovies(page);
     }, [page]);
 
     useEffectAfterPageRendered(() => {
-        fetchMoviesFirstPage();
-    }, [sortOption]);
+        if(loadPage) {
+            if (hasStringChanged(searchParams.get("sort"), sortOption)) {
+                setSearchParams((prevSearchParams) => {
+                    const newSearchParams = new URLSearchParams(prevSearchParams);
+                    if (sortOption) {
+                        newSearchParams.set("sort", sortOption);
+                    } else {
+                        newSearchParams.delete("sort"); // cleanly remove from URL if none
+                    }
+                    return newSearchParams;
+                });
+            }
+        }
+    }, [sortOption, loadPage]);
+
+
+    useEffect(() => {
+        if(loadPage) {
+            if (hasStringChanged(searchParams.get("name"), searchInput)) {
+                setSearchParams((prevSearchParams) => {
+                    const newSearchParams = new URLSearchParams(prevSearchParams);
+                    if (searchInput && searchInput.length > 0) {
+                        newSearchParams.set("name", searchInput);
+                    } else {
+                        newSearchParams.delete("name"); // cleanly remove from URL if none
+                    }
+                    return newSearchParams;
+                });
+            }
+        }
+    }, [searchInput, loadPage]);
+
+    useEffect(() => {
+        if(loadPage)
+            fetchMoviesFirstPage();
+    }, [searchParams, loadPage])
 
     return (
         <Box className="search-page">
@@ -150,13 +173,13 @@ export default function SearchPage(props) {
                 <Box sx={{ overflow: 'auto' }}>
                     <List>
                         <SearchPageListItem text="Genres" icon={<MovieGenreImage/>}>
-                            <GenreFilter selectedGenres={selectedGenres} setSelectedGenres={setSelectedGenres} />
+                            <GenreFilter selectedGenres={selectedGenres} setSelectedGenres={setSelectedGenres} setSearchParams={setSearchParams} />
                         </SearchPageListItem>
                         <SearchPageListItem text="Actors" icon={<ActorImage/>}>
-                            <ActorsFilter selectedActors={selectedActors} setSelectedActors={setSelectedActors}/>
+                            <ActorsFilter selectedActors={selectedActors} setSelectedActors={setSelectedActors} setSearchParams={setSearchParams} />
                         </SearchPageListItem>
                         <SearchPageListItem text="Directors" icon={<DirectorImage/>}>
-                            <DirectorsFilter selectedDirectors={selectedDirectors} setSelectedDirectors={setSelectedDirectors}/>
+                            <DirectorsFilter selectedDirectors={selectedDirectors} setSelectedDirectors={setSelectedDirectors} setSearchParams={setSearchParams} />
                         </SearchPageListItem>
                     </List>
                     <Button variant="outlined" onClick={() => {
@@ -233,6 +256,30 @@ export default function SearchPage(props) {
     );
 }
 
+const loadCategoryItems = async(categoryName, getItemsFunction, setSelectedItems, searchParamsChangedRef, searchParams) => {
+    if (searchParams.get(categoryName)) {
+        const searchIds = parseStringAsNumberArray(searchParams.get(categoryName));
+        const fetchedItems = await getItemsFunction(searchIds);
+        const fetchedIds = fetchedItems?.map(genre => genre.id) || [];
+        if (!compareArrays(searchIds, fetchedIds)) {
+            searchParamsChangedRef.current = true;
+            updateSearchParamCategory(searchParams, categoryName, fetchedItems);
+        }
+        setSelectedItems(fetchedItems || []);
+    } else {
+        setSelectedItems([]);
+    }
+}
+
+const updateSearchParamCategory = (searchParams, categoryName, selectedItems) => {
+    if (selectedItems.length > 0) {
+        const categoryIds = selectedItems.map(item => item.id).join(',');
+        searchParams.set(categoryName, categoryIds);
+    } else {
+        searchParams.delete(categoryName); // cleanly remove from URL if none
+    }
+}
+
 const SearchPageListItem = ({ text, icon, children }) => {
     const [expanded, setExpanded] = useState(false);
     const handleExpandClick = () => {
@@ -304,14 +351,16 @@ function textChangePagination(setItems, setSearchText, setPage) {
     };
 }
 
-const GenreFilter = ({ selectedGenres, setSelectedGenres }) => {
+const GenreFilter = ({ selectedGenres, setSelectedGenres, setSearchParams }) => {
     const { searchGenres } = useApi();
     const fetchSearchGenres = async (text, pageNum) => await searchGenres(text, pageNum, 3);
 
     return (
         <CategoryFilter
+            categoryName = "genres"
             selectedItems={selectedGenres}
             setSelectedItems={setSelectedGenres}
+            setSearchParams={setSearchParams}
             getListItemBody={(genre) => {
                 return <ListItemText primary={genre?.name} />
             }}
@@ -321,14 +370,16 @@ const GenreFilter = ({ selectedGenres, setSelectedGenres }) => {
     );
 }
 
-const ActorsFilter = ({ selectedActors, setSelectedActors }) => {
+const ActorsFilter = ({ selectedActors, setSelectedActors, setSearchParams }) => {
     const { searchActors } = useApi();
     const fetchSearchActors = async (text, pageNum) => await searchActors(text, pageNum, 3);
 
     return (
         <CategoryFilter
+            categoryName = "actors"
             selectedItems={selectedActors}
             setSelectedItems={setSelectedActors}
+            setSearchParams={setSearchParams}
             getListItemBody={(actor) => {
                 return (
                     <>
@@ -343,14 +394,16 @@ const ActorsFilter = ({ selectedActors, setSelectedActors }) => {
     );
 }
 
-const DirectorsFilter = ({ selectedDirectors, setSelectedDirectors }) => {
+const DirectorsFilter = ({ selectedDirectors, setSelectedDirectors, setSearchParams }) => {
     const { searchDirectors } = useApi();
     const fetchSearchDirectors = async (text, pageNum) => await searchDirectors(text, pageNum, 3);
 
     return (
         <CategoryFilter
+            categoryName = "directors"
             selectedItems={selectedDirectors}
             setSelectedItems={setSelectedDirectors}
+            setSearchParams={setSearchParams}
             getListItemBody={(director) => {
                 return (
                     <>
@@ -365,10 +418,18 @@ const DirectorsFilter = ({ selectedDirectors, setSelectedDirectors }) => {
     );
 }
 
-const CategoryFilter = ({ selectedItems, setSelectedItems, getListItemBody, fetchSearchItems, searchLabel }) => {
+const CategoryFilter = ({ categoryName, selectedItems, setSelectedItems, setSearchParams, getListItemBody, fetchSearchItems, searchLabel }) => {
     const removeFromFilter = removeFromSelectedItems(selectedItems, setSelectedItems);
     const isItemInFilter = isItemChecked(selectedItems);
     const changeItemCheckInFilter = changeItemCheckedValue(selectedItems, setSelectedItems);
+
+    useEffect(() => {
+        setSearchParams((prevSearchParams) => {
+            const newSearchParams = new URLSearchParams(prevSearchParams);
+            updateSearchParamCategory(newSearchParams, categoryName, selectedItems);
+            return newSearchParams;
+        });
+    }, [selectedItems])
 
     return (
         <>

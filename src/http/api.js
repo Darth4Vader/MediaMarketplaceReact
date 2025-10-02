@@ -31,7 +31,9 @@ export function useApi() {
         searchDirectors,
         searchMovies,
         requestResetPassword,
-        resetPassword
+        resetPassword,
+        getGenres,
+        getPeople
     }
 
     async function handleResponseRejection(response) {
@@ -170,8 +172,17 @@ export function useApi() {
     }
 
     async function searchMovies(page=0, size=1, searchParams) {
-        return handleResponse(await requests.get(`/api/main/movies/search?page=${page}&size=${size}${searchParams}`))
+        const query = searchParams.toString();
+        return handleResponse(await requests.get(`/api/main/movies/search?page=${page}&size=${size}${query ? `&${query}` : ''}`))
             .then(sleeper(3000));
+    }
+
+    async function getGenres(genres) {
+        return handleResponse(await requests.get(`/api/main/genres?ids=${genres}`));
+    }
+
+    async function getPeople(people) {
+        return handleResponse(await requests.get(`/api/main/people?ids=${people}`));
     }
 
     async function verifyAccount(token) {
