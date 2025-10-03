@@ -8,6 +8,12 @@
     padding: 10px 0;
 }
 
+.cart-product-main {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
 .cart-product .product-link {
     text-decoration: unset;
     color: unset;
@@ -35,7 +41,12 @@
     //justify-content: center;
 }
 
-.cart-product .remove-product-button {
+.remove-product-button-container {
+    align-items: center;
+    display: flex;
+}
+
+.remove-product-button {
     margin-top: 10px;
 }
 

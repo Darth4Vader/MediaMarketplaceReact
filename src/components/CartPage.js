@@ -5,11 +5,12 @@ import {useMutation, useQuery} from "react-query";
 import {useFetchRequests} from "../http/requests";
 import './CartPage.css';
 import {NotFoundErrorBoundary} from "./ApiErrorUtils";
-import {Fade, IconButton, MenuItem, Select, Skeleton} from "@mui/material";
+import {Button, Fade, IconButton, MenuItem, Paper, Select, Skeleton} from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
 import {Pagination, usePagination} from "./Pagination";
 import {Link, useNavigate, useNavigation, useSearchParams} from "react-router-dom";
 import Alert from "@mui/material/Alert";
+import Divider from "@mui/material/Divider";
 
 export default function LoadCartPage() {
     return (
@@ -55,7 +56,7 @@ const CartPage = () => {
                 if(sortOption) {
                     searchParams = searchParams + `&sort=${sortOption}`;
                 }
-                const cart = await getCurrentUserCart(page, 1, searchParams);
+                const cart = await getCurrentUserCart(page, 2, searchParams);
                 setCartProducts(cart?.cartProducts?.content || []);
                 setTotalPrice(cart?.totalPrice || 0);
                 setTotalItems(cart?.totalItems || 0);
@@ -182,6 +183,7 @@ const CartPage = () => {
                     <ul style={{ listStyle: 'none', padding: 0 }}>
                         {cartProducts.map((cartProduct, index) => (
                             <li key={index}>
+                                <Divider/>
                                 <CartProductItem
                                     cartProduct={cartProduct}
                                     setPageLoaded={setPageLoaded}
@@ -209,9 +211,9 @@ const CartPage = () => {
                             <Skeleton variant="text" width={15} />
                         }
                     </div>
-                    <button className="purchase-button" onClick={purchaseCartAction}>
+                    <Button variant="contained" className="purchase-button" onClick={purchaseCartAction}>
                         Purchase
-                    </button>
+                    </Button>
                 </div>
             )}
             <Fade
@@ -241,32 +243,36 @@ const CartProductItem = ({ cartProduct, setPageLoaded, onRemove, onPurchaseTypeC
     }, [loaded]);
 
     return loaded ? (
-        <div className="cart-product">
-            <Link to={"/movie/" + movie?.id} className="product-link">
-                <img src={movie?.posterPath} alt={movie?.name} className="product-poster"/>
-            </Link>
-            <div>
+        <div className="cart-product-main">
+            <div className="cart-product">
                 <Link to={"/movie/" + movie?.id} className="product-link">
-                    <div className="product-name">{movie?.name}</div>
+                    <img src={movie?.posterPath} alt={movie?.name} className="product-poster"/>
                 </Link>
-                <div className="product-purchase-panel">
-                    Purchase Type:
-                    <Select
-                        id="purchase-option"
-                        value={cartProduct?.purchaseType || 'buy'}
-                        onChange={(e) => onPurchaseTypeChange(e.target.value, setLoaded)}
-                        style={{ marginLeft: '10px', width: '100px' }}
+                <div>
+                    <Link to={"/movie/" + movie?.id} className="product-link">
+                        <div className="product-name">{movie?.name}</div>
+                    </Link>
+                    <div className="product-purchase-panel">
+                        Purchase Type:
+                        <Select
+                            id="purchase-option"
+                            value={cartProduct?.purchaseType || 'buy'}
+                            onChange={(e) => onPurchaseTypeChange(e.target.value, setLoaded)}
+                            style={{ marginLeft: '10px', width: '100px' }}
                         >
-                        <MenuItem value="buy">Buy</MenuItem>
-                        <MenuItem value="rent">Rent</MenuItem>
-                    </Select>
+                            <MenuItem value="buy">Buy</MenuItem>
+                            <MenuItem value="rent">Rent</MenuItem>
+                        </Select>
+                    </div>
+                    <div style={{ fontSize: '14px', color: 'gray' }}>
+                        {cartProduct?.purchaseType === 'buy' ? 'Buy for:' : 'Rent for:'} {cartProduct?.price}
+                    </div>
                 </div>
+            </div>
+            <div className="remove-product-button-container">
                 <IconButton aria-label="delete" size="large" className="remove-product-button" onClick={onRemove} >
                     <DeleteIcon />
                 </IconButton>
-                <div style={{ fontSize: '14px', color: 'gray' }}>
-                    {cartProduct?.purchaseType === 'buy' ? 'Buy for:' : 'Rent for:'} {cartProduct?.price}
-                </div>
             </div>
         </div>
     ): (
