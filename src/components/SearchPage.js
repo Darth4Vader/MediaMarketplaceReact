@@ -322,32 +322,14 @@ const SearchMovieSkeleton = ({ num }) => {
     );
 }
 
-function fetchPagination(fetchFunction, setItems, setHasMore, loading, setLoading) {
-    return async (text, pageNum: number) => {
-        const fetchItemsFunction = async (text, pageNumber) => {
-            const data = await fetchFunction(text, pageNumber);
-            console.log(data);
-            console.log("Last", data?.last);
-            setItems((prevItems) => {
-                return [...prevItems, ...data?.content || []];
-            });
-            setHasMore(!data.last);
-        }
-        const wrapFunction = async (pageNumber) => { await fetchItemsFunction(text, pageNumber); };
-        await infiniteScrollFetchWrapper(wrapFunction, pageNum, loading, setLoading, setHasMore);
-    }
-}
-
-function textChangePagination(setItems, setSearchText, setPage) {
+function textAlphanumericFilter(setText) {
     return (e) => {
         const ALPHA_NUMERIC_DASH_REGEX = /^[a-zA-Z0-9- ]+$/;
         const value = e.target.value;
         if (value !== "" && !ALPHA_NUMERIC_DASH_REGEX.test(value)) {
             return;
         }
-        setItems([]);
-        setSearchText(value);
-        setPage(0);
+        setText(value);
     };
 }
 
@@ -423,7 +405,7 @@ const CategoryFilter = ({ categoryName, selectedItems, setSelectedItems, setSear
     const isItemInFilter = isItemChecked(selectedItems);
     const changeItemCheckInFilter = changeItemCheckedValue(selectedItems, setSelectedItems);
 
-    useEffect(() => {
+    useEffectAfterPageRendered(() => {
         setSearchParams((prevSearchParams) => {
             const newSearchParams = new URLSearchParams(prevSearchParams);
             updateSearchParamCategory(newSearchParams, categoryName, selectedItems);
@@ -468,12 +450,9 @@ const SearchCategory = ({ isItemInFilter, changeItemCheckInFilter, getListItemBo
     const [loading, setLoading] = useState(false);
     const infiniteScrollRef = useInfiniteScrollRefPage(setPage, loading, hasMore);
 
-    useEffectAfterPageRendered( () => {
-        const fetchSearchPaginationItems = fetchPagination(fetchSearchItems, setItems, setHasMore, loading, setLoading);
-        fetchSearchPaginationItems(searchText, page);
-    }, [searchText, page]);
+    const searchTextChange = textAlphanumericFilter(setSearchText);
 
-    const searchTextChange = textChangePagination(setItems, setSearchText, setPage);
+    const { handleKeyDown } = usePaginationTextSearch(page, setPage, loading, setLoading, searchText, fetchSearchItems, setItems, setHasMore, 1000);
 
     return (
         <div className="search-actors-filter">
@@ -482,6 +461,7 @@ const SearchCategory = ({ isItemInFilter, changeItemCheckInFilter, getListItemBo
                 variant="outlined"
                 value={searchText}
                 onChange={(e) => searchTextChange(e)}
+                onKeyDown={handleKeyDown}
                 placeholder={searchLabel}
                 fullWidth
                 margin="normal"
@@ -517,4 +497,158 @@ const SearchCategory = ({ isItemInFilter, changeItemCheckInFilter, getListItemBo
             }
         </div>
     );
+}
+
+const usePaginationTextSearch = (page, setPage, loading, setLoading, searchText, fetchSearchItems, setItems, setHasMore, searchTimeout) => {
+    const [debouncedInput, setDebouncedInput] = useState('');
+    const debounceTimerRef = useRef(null);
+
+    const lockRef = useRef(false); // 🔒 Prevents starting debounce during search
+
+    const searchSessionRef = useRef(0); // 🆔 Each new search gets a new ID
+
+
+    const [subLoading, setSubLoading] = useState(false);
+    const [subHasMore, setSubHasMore] = useState(false);
+    const [newSearch, setNewSearch] = useState(false);
+
+    const setItemsInSession = (sessionId) => {
+        return (newItems) => {
+        if(sessionId === searchSessionRef.current) { // ✅ Only update if this fetch is still valid
+                setItems(newItems);
+            }
+        }
+    }
+
+    // search first page
+    const runSearch = async (query) => {
+        if (!query) return;
+        if (lockRef.current) return;
+
+        lockRef.current = true; // 🔒 Block new timers
+        searchSessionRef.current += 1; // 🚨 Invalidate all old fetches
+        const sessionId = searchSessionRef.current;
+
+        setItems([]);
+        setPage(0);
+        const fetchSearchPaginationItems = fetchPagination(
+            fetchSearchItems,
+            setItemsInSession(sessionId),
+            setHasMore,
+            loading,
+            setLoading
+        );
+
+        await fetchSearchPaginationItems(query, 0);
+        lockRef.current = false; // 🔓 Unlock for next debounce
+    };
+
+    // search new text (can wait until old search finishes and then searches the next text)
+    const runNewSearch = async (query) => {
+        // Trigger immediate search
+        if(!loading) {
+            await runSearch(query);
+        }
+        else {
+            setNewSearch(true);
+            setLoading(false);
+        }
+    }
+
+    // search next page
+    useEffectAfterPageRendered( () => {
+        if (page === 0) return; // Skip if it's the initial page handled by runSearch
+
+        const run = async () => {
+            const sessionId = searchSessionRef.current;
+            setLoading(true);
+            const fetchSearchPaginationItems = fetchPagination(
+                fetchSearchItems,
+                setItemsInSession(sessionId),
+                setSubHasMore,
+                subLoading,
+                setSubLoading
+            );
+
+            await fetchSearchPaginationItems(searchText, page);
+            if(sessionId === searchSessionRef.current) {
+                setLoading(false);
+                setHasMore(subHasMore);
+            }
+        }
+        run();
+    }, [page]);
+
+    // Called when user types, will have a timer of input seconds until search begins (text change will reset the timer)
+    useEffect(() => {
+        if (lockRef.current) return;
+
+        // Reset previous timer if it exists
+        if (debounceTimerRef.current) {
+            clearTimeout(debounceTimerRef.current);
+        }
+
+        // Start new debounce timer
+        debounceTimerRef.current = setTimeout(() => {
+            setDebouncedInput(searchText);
+        }, searchTimeout); // ⏲️ timeout seconds
+
+        return () => {
+            clearTimeout(debounceTimerRef.current);
+        };
+    }, [searchText]);
+
+    // When debounce completes and input is ready, run the task
+    useEffect(() => {
+        if (debouncedInput) {
+            runNewSearch(debouncedInput);
+        }
+    }, [debouncedInput]);
+
+    // Handle Enter key press
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            if (lockRef.current) return;
+
+            // Cancel pending debounce
+            if (debounceTimerRef.current) {
+                clearTimeout(debounceTimerRef.current);
+                debounceTimerRef.current = null;
+            }
+
+            runNewSearch(searchText);
+        }
+    };
+
+    // if loading changes, stops loading, and there is a new search pending, run it
+    useEffect(() => {
+        if(!loading) {
+            if(newSearch) {
+                setNewSearch(false);
+                runSearch(searchText);
+            }
+        }
+    }, [loading]);
+
+    return { handleKeyDown };
+}
+
+function fetchPagination(fetchFunction, setItems, setHasMore, loading, setLoading) {
+    return async (text, pageNum: number) => {
+        const fetchItemsFunction = async (text, pageNumber) => {
+            const data = await fetchFunction(text, pageNumber);
+            console.log(data);
+            console.log("Last", data?.last);
+            setItems((prevItems) => {
+                if (pageNumber === 0) {
+                    return data?.content || [];
+                } else {
+                    return [...prevItems, ...data?.content || []];
+                }
+            });
+            setHasMore(!data.last);
+        }
+        const wrapFunction = async (pageNumber) => { await fetchItemsFunction(text, pageNumber); };
+        await infiniteScrollFetchWrapper(wrapFunction, pageNum, loading, setLoading, setHasMore);
+    }
 }
