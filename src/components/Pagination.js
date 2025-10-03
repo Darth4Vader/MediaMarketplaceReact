@@ -1,6 +1,22 @@
 import { useSearchParams } from "react-router-dom";
 import './Pagination.css';
 import {useState} from "react";
+import {ToggleButton, ToggleButtonGroup} from "@mui/material";
+
+
+/*
+export const CustomToggleButton = styled(ToggleButton)(({ theme }) => ({
+    "&.Mui-selected": {
+        color: "#fff",
+        "&:hover": {
+            color: "#fff",
+        },
+    },
+    "&:hover": {
+        color: "#fff",
+    },
+}));
+*/
 
 export function useCurrentPage() {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -11,20 +27,17 @@ function getPageNumber(searchParams) {
     return Number(searchParams.get("page")) || 1;
 }
 
-const ChangePage = ({page, changePageAction}) => {
+const ChangePage = ({page, changePageAction, isCurrentPage}) => {
     return page ? (
-        <ChangePageButton page={page} text={`${page}`} changePageAction={changePageAction} />
+        <ChangePageButton page={page} text={`${page}`} changePageAction={changePageAction} isCurrentPage={isCurrentPage} />
     ) : null;
 };
 
 const ChangePageButton = ({page, text, changePageAction}) => {
-    const [searchParams, setSearchParams] = useSearchParams({});
-    const searchObject = Object.fromEntries(searchParams.entries());
-
     return page ? (
-        <a className="page-number" onClick={(e) => changePageAction(e, page-1)}>
+        <ToggleButton value={text} onClick={(e) => changePageAction(e, page-1)}>
             {text}
-        </a>
+        </ToggleButton>
     ) : null;
 };
 
@@ -44,7 +57,12 @@ export function usePagination() {
 export const Pagination = ({ paginationResult, changePageAction }) => {
     const page = paginationResult?.number != null ? paginationResult.number + 1 : null;
     return (
-        <div className="pagination-bar">
+        <ToggleButtonGroup
+            className="pagination-bar"
+            exclusive
+            defaultValue={`${page}`}
+            value={`${page}`}
+        >
             {!paginationResult?.first && (
                 <>
                     <ChangePageButton page={page-1} text="Previous" changePageAction={changePageAction} />
@@ -52,17 +70,15 @@ export const Pagination = ({ paginationResult, changePageAction }) => {
                 </>
             )}
             {paginationResult?.number != null && (
-                <div className="current-page-number">
-                    <ChangePage page={page} changePageAction={changePageAction} />
-                </div>
-                )}
+                <ChangePage page={page} changePageAction={changePageAction} />
+            )}
             {!paginationResult?.last && (
                 <>
                     <ChangePage page={paginationResult?.totalPages} changePageAction={changePageAction} />
                     <ChangePageButton page={page+1} text="Next" changePageAction={changePageAction} />
                 </>
             )}
-        </div>
+        </ToggleButtonGroup>
     );
 };
 
@@ -72,9 +88,6 @@ export const PaginationNavigatePage = ({ paginationResult }) => {
     const changePageAction = (e, page) => {
         e.preventDefault();
         const urlPage = page + 1;
-        console.log("Page: " + page);
-        console.log(searchObject)
-        console.log({...searchObject, page: `${page}`});
         const currentPageNumber = getPageNumber(searchParams);
         // prevent reloading current page
         if(currentPageNumber === urlPage) {
