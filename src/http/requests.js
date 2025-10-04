@@ -11,6 +11,7 @@ export function useFetchRequests() {
         post: request('POST'),
         getWithAuth: requestWithAuth('GET'),
         putWithAuth: requestWithAuth('PUT'),
+        patchWithAuth: requestWithAuth('PATCH'),
         postWithAuth: requestWithAuth('POST'),
         deleteWithAuth: requestWithAuth('DELETE'),
         postWithCookies: requestWithCookies('POST'),

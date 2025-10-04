@@ -41,6 +41,12 @@
     //justify-content: center;
 }
 
+.select-product-button-container {
+    align-items: center;
+    display: flex;
+    margin-right: 10px;
+}
+
 .remove-product-button-container {
     align-items: center;
     display: flex;

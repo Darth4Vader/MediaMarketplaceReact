@@ -5,7 +5,7 @@ import {useMutation, useQuery} from "react-query";
 import {useFetchRequests} from "../http/requests";
 import './CartPage.css';
 import {NotFoundErrorBoundary} from "./ApiErrorUtils";
-import {Button, Fade, IconButton, MenuItem, Paper, Select, Skeleton} from "@mui/material";
+import {Button, Checkbox, Fade, IconButton, MenuItem, Select, Skeleton} from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
 import {Pagination, usePagination} from "./Pagination";
 import {Link, useNavigate, useNavigation, useSearchParams} from "react-router-dom";
@@ -49,7 +49,13 @@ const CartPage = () => {
     //const [searchParams, setSearchParams] = useSearchParams();
     const [sortOption, setSortOption] = useState("");
 
+    const [isCartChanged, setIsCartChanged] = useState(false);
+
     useEffect(() => {
+        if(isCartChanged) {
+            setIsCartChanged(false);
+            return;
+        }
         const fetching = async () => {
             try {
                 let searchParams = "";
@@ -67,11 +73,11 @@ const CartPage = () => {
             }
         }
         fetching();
-    }, [page, sortOption]);
+    }, [page, sortOption, isCartChanged]);
 
-    const { mutate: updateProductPurchaseType } = useMutation({
-        mutationFn: async ({index, productId, purchaseType, setLoaded}) => {
-            return await updateProductInCart(productId, purchaseType);
+    const { mutate: updateProductInCartMutate } = useMutation({
+        mutationFn: async ({index, productId, purchaseType, isSelected, setLoaded}) => {
+            return await updateProductInCart(productId, purchaseType, isSelected);
         },
         onSuccess: async (data, variables) => {
             const index = variables.index;
@@ -81,7 +87,7 @@ const CartPage = () => {
             setCartProducts(cartProducts => {
                 const newCartProducts = [...cartProducts];
                 console.log("New Boy");
-                newCartProducts[index] = data?.cartProduct?.content || cartProducts[index];
+                newCartProducts[index] = data?.cartProduct || cartProducts[index];
                 return newCartProducts;
             });
             setTotalPrice(data?.totalPrice || 0);
@@ -100,6 +106,8 @@ const CartPage = () => {
         onSuccess: async (response, variables) => {
             if(response.ok) {
                 setCartProducts(cartProducts => cartProducts.filter((_, i) => i !== variables.index));
+                // after removing the product, fetch the cart at the same page again
+                setIsCartChanged(true);
                 setPage(0);
             }
         },
@@ -115,12 +123,20 @@ const CartPage = () => {
             setSeverity("success");
             setMessage("Purchase Successful");
             setOpenAlert(true);
-            setCartProducts([]);
+            // after the purchase, fetch the cart again at page 0
+            setPage(0);
+            setIsCartChanged(true);
         },
         onError: async (error) => {
             if(error?.status === 404) {
                 setMessage(await error.text());
                 setSeverity("error");
+                setOpenAlert(true);
+            }
+            else if(error?.status === 422) {
+                // unprocessable entity - maybe cart is empty or no selected products
+                setMessage(await error.text());
+                setSeverity("warning");
                 setOpenAlert(true);
             }
             else {
@@ -149,9 +165,9 @@ const CartPage = () => {
          */
     };
 
-    const productPurchaseTypeChange = async (index, productId, purchaseType, setLoaded) => {
+    const updateProductAction = async (index, productId, purchaseType, isSelected, setLoaded) => {
         setLoaded(false);
-        updateProductPurchaseType({index, productId, purchaseType, setLoaded});
+        updateProductInCartMutate({index, productId, purchaseType, setLoaded, isSelected});
     }
 
     /*useEffect(() => {
@@ -188,7 +204,8 @@ const CartPage = () => {
                                     cartProduct={cartProduct}
                                     setPageLoaded={setPageLoaded}
                                     onRemove={() => removeProductFromCartAction(index, cartProduct.product.id)}
-                                    onPurchaseTypeChange={(type, setLoaded) => productPurchaseTypeChange(index, cartProduct.product.id, type, setLoaded)}
+                                    onPurchaseTypeChange={(type, setLoaded) => updateProductAction(index, cartProduct.product.id, type, null, setLoaded)}
+                                    onProductSelectionChange={(isSelected, setLoaded) => updateProductAction(index, cartProduct.product.id, null, isSelected, setLoaded)}
                                 />
                             </li>
                         ))}
@@ -232,7 +249,7 @@ const CartPage = () => {
     );
 };
 
-const CartProductItem = ({ cartProduct, setPageLoaded, onRemove, onPurchaseTypeChange}) => {
+const CartProductItem = ({ cartProduct, setPageLoaded, onRemove, onPurchaseTypeChange, onProductSelectionChange }) => {
     const [loaded, setLoaded] = useState(true);
     const product = cartProduct?.product;
     const movie = product?.movie;
@@ -242,9 +259,17 @@ const CartProductItem = ({ cartProduct, setPageLoaded, onRemove, onPurchaseTypeC
         setPageLoaded(loaded);
     }, [loaded]);
 
-    return loaded ? (
+    if(!loaded) return <CartProductItemSkeleton/>;
+
+    return (
         <div className="cart-product-main">
             <div className="cart-product">
+                <div className="select-product-button-container">
+                    <Checkbox
+                        checked={(cartProduct?.isSelected) || false}
+                        onChange={(e) => onProductSelectionChange(e.target.checked, setLoaded)}
+                    />
+                </div>
                 <Link to={"/movie/" + movie?.id} className="product-link">
                     <img src={movie?.posterPath} alt={movie?.name} className="product-poster"/>
                 </Link>
@@ -275,8 +300,6 @@ const CartProductItem = ({ cartProduct, setPageLoaded, onRemove, onPurchaseTypeC
                 </IconButton>
             </div>
         </div>
-    ): (
-        <CartProductItemSkeleton/>
     );
 };
 

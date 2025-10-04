@@ -99,8 +99,19 @@ export function useApi() {
         return handleResponse(await requests.getWithAuth(`/api/users/carts?page=${page}&size=${size}${searchParams}`));
     }
 
-    async function updateProductInCart(productId, purchaseType) {
-        return handleResponse(await requests.putWithAuth(`/api/users/carts/${productId}`, {purchaseType}))
+    async function updateProductInCart(productId, purchaseType, isSelected) {
+        const body = {};
+
+        if (purchaseType != null) {
+            body.purchaseType = purchaseType;
+        }
+        if (isSelected != null) {
+            body.isSelected = isSelected;
+        }
+
+        console.log("Body:", body);
+
+        return handleResponse(await requests.patchWithAuth(`/api/users/carts/${productId}`, body))
             .then(sleeper(3000))
             .then((data) => {
                 console.log("Good Morning")
