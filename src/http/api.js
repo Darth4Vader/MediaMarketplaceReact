@@ -33,7 +33,10 @@ export function useApi() {
         requestResetPassword,
         resetPassword,
         getGenres,
-        getPeople
+        getPeople,
+        getAllCurrencies,
+        getSessionCurrency,
+        saveCurrencyInSession
     }
 
     async function handleResponseRejection(response) {
@@ -206,5 +209,17 @@ export function useApi() {
 
     async function resetPassword(token, password, passwordConfirm) {
         return await requests.post('/api/users/reset-password', { token, password, passwordConfirm });
+    }
+
+    async function getAllCurrencies() {
+        return await requests.get('/api/users/currency');
+    }
+
+    async function getSessionCurrency() {
+        return await requests.getWithAuth('/api/users/currency/current');
+    }
+
+    async function saveCurrencyInSession(currencyCode) {
+        return await requests.postWithAuth('/api/users/currency/current/', { currencyCode });
     }
 }
