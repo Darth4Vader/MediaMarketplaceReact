@@ -24,6 +24,8 @@ import { CircularProgressbarWithChildren  } from 'react-circular-progressbar';
 import TextField from "@mui/material/TextField";
 import {useAuthContext} from "../AuthProvider";
 import MuiLink from '@mui/material/Link';
+import {useCurrencyContext} from "../CurrencyProvider";
+import {useEffectAfterPageRendered} from "./UseEffectAfterPageRendered";
 
 export default function LoadMoviePage() {
     const { getMovie } = useApi();
@@ -400,11 +402,20 @@ const ProductOptions = ({ id }) => {
 const ProductPurchaseOptions = ({ id, isRented, isBought, setOpenAlert, setMessage, setSeverity }) => {
     const requests = useFetchRequests();
     const { getProductOfMovie } = useApi();
-    const { data: product } = useQuery(['product', id], () => getProductOfMovie(id), {
+    const { currentCurrency } = useCurrencyContext();
+
+    const { data: product, refetch } = useQuery(['product', id], () => getProductOfMovie(id), {
         suspense: true,
         retry: false,
+        //enabled: false // disable this query from automatically running
         //cacheTime: 1,
     });
+    // every time we change the currency we want to refetch the product
+    useEffectAfterPageRendered(() => {
+        console.log("What")
+        refetch();
+    }, [currentCurrency]);
+    console.log("Product:", product);
     const { mutate: addToCarRequest } = useMutation({
         mutationFn: async ({productId, purchaseType}) => {
             return await requests.postWithAuth('/api/users/carts/',
@@ -434,12 +445,12 @@ const ProductPurchaseOptions = ({ id, isRented, isBought, setOpenAlert, setMessa
         <>
             {!isBought &&
                 <Button variant="outlined" className="buy-button" onClick={(e) => addToCart(e, product.id, "buy")}>
-                    Buy for: {product?.finalBuyPrice}
+                    Buy for: {product?.finalBuyPrice?.amount} {product?.finalBuyPrice?.currency}
                 </Button>
             }
             {(!isBought && !isRented) &&
                 <Button variant="outlined" className="rent-button" onClick={(e)  => addToCart(e, product.id, "rent")}>
-                    Rent for: {product?.finalRentPrice}
+                    Rent for: {product?.finalRentPrice?.amount} {product?.finalRentPrice?.currency}
                 </Button>
             }
         </>

@@ -32,6 +32,7 @@ import {NotFoundPage} from "./NotFoundPage";
 import ResetPasswordPage from "./components/ResetPasswordPage";
 import EmailVerificationPage from "./components/EmailVerificationPage";
 import {AuthenticationBoundary} from "./components/ApiErrorUtils";
+import {CurrencyProvider} from "./CurrencyProvider";
 
 const theme = createTheme({
     palette: {
@@ -158,6 +159,7 @@ function App() {
         <AuthProvider>
         <div className="App">
             <header className="App-header">
+                    <CurrencyProvider>
                     <SearchInputProvider>
                     <QueryClientProvider client={queryClient}>
                         <AuthenticationBoundary>
@@ -190,6 +192,7 @@ function App() {
                         {/*<ReactQueryDevtools initialIsOpen={true} />*/}
                     </QueryClientProvider>
                     </SearchInputProvider>
+                    </CurrencyProvider>
             </header>
         </div>
         </AuthProvider>

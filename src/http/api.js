@@ -123,7 +123,7 @@ export function useApi() {
     }
 
     async function getProductOfMovie(movieId) {
-        return handleResponse(await requests.get(`/api/main/products?movieId=${movieId}`));
+        return handleResponse(await requests.getWithAuth(`/api/main/products?movieId=${movieId}`));
             //.then(sleeper(3000))
             /*.catch((err) => {
                 console.log("Oh no catched error");

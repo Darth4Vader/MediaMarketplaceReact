@@ -5,6 +5,7 @@ import React, {Suspense, use, useEffect, useState} from "react";
 import {PaginationNavigatePage, useCurrentPage, usePagination} from "./Pagination";
 import './UserOrdersPage.css';
 import {Skeleton} from "@mui/material";
+import {useCurrencyContext} from "../CurrencyProvider";
 
 function formatDate(dateArray) {
     if (!dateArray) return '';
@@ -20,6 +21,8 @@ const UserOrdersPage = () => {
 
     const errorBoundary = useErrorBoundary();
 
+    const { currentCurrency } = useCurrencyContext();
+
     useEffect(() => {
         const fetchOrders = async () => {
             try {
@@ -31,7 +34,7 @@ const UserOrdersPage = () => {
             }
         }
         fetchOrders();
-    }, [page]);
+    }, [page, currentCurrency]);
     return (
         <div key="orders">
             {orders?.length > 0 ? (
@@ -69,7 +72,7 @@ const Order = ({ order, setPageLoaded }) => {
                     ))}
                 </ul>
             </div>
-            <span>Total Price: {order?.totalPrice}</span>
+            <span>Total Price: {order?.totalPrice?.amount} {order?.totalPrice?.currency}</span>
         </div>
     )
 }
@@ -103,7 +106,7 @@ const PurchasedProductItem = ({ purchasedItem, setPageLoaded }) => {
                     )
                 </div>
                 <div style={{ color: 'gray' }}>
-                    Price: {purchasedItem.purchasePrice}
+                    Price: {purchasedItem.purchasePrice?.amount} {purchasedItem.purchasePrice?.currency}
                 </div>
             </div>
         </div>

@@ -31,6 +31,7 @@ import React from "react";
 import TextField from "@mui/material/TextField";
 import {useMutation} from "react-query";
 import {useEffectAfterPageRendered} from "./UseEffectAfterPageRendered";
+import {useCurrencyContext} from "../CurrencyProvider";
 
 export function HideOnScroll(props) {
     const { children, window } = props;
@@ -221,6 +222,8 @@ function CurrencySelector() {
     const [value, setValue] = useState(null);
     const [inputValue, setInputValue] = useState('');
 
+    const { setCurrentCurrency } = useCurrencyContext();
+
     useEffect(() => {
 
         const fetchCurrencies = async () => {
@@ -276,6 +279,12 @@ function CurrencySelector() {
             return await saveCurrencyInSession(currencyCode);
         },
         onSuccess: async (response) => {
+            // notify that currency was changed successfully
+            if (response.ok) {
+                console.log(response);
+                const data = await response.text();
+                setCurrentCurrency(Date.now());
+            }
             /*setOpenAlert(true);
             console.log(response);
             if (!response.ok) {

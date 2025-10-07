@@ -11,6 +11,7 @@ import {Pagination, usePagination} from "./Pagination";
 import {Link, useNavigate, useNavigation, useSearchParams} from "react-router-dom";
 import Alert from "@mui/material/Alert";
 import Divider from "@mui/material/Divider";
+import {useCurrencyContext} from "../CurrencyProvider";
 
 export default function LoadCartPage() {
     return (
@@ -35,6 +36,7 @@ const CartPage = () => {
     const { getCurrentUserCart, updateProductInCart, purchaseCart } = useApi();
     const [cartProducts, setCartProducts] = useState([]);
     const [totalPrice, setTotalPrice] = useState(0);
+    const [currency, setCurrency] = useState("USD");
     const [totalItems, setTotalItems] = useState(0);
     const { pagination, setPaginationResult } = usePagination();
     const [page, setPage] = useState(0);
@@ -51,6 +53,8 @@ const CartPage = () => {
 
     const [isCartChanged, setIsCartChanged] = useState(false);
 
+    const { currentCurrency } = useCurrencyContext();
+
     useEffect(() => {
         if(isCartChanged) {
             setIsCartChanged(false);
@@ -64,7 +68,8 @@ const CartPage = () => {
                 }
                 const cart = await getCurrentUserCart(page, 2, searchParams);
                 setCartProducts(cart?.cartProducts?.content || []);
-                setTotalPrice(cart?.totalPrice || 0);
+                setTotalPrice(cart?.totalPrice?.amount || 0);
+                setCurrency(cart?.totalPrice?.currency || "USD");
                 setTotalItems(cart?.totalItems || 0);
                 setPaginationResult(cart?.cartProducts);
             }
@@ -73,7 +78,7 @@ const CartPage = () => {
             }
         }
         fetching();
-    }, [page, sortOption, isCartChanged]);
+    }, [page, sortOption, isCartChanged, currentCurrency]);
 
     const { mutate: updateProductInCartMutate } = useMutation({
         mutationFn: async ({index, productId, purchaseType, isSelected, setLoaded}) => {
@@ -90,7 +95,8 @@ const CartPage = () => {
                 newCartProducts[index] = data?.cartProduct || cartProducts[index];
                 return newCartProducts;
             });
-            setTotalPrice(data?.totalPrice || 0);
+            setTotalPrice(data?.totalPrice?.amount || 0);
+            setCurrency(data?.totalPrice?.currency || "USD");
             setTotalItems(data?.totalItems || 0);
 
             variables.setLoaded(true);
@@ -224,7 +230,7 @@ const CartPage = () => {
                         }
                         &nbsp;items):&nbsp;
                         {pageLoaded ?
-                            <strong>{totalPrice}</strong> :
+                            <strong>{totalPrice} {currency}</strong> :
                             <Skeleton variant="text" width={15} />
                         }
                     </div>
@@ -290,7 +296,7 @@ const CartProductItem = ({ cartProduct, setPageLoaded, onRemove, onPurchaseTypeC
                         </Select>
                     </div>
                     <div style={{ fontSize: '14px', color: 'gray' }}>
-                        {cartProduct?.purchaseType === 'buy' ? 'Buy for:' : 'Rent for:'} {cartProduct?.price}
+                        {cartProduct?.purchaseType === 'buy' ? 'Buy for:' : 'Rent for:'} {cartProduct?.price?.amount} {cartProduct?.price?.currency}
                     </div>
                 </div>
             </div>
