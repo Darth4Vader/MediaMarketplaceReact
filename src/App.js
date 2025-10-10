@@ -53,6 +53,7 @@ const Footer = () => {
                 backgroundColor: (theme) =>
                     theme.palette.mode === 'light' ? theme.palette.grey[200] : theme.palette.grey[800],
                 textAlign: 'center',
+                zIndex: (theme) => theme.zIndex.drawer + 1
             }}
         >
             <Typography variant="body2" color="text.secondary">
@@ -69,9 +70,25 @@ const AppTemplate = () => {
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline enableColorScheme/>
-            <MyAppBar/>
-            <Outlet/>
-            <Footer />
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    minHeight: '100vh', // full viewport height
+                }}
+            >
+                <MyAppBar/>
+                <Box
+                    component="main"
+                    sx={{
+                        flexGrow: 1,          // take remaining space between header and footer
+                        overflowY: 'auto',    // scroll if content is too tall
+                    }}
+                >
+                    <Outlet/>
+                </Box>
+                <Footer />
+            </Box>
         </ThemeProvider>
     );
 };

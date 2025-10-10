@@ -99,7 +99,8 @@ export function useApi() {
     }
 
     async function getCurrentUserCart(page=0, size=1, searchParams) {
-        return handleResponse(await requests.getWithAuth(`/api/users/carts?page=${page}&size=${size}${searchParams}`));
+        return handleResponse(await requests.getWithAuth(`/api/users/carts?page=${page}&size=${size}${searchParams}`))
+            .then(sleeper(1000));
     }
 
     async function updateProductInCart(productId, purchaseType, isSelected) {

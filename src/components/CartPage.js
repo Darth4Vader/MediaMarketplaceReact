@@ -1,11 +1,11 @@
-import React, {Suspense,use, useEffect, useState} from 'react';
+import React, {Fragment, Suspense, use, useEffect, useState} from 'react';
 import {useApi} from '../http/api';
 import {ErrorBoundary, useErrorBoundary} from "react-error-boundary";
 import {useMutation, useQuery} from "react-query";
 import {useFetchRequests} from "../http/requests";
 import './CartPage.css';
 import {NotFoundErrorBoundary} from "./ApiErrorUtils";
-import {Button, Checkbox, Fade, IconButton, MenuItem, Select, Skeleton} from "@mui/material";
+import {Box, Button, Checkbox, Fade, IconButton, MenuItem, Paper, Select, Skeleton, Typography} from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
 import {Pagination, usePagination} from "./Pagination";
 import {Link, useNavigate, useNavigation, useSearchParams} from "react-router-dom";
@@ -13,6 +13,7 @@ import Alert from "@mui/material/Alert";
 import Divider from "@mui/material/Divider";
 import {useCurrencyContext} from "../CurrencyProvider";
 import GooglePayButton from "@google-pay/button-react";
+import {CustomSuspenseOnlyInFirstLoad} from "./CustomSuspense";
 
 export default function LoadCartPage() {
     return (
@@ -45,7 +46,6 @@ const CartPage = () => {
     const [totalItems, setTotalItems] = useState(0);
     const { pagination, setPaginationResult, paginationLoaded, setPaginationLoaded } = usePagination();
     const [page, setPage] = useState(0);
-    const [pageLoaded, setPageLoaded] = useState(false);
     const requests = useFetchRequests();
     const errorBoundary = useErrorBoundary();
     const [message, setMessage] = useState(null);
@@ -191,16 +191,10 @@ const CartPage = () => {
         updateProductInCartMutate({index, productId, purchaseType, setLoaded, isSelected});
     }
 
-    /*useEffect(() => {
-        navigation({ search: `?sort=${sortOption}` });
-    }, [sortOption]);*/
-
     return (
-        <div className="cart-page">
-            {cartProducts.length === 0 ? (
-                <h1 style={{ fontSize: '50px' }}>The Cart is empty.</h1>
-            ) : (
-                <div className="cart">
+        <Fragment>
+            <CartPageWrapper paginationLoaded={paginationLoaded} cartProducts={cartProducts}>
+                <Box>
                     <Select
                         value={sortOption}
                         onChange={(e) => {
@@ -223,7 +217,8 @@ const CartPage = () => {
                                 <Divider/>
                                 <CartProductItem
                                     cartProduct={cartProduct}
-                                    setPageLoaded={setPageLoaded}
+                                    paginationLoaded={paginationLoaded}
+                                    setPaginationLoaded={setPaginationLoaded}
                                     onRemove={() => removeProductFromCartAction(index, cartProduct.product.id)}
                                     onPurchaseTypeChange={(type, setLoaded) => updateProductAction(index, cartProduct.product.id, type, null, setLoaded)}
                                     onProductSelectionChange={(isSelected, setLoaded) => updateProductAction(index, cartProduct.product.id, null, isSelected, setLoaded)}
@@ -239,17 +234,17 @@ const CartPage = () => {
                     </div>
                     <div className="cart-info">
                         Total Price (
-                        {pageLoaded ?
+                        {paginationLoaded ?
                             <strong>{totalItems}</strong> :
                             <Skeleton variant="text" width={15}/>
                         }
                         &nbsp;items):&nbsp;
-                        {pageLoaded ?
+                        {paginationLoaded ?
                             <strong>{totalPrice} {currency?.symbol}</strong> :
                             <Skeleton variant="text" width={15} />
                         }
                     </div>
-                    {pageLoaded && <GooglePayButton
+                    {paginationLoaded && <GooglePayButton
                         environment="TEST"
                         paymentRequest={{
                             apiVersion: 2,
@@ -287,8 +282,8 @@ const CartPage = () => {
                         className="purchase-button"
                     />
                     }
-                </div>
-            )}
+                </Box>
+            </CartPageWrapper>
             <Fade
                 in={openAlert}
                 //timeout={{ enter: 500, exit: 200 }}
@@ -301,24 +296,24 @@ const CartPage = () => {
             >
                 <Alert severity={severity} onClose={() => setOpenAlert(false)} >{message}</Alert>
             </Fade>
-        </div>
+        </Fragment>
     );
 };
 
-const CartProductItem = ({ cartProduct, setPageLoaded, onRemove, onPurchaseTypeChange, onProductSelectionChange }) => {
+const CartProductItem = ({ cartProduct, onRemove, onPurchaseTypeChange, onProductSelectionChange, paginationLoaded, setPaginationLoaded }) => {
     const [loaded, setLoaded] = useState(true);
     const product = cartProduct?.product;
     const movie = product?.movie;
     console.log(cartProduct?.purchaseType);
 
     useEffect(() => {
-        setPageLoaded(loaded);
+        setPaginationLoaded(loaded);
     }, [loaded]);
 
-    if(!loaded) return <CartProductItemSkeleton/>;
+    if(!loaded || !paginationLoaded) return <CartProductItemSkeleton/>;
 
     return (
-        <div className="cart-product-main">
+        <Paper className="cart-product-main">
             <div className="cart-product">
                 <div className="select-product-button-container">
                     <Checkbox
@@ -355,9 +350,70 @@ const CartProductItem = ({ cartProduct, setPageLoaded, onRemove, onPurchaseTypeC
                     <DeleteIcon />
                 </IconButton>
             </div>
-        </div>
+        </Paper>
     );
 };
+
+const CartPageWrapper = ({children, paginationLoaded, cartProducts}) => {
+    return (
+        <Box
+            sx={{
+                minHeight: '400px', // fixed height to prevent jumps; adjust as needed
+                display: 'flex',
+                alignItems: 'center',
+                px: 2,
+            }}
+        >
+            <CustomSuspenseOnlyInFirstLoad fallbackComponent={
+                <Box sx={{ width: '100%'}}>
+                    <CartSkeleton />
+                </Box>
+            } isPageLoaded={paginationLoaded}>
+                <Box sx={{ width: '100%' }}>
+                    {cartProducts.length === 0 ? (
+                        <Box
+                            sx={{
+                                height: '60vh',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                textAlign: 'center',
+                                px: 2,
+                            }}
+                        >
+                            <Box>
+                                <Typography variant="h4" component="h1" gutterBottom>
+                                    Your Cart is Empty
+                                </Typography>
+                                <Typography
+                                    variant="body1"
+                                    color="text.secondary"
+                                    sx={{ maxWidth: 400 }}
+                                >
+                                    You haven’t added any items to your cart yet. Start exploring our products to find something you like!
+                                </Typography>
+                            </Box>
+                        </Box>
+                    ) : (
+                        <Fade in timeout={600} unmountOnExit>
+                            {children}
+                        </Fade>
+                    )}
+                </Box>
+            </CustomSuspenseOnlyInFirstLoad>
+        </Box>
+    );
+}
+
+const CartSkeleton = () => {
+    return (
+        <div>
+            <CartProductItemSkeleton />
+            <CartProductItemSkeleton />
+        </div>
+    )
+}
 
 const CartProductItemSkeleton = () => {
     return (
