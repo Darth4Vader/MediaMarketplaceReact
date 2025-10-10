@@ -23,7 +23,7 @@ import UserInformationPage from "./components/UserInformationPage";
 
 import Cookies from "js-cookie";
 import SearchPage from "./components/SearchPage";
-import {createTheme, CssBaseline, Stack, styled, ThemeProvider} from "@mui/material";
+import {Box, createTheme, CssBaseline, Stack, styled, ThemeProvider, Typography} from "@mui/material";
 import {AuthProvider, useAuthenticationCheck} from "./AuthProvider";
 import {apiBaseUrl} from "./http/requests";
 import {SearchInputProvider} from "./SearchInputProvider";
@@ -33,6 +33,8 @@ import ResetPasswordPage from "./components/ResetPasswordPage";
 import EmailVerificationPage from "./components/EmailVerificationPage";
 import {AuthenticationBoundary} from "./components/ApiErrorUtils";
 import {CurrencyProvider} from "./CurrencyProvider";
+import PrivacyPolicy from "./components/PrivacyPolicy";
+import MuiLink from "@mui/material/Link";
 
 const theme = createTheme({
     palette: {
@@ -40,12 +42,36 @@ const theme = createTheme({
     },
 });
 
+const Footer = () => {
+    return (
+        <Box
+            component="footer"
+            sx={{
+                py: 2,
+                px: 2,
+                mt: 'auto',
+                backgroundColor: (theme) =>
+                    theme.palette.mode === 'light' ? theme.palette.grey[200] : theme.palette.grey[800],
+                textAlign: 'center',
+            }}
+        >
+            <Typography variant="body2" color="text.secondary">
+                © {new Date().getFullYear()} Your Company Name.{' '}
+                <MuiLink component={Link} to="/privacy" underline="hover" color="inherit">
+                    Privacy Policy
+                </MuiLink>
+            </Typography>
+        </Box>
+    );
+};
+
 const AppTemplate = () => {
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline enableColorScheme/>
             <MyAppBar/>
             <Outlet/>
+            <Footer />
         </ThemeProvider>
     );
 };
@@ -171,6 +197,7 @@ function App() {
                                         <Route path="cart" element={<LoadCartPage />} />
                                         <Route path="movie/:id" element={<LoadMoviePage />} />
                                         <Route path="movie/:id/reviews" element={<LoadReviewPage />} />
+                                        <Route path="privacy" element={<PrivacyPolicy /> } />
                                     </Route>
                                     <Route path="user" element={<UserPageTemplate/>}>
                                         <Route index element={<Navigate to="orders" replace />} />

@@ -12,6 +12,7 @@ import {Link, useNavigate, useNavigation, useSearchParams} from "react-router-do
 import Alert from "@mui/material/Alert";
 import Divider from "@mui/material/Divider";
 import {useCurrencyContext} from "../CurrencyProvider";
+import GooglePayButton from "@google-pay/button-react";
 
 export default function LoadCartPage() {
     return (
@@ -234,6 +235,43 @@ const CartPage = () => {
                             <Skeleton variant="text" width={15} />
                         }
                     </div>
+                    {page}
+                    <GooglePayButton
+                        environment="TEST"
+                        paymentRequest={{
+                            apiVersion: 2,
+                            apiVersionMinor: 0,
+                            allowedPaymentMethods: [{
+                                type: 'CARD',
+                                parameters: {
+                                    allowedAuthMethods: ['PAN_ONLY', 'CRYPTOGRAM_3DS'],
+                                    allowedCardNetworks: ['AMEX', 'DISCOVER', 'MASTERCARD', 'VISA'],
+                                },
+                                tokenizationSpecification: {
+                                    type: 'PAYMENT_GATEWAY',
+                                    parameters: {
+                                        gateway: 'example', // replace with real gateway like 'stripe' or 'adyen'
+                                        gatewayMerchantId: 'exampleMerchantId',
+                                    },
+                                },
+                            }],
+                            merchantInfo: {
+                                merchantId: '01234567890123456789', // for TEST env, this can be dummy
+                                merchantName: 'Demo Merchant',
+                            },
+                            transactionInfo: {
+                                totalPriceStatus: 'FINAL',
+                                totalPriceLabel: 'Total',
+                                totalPrice: '3.00',
+                                currencyCode: 'USD',
+                                countryCode: 'US',
+                            },
+                        }}
+                        onLoadPaymentData={paymentRequest => {
+                            console.log('load payment data', paymentRequest);
+                        }}
+                        className="purchase-button"
+                    />
                     <Button variant="contained" className="purchase-button" onClick={purchaseCartAction}>
                         Purchase
                     </Button>
