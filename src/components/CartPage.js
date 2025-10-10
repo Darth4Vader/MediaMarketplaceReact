@@ -39,7 +39,7 @@ const CartPage = () => {
     const [totalPrice, setTotalPrice] = useState(0);
     const [currency, setCurrency] = useState("USD");
     const [totalItems, setTotalItems] = useState(0);
-    const { pagination, setPaginationResult } = usePagination();
+    const { pagination, setPaginationResult, paginationLoaded, setPaginationLoaded } = usePagination();
     const [page, setPage] = useState(0);
     const [pageLoaded, setPageLoaded] = useState(false);
     const requests = useFetchRequests();
@@ -61,24 +61,29 @@ const CartPage = () => {
             setIsCartChanged(false);
             return;
         }
-        const fetching = async () => {
+        const fetching = async (pageToFetch) => {
             try {
+                if(!paginationLoaded) return;
+                setPaginationLoaded(false);
                 let searchParams = "";
                 if(sortOption) {
                     searchParams = searchParams + `&sort=${sortOption}`;
                 }
-                const cart = await getCurrentUserCart(page, 2, searchParams);
-                setCartProducts(cart?.cartProducts?.content || []);
-                setTotalPrice(cart?.totalPrice?.amount || 0);
-                setCurrency(cart?.totalPrice?.currency || "USD");
-                setTotalItems(cart?.totalItems || 0);
-                setPaginationResult(cart?.cartProducts);
+                const cart = await getCurrentUserCart(pageToFetch, 2, searchParams);
+                // Only update if this is the latest request
+                if (page === pageToFetch) {
+                    setCartProducts(cart?.cartProducts?.content || []);
+                    setTotalPrice(cart?.totalPrice?.amount || 0);
+                    setCurrency(cart?.totalPrice?.currency || "USD");
+                    setTotalItems(cart?.totalItems || 0);
+                    setPaginationResult(cart?.cartProducts);
+                }
             }
             catch (error) {
                 errorBoundary.showBoundary(error);
             }
         }
-        fetching();
+        fetching(page);
     }, [page, sortOption, isCartChanged, currentCurrency]);
 
     const { mutate: updateProductInCartMutate } = useMutation({
@@ -221,7 +226,7 @@ const CartPage = () => {
                         <Pagination paginationResult={pagination} changePageAction={(e, newPage) => {
                             e.preventDefault();
                             setPage(newPage);
-                        }}/>
+                        }} paginationLoaded={paginationLoaded} />
                     </div>
                     <div className="cart-info">
                         Total Price (
@@ -235,7 +240,6 @@ const CartPage = () => {
                             <Skeleton variant="text" width={15} />
                         }
                     </div>
-                    {page}
                     <GooglePayButton
                         environment="TEST"
                         paymentRequest={{

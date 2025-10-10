@@ -43,6 +43,7 @@ const ChangePageButton = ({page, text, changePageAction}) => {
 
 export function usePagination() {
     const [pagination, setPagination] = useState(null);
+    const [paginationLoaded, setPaginationLoaded] = useState(true);
     const setPaginationResult = (result) => {
         const paginationResult = {};
         paginationResult.number = result?.number;
@@ -50,32 +51,38 @@ export function usePagination() {
         paginationResult.first = result?.first;
         paginationResult.last = result?.last;
         setPagination(paginationResult);
+        setPaginationLoaded(true);
     }
-    return { pagination, setPaginationResult };
+    return { pagination, setPaginationResult, paginationLoaded, setPaginationLoaded };
 }
 
-export const Pagination = ({ paginationResult, changePageAction }) => {
+export const Pagination = ({ paginationResult, changePageAction, paginationLoaded }) => {
     const page = paginationResult?.number != null ? paginationResult.number + 1 : null;
+    const changePageActionWait = (e, page) => {
+        if(!paginationLoaded) return;
+        changePageAction(e, page);
+    };
     return (
         <ToggleButtonGroup
             className="pagination-bar"
             exclusive
             defaultValue={`${page}`}
             value={`${page}`}
+            disabled={!paginationLoaded}
         >
             {!paginationResult?.first && (
                 <>
-                    <ChangePageButton page={page-1} text="Previous" changePageAction={changePageAction} />
-                    <ChangePage page={1} changePageAction={changePageAction} />
+                    <ChangePageButton page={page-1} text="Previous" changePageAction={changePageActionWait} />
+                    <ChangePage page={1} changePageAction={changePageActionWait} />
                 </>
             )}
             {paginationResult?.number != null && (
-                <ChangePage page={page} changePageAction={changePageAction} />
+                <ChangePage page={page} changePageAction={changePageActionWait} />
             )}
             {!paginationResult?.last && (
                 <>
-                    <ChangePage page={paginationResult?.totalPages} changePageAction={changePageAction} />
-                    <ChangePageButton page={page+1} text="Next" changePageAction={changePageAction} />
+                    <ChangePage page={paginationResult?.totalPages} changePageAction={changePageActionWait} />
+                    <ChangePageButton page={page+1} text="Next" changePageAction={changePageActionWait} />
                 </>
             )}
         </ToggleButtonGroup>
