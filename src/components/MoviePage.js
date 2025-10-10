@@ -445,12 +445,12 @@ const ProductPurchaseOptions = ({ id, isRented, isBought, setOpenAlert, setMessa
         <>
             {!isBought &&
                 <Button variant="outlined" className="buy-button" onClick={(e) => addToCart(e, product.id, "buy")}>
-                    Buy for: {product?.finalBuyPrice?.amount} {product?.finalBuyPrice?.currency}
+                    Buy for: {product?.finalBuyPrice?.amount} {product?.finalBuyPrice?.currency?.symbol}
                 </Button>
             }
             {(!isBought && !isRented) &&
                 <Button variant="outlined" className="rent-button" onClick={(e)  => addToCart(e, product.id, "rent")}>
-                    Rent for: {product?.finalRentPrice?.amount} {product?.finalRentPrice?.currency}
+                    Rent for: {product?.finalRentPrice?.amount} {product?.finalRentPrice?.currency?.symbol}
                 </Button>
             }
         </>

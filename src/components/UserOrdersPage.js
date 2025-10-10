@@ -72,7 +72,7 @@ const Order = ({ order, setPageLoaded }) => {
                     ))}
                 </ul>
             </div>
-            <span>Total Price: {order?.totalPrice?.amount} {order?.totalPrice?.currency}</span>
+            <span>Total Price: {order?.totalPrice?.amount} {order?.totalPrice?.currency?.symbol}</span>
         </div>
     )
 }
@@ -106,7 +106,7 @@ const PurchasedProductItem = ({ purchasedItem, setPageLoaded }) => {
                     )
                 </div>
                 <div style={{ color: 'gray' }}>
-                    Price: {purchasedItem.purchasePrice?.amount} {purchasedItem.purchasePrice?.currency}
+                    Price: {purchasedItem.purchasePrice?.amount} {purchasedItem.purchasePrice?.currency?.symbol}
                 </div>
             </div>
         </div>

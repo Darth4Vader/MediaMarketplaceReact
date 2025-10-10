@@ -32,12 +32,16 @@ export default function LoadCartPage() {
     );
 }
 
+const defaultCurrency = {code: "USD", symbol: "$"};
+const defaultCountry = {code: "US", name: "United States"};
+
 const CartPage = () => {
     console.log("Hellllllllll")
     const { getCurrentUserCart, updateProductInCart, purchaseCart } = useApi();
     const [cartProducts, setCartProducts] = useState([]);
     const [totalPrice, setTotalPrice] = useState(0);
-    const [currency, setCurrency] = useState("USD");
+    const [currency, setCurrency] = useState(defaultCurrency);
+    const [country, setCountry] = useState(defaultCountry);
     const [totalItems, setTotalItems] = useState(0);
     const { pagination, setPaginationResult, paginationLoaded, setPaginationLoaded } = usePagination();
     const [page, setPage] = useState(0);
@@ -74,8 +78,12 @@ const CartPage = () => {
                 if (page === pageToFetch) {
                     setCartProducts(cart?.cartProducts?.content || []);
                     setTotalPrice(cart?.totalPrice?.amount || 0);
-                    setCurrency(cart?.totalPrice?.currency || "USD");
+                    setCurrency(cart?.totalPrice?.currency || defaultCurrency);
+                    setCountry(cart?.country || defaultCountry);
                     setTotalItems(cart?.totalItems || 0);
+
+                    console.log(cart?.totalPrice?.amount)
+
                     setPaginationResult(cart?.cartProducts);
                 }
             }
@@ -102,7 +110,8 @@ const CartPage = () => {
                 return newCartProducts;
             });
             setTotalPrice(data?.totalPrice?.amount || 0);
-            setCurrency(data?.totalPrice?.currency || "USD");
+            setCurrency(data?.totalPrice?.currency || defaultCurrency);
+            setCountry(data?.countryCode || defaultCountry);
             setTotalItems(data?.totalItems || 0);
 
             variables.setLoaded(true);
@@ -236,11 +245,11 @@ const CartPage = () => {
                         }
                         &nbsp;items):&nbsp;
                         {pageLoaded ?
-                            <strong>{totalPrice} {currency}</strong> :
+                            <strong>{totalPrice} {currency?.symbol}</strong> :
                             <Skeleton variant="text" width={15} />
                         }
                     </div>
-                    <GooglePayButton
+                    {pageLoaded && <GooglePayButton
                         environment="TEST"
                         paymentRequest={{
                             apiVersion: 2,
@@ -266,19 +275,18 @@ const CartPage = () => {
                             transactionInfo: {
                                 totalPriceStatus: 'FINAL',
                                 totalPriceLabel: 'Total',
-                                totalPrice: '3.00',
-                                currencyCode: 'USD',
-                                countryCode: 'US',
+                                totalPrice: totalPrice,
+                                currencyCode: currency?.code,
+                                countryCode: country?.code,
                             },
                         }}
                         onLoadPaymentData={paymentRequest => {
                             console.log('load payment data', paymentRequest);
+                            purchaseCartAction();
                         }}
                         className="purchase-button"
                     />
-                    <Button variant="contained" className="purchase-button" onClick={purchaseCartAction}>
-                        Purchase
-                    </Button>
+                    }
                 </div>
             )}
             <Fade
@@ -338,7 +346,7 @@ const CartProductItem = ({ cartProduct, setPageLoaded, onRemove, onPurchaseTypeC
                         </Select>
                     </div>
                     <div style={{ fontSize: '14px', color: 'gray' }}>
-                        {cartProduct?.purchaseType === 'buy' ? 'Buy for:' : 'Rent for:'} {cartProduct?.price?.amount} {cartProduct?.price?.currency}
+                        {cartProduct?.purchaseType === 'buy' ? 'Buy for:' : 'Rent for:'} {cartProduct?.price?.amount} {cartProduct?.price?.currency?.symbol}
                     </div>
                 </div>
             </div>
