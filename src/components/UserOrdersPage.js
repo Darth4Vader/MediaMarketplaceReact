@@ -17,7 +17,7 @@ const UserOrdersPage = () => {
     const page = useCurrentPage();
     const [orders, setOrders] = useState(null);
     const [pageLoaded, setPageLoaded] = useState(false);
-    const { pagination, setPaginationResult } = usePagination();
+    const { pagination, setPaginationResult, paginationLoaded, setPaginationLoaded } = usePagination();
 
     const errorBoundary = useErrorBoundary();
 
@@ -26,9 +26,11 @@ const UserOrdersPage = () => {
     useEffect(() => {
         const fetchOrders = async () => {
             try {
+                if(!paginationLoaded) return;
+                setPaginationLoaded(false);
                 const orders = await getCurrentUserOrders(page - 1, 10);
-                setPaginationResult(orders);
                 setOrders(orders?.content);
+                setPaginationResult(orders);
             } catch (error) {
                 errorBoundary.showBoundary(error);
             }
@@ -44,7 +46,7 @@ const UserOrdersPage = () => {
                 <p>No products yet.</p>
             )}
             <div className="pagination">
-                <PaginationNavigatePage paginationResult={pagination} />
+                <PaginationNavigatePage paginationResult={pagination} paginationLoaded={paginationLoaded} />
             </div>
         </div>
     );

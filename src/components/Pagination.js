@@ -89,7 +89,7 @@ export const Pagination = ({ paginationResult, changePageAction, paginationLoade
     );
 };
 
-export const PaginationNavigatePage = ({ paginationResult }) => {
+export const PaginationNavigatePage = ({ paginationResult, paginationLoaded }) => {
     const [searchParams, setSearchParams] = useSearchParams({});
     const searchObject = Object.fromEntries(searchParams.entries());
     const changePageAction = (e, page) => {
@@ -102,5 +102,5 @@ export const PaginationNavigatePage = ({ paginationResult }) => {
         }
         setSearchParams({...searchObject, page: `${urlPage}`});
     };
-    return <Pagination paginationResult={paginationResult} changePageAction={changePageAction} />
+    return <Pagination paginationResult={paginationResult} changePageAction={changePageAction} paginationLoaded={paginationLoaded} />
 };
