@@ -2,12 +2,12 @@ import {useApi} from "../http/api";
 import React, {useEffect, useRef, useState} from "react";
 import './SearchPage.css'
 import {
-    AppBar,
+    AppBar, Avatar,
     Box, Button,
     Checkbox, Collapse,
     Drawer,
     Grid,
-    IconButton, ListItem,
+    IconButton, ListItem, ListItemAvatar,
     ListItemButton,
     MenuItem,
     Select,
@@ -15,6 +15,7 @@ import {
     Toolbar
 } from "@mui/material";
 import {
+    getInfiniteScrollItem,
     infiniteScrollFetchWrapper,
     InfiniteScrollItem,
     useInfiniteScrollRefPage
@@ -36,6 +37,9 @@ import TextField from "@mui/material/TextField";
 import {HideOnScroll} from "./MyAppBar";
 import {useSearchParams} from "react-router-dom";
 import {compareArrays, hasStringChanged, normalizeToArray, parseStringAsNumberArray} from "./UtilsFunctions";
+import MenuIcon from '@mui/icons-material/Menu';
+import CloseIcon from '@mui/icons-material/Close';
+import {useScreenContext} from "../ScreenProvider";
 
 export default function SearchPage(props) {
     console.log("search");
@@ -58,6 +62,9 @@ export default function SearchPage(props) {
     const [searchParams, setSearchParams] = useSearchParams({});
 
     const [loadPage, setLoadPage] = useState(false);
+
+    const { isMobile } = useScreenContext();
+    const [filtersDrawerOpen, setFiltersDrawerOpen] = useState(false);
 
     const fetchMovies = async (pageNumber: number) => {
         const fetchMoviesFunction = async (pageNum) => {
@@ -155,50 +162,62 @@ export default function SearchPage(props) {
             fetchMoviesFirstPage();
     }, [searchParams, loadPage])
 
+    // Filter config: DRY structure
+    const filters = [
+        {
+            key: 'genres',
+            label: 'Genres',
+            icon: <MovieGenreImage />,
+            component: (
+                <GenreFilter
+                    selectedGenres={selectedGenres}
+                    setSelectedGenres={setSelectedGenres}
+                    setSearchParams={setSearchParams}
+                />
+            ),
+        },
+        {
+            key: 'actors',
+            label: 'Actors',
+            icon: <ActorImage />,
+            component: (
+                <ActorsFilter
+                    selectedActors={selectedActors}
+                    setSelectedActors={setSelectedActors}
+                    setSearchParams={setSearchParams}
+                />
+            ),
+        },
+        {
+            key: 'directors',
+            label: 'Directors',
+            icon: <DirectorImage />,
+            component: (
+                <DirectorsFilter
+                    selectedDirectors={selectedDirectors}
+                    setSelectedDirectors={setSelectedDirectors}
+                    setSearchParams={setSearchParams}
+                />
+            ),
+        },
+    ];
+
     return (
         <Box className="search-page">
-            <Drawer
-                variant="permanent"
-                sx={{
-                    width: 240,
-                    flexShrink: 0,
-                    '& .MuiDrawer-paper': {
-                        width: 240,
-                        boxSizing: 'border-box',
-                    },
-                    zIndex: (theme) => theme.zIndex.drawer
-                }}
-            >
-                <Toolbar className="app-bar" />
-                <Box sx={{ overflow: 'auto' }}>
-                    <List>
-                        <SearchPageListItem text="Genres" icon={<MovieGenreImage/>}>
-                            <GenreFilter selectedGenres={selectedGenres} setSelectedGenres={setSelectedGenres} setSearchParams={setSearchParams} />
-                        </SearchPageListItem>
-                        <SearchPageListItem text="Actors" icon={<ActorImage/>}>
-                            <ActorsFilter selectedActors={selectedActors} setSelectedActors={setSelectedActors} setSearchParams={setSearchParams} />
-                        </SearchPageListItem>
-                        <SearchPageListItem text="Directors" icon={<DirectorImage/>}>
-                            <DirectorsFilter selectedDirectors={selectedDirectors} setSelectedDirectors={setSelectedDirectors} setSearchParams={setSearchParams} />
-                        </SearchPageListItem>
-                    </List>
-                    <Button variant="outlined" onClick={() => {
-                        fetchMoviesFirstPage();
-                    }} style={{ height: "50px"}}>
-                        Search
-                    </Button>
-                </Box>
-            </Drawer>
+            <SearchFilters
+                filters={filters}
+                filtersDrawerOpen={filtersDrawerOpen}
+                setFiltersDrawerOpen={setFiltersDrawerOpen}
+            />
             <div className="main-search-page">
                 <h1>Search Page</h1>
                 <HideOnScroll {...props}>
                 <AppBar
                     position="sticky"
-                    style={{
+                    sx={{
+                        zIndex: (theme) => theme.zIndex.drawer-1,
                         top: "10vh"
-                    }
-                    }
-                    sx={{ zIndex: (theme) => theme.zIndex.drawer+1}}
+                    }}
                 >
                     <Toolbar variant="dense">
                         <label>Sort By</label>
@@ -223,6 +242,13 @@ export default function SearchPage(props) {
                             <MenuItem value={"rating,DESC"}>Rating: High to Low</MenuItem>
 
                         </Select>
+                        {isMobile && (
+                            <Button variant="outlined" onClick={() => {
+                                setFiltersDrawerOpen(true);
+                            }} startIcon={<MenuIcon/>} sx={{ mx: 5 }}>
+                                Filters
+                            </Button>
+                        )}
                     </Toolbar>
                 </AppBar>
                 </HideOnScroll>
@@ -256,6 +282,85 @@ export default function SearchPage(props) {
     );
 }
 
+const SearchFilters = ({ filters, filtersDrawerOpen, setFiltersDrawerOpen }) => {
+    const { isMobile } = useScreenContext();
+    const [activeFilterKey, setActiveFilterKey] = useState(null);
+
+    // Find currently selected filter (for mobile drawer)
+    const activeFilter = filters.find((f) => f.key === activeFilterKey);
+
+    const onDrawerClose = () => {
+        setFiltersDrawerOpen(false);
+    };
+
+    return (
+        <Drawer
+            variant={isMobile ? 'temporary' : 'permanent'}
+            open={isMobile ? filtersDrawerOpen : true}
+            onClose={onDrawerClose}
+            ModalProps={{ keepMounted: true }}
+            sx={{
+                width: isMobile ? '100%' : 240,
+                flexShrink: 0,
+                '& .MuiDrawer-paper': {
+                    width: isMobile ? '100%' : 240,
+                    boxSizing: 'border-box',
+                },
+                zIndex: isMobile ? (theme) => theme.zIndex.drawer + 1 : undefined
+            }}
+        >
+            {!isMobile && <Toolbar className="app-bar" />}
+            {isMobile && (
+                <Box>
+                    <IconButton
+                        onClick={onDrawerClose}
+                        sx={{
+                            edge: 'start',
+                        }}
+                    >
+                        <CloseIcon />
+                    </IconButton>
+                    Filter Page
+                </Box>
+            )}
+            <Box sx={{
+                overflow: 'auto',
+                display: 'flex',
+                width: '100%',
+                flexGrow: 1
+            }}>
+                <Box sx={{ width: isMobile ? '50%' : '100%' }} >
+                    <List>
+                        {filters.map((filter) => (
+                            <SearchPageListItem
+                                key={filter.key}
+                                text={filter.label}
+                                icon={filter.icon}
+                                setAsActiveFilter={() => {
+                                    if (isMobile) {
+                                        setActiveFilterKey(filter.key);
+                                    }
+                                }}
+                                isSelected={activeFilterKey === filter.key}
+                            >
+                                {!isMobile && filter.component}
+                            </SearchPageListItem>
+                        ))}
+                    </List>
+                </Box>
+                {isMobile && activeFilter && (
+                    <Box sx={{ width: '50%' }} >
+                        {activeFilter.component}
+                    </Box>
+                )}
+            </Box>
+            <Button variant="outlined" onClick={onDrawerClose}>
+                Search
+            </Button>
+        </Drawer>
+    )
+}
+
 const loadCategoryItems = async(categoryName, getItemsFunction, setSelectedItems, searchParamsChangedRef, searchParams) => {
     if (searchParams.get(categoryName)) {
         const searchIds = parseStringAsNumberArray(searchParams.get(categoryName));
@@ -280,28 +385,36 @@ const updateSearchParamCategory = (searchParams, categoryName, selectedItems) =>
     }
 }
 
-const SearchPageListItem = ({ text, icon, children }) => {
+const SearchPageListItem = ({ text, icon, setAsActiveFilter, isSelected, children }) => {
+    const { isMobile } = useScreenContext();
+
     const [expanded, setExpanded] = useState(false);
     const handleExpandClick = () => {
         setExpanded(!expanded);
+        setAsActiveFilter();
     }
     return (
-        <div style={{width: '100%'}}>
+        <Box style={{width: '100%'}}>
             <ListItem key="text">
-                <ListItemButton onClick={handleExpandClick}>
+                <ListItemButton
+                    onClick={handleExpandClick}
+                    selected={isMobile && isSelected}
+                >
                     <ListItemIcon>
                         <SvgIcon color="primary">
                             {icon}
                         </SvgIcon>
                     </ListItemIcon>
                     <ListItemText primary={text} />
-                    {expanded ? <ExpandLess /> : <ExpandMore />}
+                    {!isMobile &&
+                        (expanded ? <ExpandLess /> : <ExpandMore />)
+                    }
                 </ListItemButton>
             </ListItem>
             <Collapse in={expanded} timeout="auto" unmountOnExit>
                 {children}
             </Collapse>
-        </div>
+        </Box>
     );
 }
 
@@ -365,8 +478,19 @@ const ActorsFilter = ({ selectedActors, setSelectedActors, setSearchParams }) =>
             getListItemBody={(actor) => {
                 return (
                     <>
-                        <img src={actor?.imagePath} alt={`${actor?.name} Poster`} width="10%" height="auto"/>
-                        <p>{actor?.name}</p>
+                        <ListItemAvatar>
+                            <Avatar src={actor?.imagePath} alt={`${actor?.name} Poster`} height="auto" />
+                        </ListItemAvatar>
+                        <ListItemText
+                            primary={actor?.name}
+                            slotProps={{
+                                primary: {
+                                    style: {
+                                        whiteSpace: 'nowrap',
+                                    },
+                                }
+                            }}
+                        />
                     </>
                 )
             }}
@@ -389,8 +513,19 @@ const DirectorsFilter = ({ selectedDirectors, setSelectedDirectors, setSearchPar
             getListItemBody={(director) => {
                 return (
                     <>
-                        <img src={director?.imagePath} alt={`${director?.name} Poster`} width="10%" height="auto"/>
-                        <p>{director?.name}</p>
+                        <ListItemAvatar>
+                            <Avatar src={director?.imagePath} alt={`${director?.name} Poster`} height="auto" />
+                        </ListItemAvatar>
+                        <ListItemText
+                            primary={director?.name}
+                            slotProps={{
+                                primary: {
+                                    style: {
+                                        whiteSpace: 'nowrap',
+                                    },
+                                }
+                            }}
+                        />
                     </>
                 )
             }}
@@ -414,7 +549,13 @@ const CategoryFilter = ({ categoryName, selectedItems, setSelectedItems, setSear
     }, [selectedItems])
 
     return (
-        <>
+        <Box sx={{
+            width: '100%',
+            height: '100%',
+            border: '1px solid #61dafb',
+            display: "flex",
+            flexDirection: "column",
+        }}>
             <SearchCategory
                 changeItemCheckInFilter={changeItemCheckInFilter}
                 isItemInFilter={isItemInFilter}
@@ -423,21 +564,25 @@ const CategoryFilter = ({ categoryName, selectedItems, setSelectedItems, setSear
                 searchLabel={searchLabel}
             />
             <div className="search-actors-filter">
-                <List>
-                    {selectedItems?.map((item, index) => {
-                        return (
-                            <ListItem key={index}>
-                                <IconButton aria-label="delete" size="large" className="remove-product-button"
-                                            onClick={() => removeFromFilter(index)} >
-                                    <CancelIcon />
-                                </IconButton>
-                                {getListItemBody(item)}
-                            </ListItem>
-                        );
-                    })}
-                </List>
+                <div className="search-actors-filter-list">
+                    <List>
+                        {selectedItems?.map((item, index) => {
+                            return (
+                                <ListItem key={index}>
+                                    <ListItemIcon>
+                                        <IconButton aria-label="delete" size="large"
+                                                    onClick={() => removeFromFilter(index)} >
+                                            <CancelIcon />
+                                        </IconButton>
+                                    </ListItemIcon>
+                                    {getListItemBody(item)}
+                                </ListItem>
+                            );
+                        })}
+                    </List>
+                </div>
             </div>
-        </>
+        </Box>
     );
 }
 
@@ -472,28 +617,34 @@ const SearchCategory = ({ isItemInFilter, changeItemCheckInFilter, getListItemBo
                     <Skeleton variant="rectangular"/>
                     <Skeleton variant="rectangular"/>
                 </div> :
-                <List>
-                    {items?.map((item, index) => {
-                        return (
-                            <InfiniteScrollItem
-                                idx={index}
-                                length={items.length}
-                                infiniteScrollRef={infiniteScrollRef}
-                                className="search-director-cell-div"
-                            >
-                                <ListItem key={item.id} className="search-director-cell">
-                                    <Checkbox
-                                        checked={isItemInFilter(item)}
-                                        onChange={(e) => changeItemCheckInFilter(item, e.target.checked)}
-                                    />
-                                    {getListItemBody(item)}
-                                </ListItem>
-                            </InfiniteScrollItem>
-                        );
-                    })}
-                    {hasMore && !loading && <div style={{height: '20px'}}></div>}
-                    {loading && <Skeleton variant="rectangular"/>}
-                </List>
+                <div className="search-actors-filter-list">
+                    <List>
+                        {items?.map((item, index) => {
+                            const labelId = `checkbox-list-label-${index}`;
+                            return (
+                                    <ListItem
+                                        key={item.id}
+                                        ref={getInfiniteScrollItem(index, items.length, infiniteScrollRef)}
+                                        disableGutters
+                                    >
+                                            <Checkbox
+                                                edge="start"
+                                                checked={isItemInFilter(item)}
+                                                onChange={(e) => changeItemCheckInFilter(item, e.target.checked)}
+                                                slotProps={{
+                                                    input: {
+                                                        'aria-labelledby': labelId
+                                                    }
+                                                }}
+                                            />
+                                        {getListItemBody(item)}
+                                    </ListItem>
+                            );
+                        })}
+                        {hasMore && !loading && <div style={{height: '20px'}}></div>}
+                        {loading && <Skeleton variant="rectangular"/>}
+                    </List>
+                </div>
             }
         </div>
     );

@@ -1,4 +1,5 @@
 import React, {useCallback, useEffect, useRef, useState} from "react";
+import {Box} from "@mui/material";
 
 export async function infiniteScrollFetchWrapper(fetchFunction, pageNumber, loading, setLoading, setHasMore) {
     if (loading) return;
@@ -48,15 +49,23 @@ export function InfiniteScrollItem({idx, length, infiniteScrollRef, className, c
     if(length === idx + 1) {
         console.log("last");
         return (
-            <div ref={infiniteScrollRef} className={className}>
+            <Box ref={infiniteScrollRef} className={className}>
                 {children}
-            </div>
+            </Box>
         );
     } else {
         return (
-            <div className={className}>
+            <Box className={className}>
                 {children}
-            </div>
+            </Box>
         );
+    }
+}
+
+export function getInfiniteScrollItem(idx, length, infiniteScrollRef) {
+    if(length === idx + 1) {
+        return infiniteScrollRef;
+    } else {
+        return null;
     }
 }

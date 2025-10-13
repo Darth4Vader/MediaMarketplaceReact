@@ -2,7 +2,6 @@
 
 .search-page {
     display: flex;
-//flex-direction: row;
 }
 
 .search-page .main-search-page {
@@ -14,16 +13,7 @@
 
 .search-center-page {
     display: flex;
-    //flex-direction: row;
-
-    //align-items: center;
     padding: 20px;
-    //width: 100%;
-    //display:inline-block;
-    //display: none;
-    //display: flex;
-    /*display: inline-block;*/
-    //height: auto;
 }
 
 .search-filters {
@@ -32,18 +22,8 @@
     width: 30%;
     height: 100vh;
     position: sticky;
-    //position: fixed;
     display: flex;
     flex-direction: column;
-    //overflow: hidden;
-
-
-    //max-width: 300px;
-    /*
-     width: 30%;
-     height: 100vh;
-     float: right;
-    */
 }
 
 .search-filters-scroll {
@@ -64,18 +44,20 @@
 
 .search-actors-filter {
     border: 1px solid #61dafb;
-    //height: 50px;
-    //overflow: auto;
+    display: flex;
+    flex-direction: column;
+    height: 50%;
 }
 
 .search-actors-filter ul, .search-actors-filter li{
-    margin:0;
     padding:0;
 }
 
-.search-actors-filter > ul {
-    height: 100px;
+.search-actors-filter-list {
     overflow: auto;
+    height: 100%;
+    width: 100%;
+    max-width: 100%;
 }
 
 .search-cast-cell {
@@ -83,34 +65,7 @@
     flex-direction: row;
 }
 
-.search-director-cell-div {
-    height: 50%;
-}
-
-.search-director-cell {
-    height: 100%;
-    display: flex;
-    flex-direction: row;
-    //justify-content: center;
-    align-items: center;
-    //list-style: none;
-}
-
-.search-director-cell > p{
-    text-wrap: nowrap;
-}
-
-.search-director-cell > img {
-    height: 100%;
-    width: 20%;
-}
-
 .search-results {
-    /*
-    width: 70%;
-    float: right;
-
-     */
     flex-grow: 1;
     display: inline-block;
     float: none;

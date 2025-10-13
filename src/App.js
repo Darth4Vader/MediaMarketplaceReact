@@ -35,6 +35,7 @@ import {AuthenticationBoundary} from "./components/ApiErrorUtils";
 import {CurrencyProvider} from "./CurrencyProvider";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 import MuiLink from "@mui/material/Link";
+import {ScreenProvider} from "./ScreenProvider";
 
 const theme = createTheme({
     palette: {
@@ -70,25 +71,26 @@ const AppTemplate = () => {
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline enableColorScheme/>
-            <Box
-                sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    minHeight: '100vh', // full viewport height
-                }}
-            >
-                <MyAppBar/>
+            <ScreenProvider>
                 <Box
-                    component="main"
                     sx={{
-                        flexGrow: 1,          // take remaining space between header and footer
-                        overflowY: 'auto',    // scroll if content is too tall
+                        display: 'flex',
+                        flexDirection: 'column',
+                        minHeight: '100vh', // full viewport height
                     }}
                 >
-                    <Outlet/>
+                    <MyAppBar/>
+                    <Box
+                        component="main"
+                        sx={{
+                            flexGrow: 1,          // take remaining space between header and footer
+                        }}
+                    >
+                        <Outlet/>
+                    </Box>
+                    <Footer />
                 </Box>
-                <Footer />
-            </Box>
+            </ScreenProvider>
         </ThemeProvider>
     );
 };

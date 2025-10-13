@@ -47,10 +47,6 @@
     display: flex;
 }
 
-.remove-product-button {
-    margin-top: 10px;
-}
-
 .cart-info {
     display: flex;
     align-items: center;
