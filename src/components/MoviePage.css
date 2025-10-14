@@ -20,6 +20,11 @@
     //color: white;
 }
 
+.movie-backdrop-mobile {
+    width: 100%;
+    height: 50%;
+}
+
 .movie-main-info {
     display: flex;
     align-items: center;
@@ -99,7 +104,6 @@
 .movie-details {
     text-align: start;
     align-items: start;
-    width: 30%;
 }
 
 .movie-details h1 {
@@ -112,9 +116,17 @@
     margin-bottom: 12px;
 }
 
+.product-options-container {
+    align-content: center;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+}
+
 /* Product options section (e.g., Buy, Rent) */
 .product-options {
     display: flex;
+    align-self: center;
     gap: 10px;
 }
 
@@ -152,7 +164,7 @@
 .movie-cast-list {
     overflow: auto;
     white-space:nowrap;
-    height: 40vh;
+    height: 25vh;
     border: 1px solid;
 }
 

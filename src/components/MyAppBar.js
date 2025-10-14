@@ -9,7 +9,7 @@ import { useAuthContext } from "../AuthProvider";
 import {useSearchInputContext} from "../SearchInputProvider";
 import {
     AppBar, Autocomplete, Avatar, Box,
-    createTheme, CssBaseline,
+    CssBaseline, Drawer,
     IconButton, InputAdornment,
     InputBase,
     Slide,
@@ -32,6 +32,8 @@ import TextField from "@mui/material/TextField";
 import {useMutation} from "react-query";
 import {useEffectAfterPageRendered} from "./UseEffectAfterPageRendered";
 import {useCurrencyContext} from "../CurrencyProvider";
+import MenuIcon from "@mui/icons-material/Menu";
+import {useScreenContext} from "../ScreenProvider";
 
 export function HideOnScroll(props) {
     const { children, window } = props;
@@ -63,11 +65,21 @@ export function MyAppBar(props) {
     const { userInfo, userLogged, isLogged } = useAuthContext();
     const { searchInput, setSearchInput, setIsSearching } = useSearchInputContext();
 
-    console.log(userInfo)
-
     const [anchorEl, setAnchorEl] = useState(null);
 
     const navigate = useNavigate();
+
+    const { isMobile } = useScreenContext();
+
+    const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+
+    const handleMobileDrawerOpen = () => {
+        setMobileDrawerOpen(true);
+    }
+
+    const handleMobileDrawerClose = () => {
+        setMobileDrawerOpen(false);
+    }
 
     const handleMenu = (event) => {
         setAnchorEl(event.currentTarget);
@@ -109,6 +121,17 @@ export function MyAppBar(props) {
                 sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
             >
                 <Toolbar variant="dense" className="app-bar">
+                    {isMobile &&
+                        <IconButton
+                            size="large"
+                            edge="start"
+                            color="inherit"
+                            aria-label="menu"
+                            onClick={handleMobileDrawerOpen}
+                        >
+                            <MenuIcon />
+                        </IconButton>
+                    }
                     <Link to="/cart" className="icon-wrapper">
                         <IconButton>
                             <ShoppingCartIcon className="mui-icon"/>
@@ -139,7 +162,7 @@ export function MyAppBar(props) {
                             className="search-input"
                         />
                     </div>
-                    <CurrencySelector />
+                    { !isMobile && <CurrencySelector /> }
                     <Box sx={{ flexGrow: 1 }} />
                         <IconButton
                             onClick={handleMenu}
@@ -210,7 +233,37 @@ export function MyAppBar(props) {
                 </Toolbar>
             </AppBar>
             </HideOnScroll>
+            <Box
+                component="nav"
+                aria-label="app bar side bar"
+            >
+                <MobileSideAppBar
+                    mobileDrawerOpen={mobileDrawerOpen}
+                    closeMobile={handleMobileDrawerClose}
+                />
+            </Box>
         </React.Fragment>
+    );
+}
+
+const MobileSideAppBar = ({mobileDrawerOpen, closeMobile}) => {
+    return (
+        <Drawer
+            variant="temporary"
+            open={mobileDrawerOpen}
+            onClose={closeMobile}
+            sx={{
+                zIndex: (theme) => theme.zIndex.drawer + 1,
+            }}
+            slotProps={{
+                root: {
+                    keepMounted: true, // Better open performance on mobile.
+                },
+            }}
+        >
+            <Toolbar />
+            <CurrencySelector />
+        </Drawer>
     );
 }
 

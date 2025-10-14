@@ -26,6 +26,7 @@ import {useAuthContext} from "../AuthProvider";
 import MuiLink from '@mui/material/Link';
 import {useCurrencyContext} from "../CurrencyProvider";
 import {useEffectAfterPageRendered} from "./UseEffectAfterPageRendered";
+import {useScreenContext} from "../ScreenProvider";
 
 export default function LoadMoviePage() {
     const { getMovie } = useApi();
@@ -42,6 +43,8 @@ const MoviePage = ({ moviePromise}) => {
     const movieId = movie.id;
     const [isRatingMovie, setIsRatingMovie] = useState(false);
 
+    const { isMobile } = useScreenContext();
+
     const handleClickOpen = () => {
         setIsRatingMovie(true);
     };
@@ -50,39 +53,25 @@ const MoviePage = ({ moviePromise}) => {
         setIsRatingMovie(false);
     };
 
-
-    /*
-    const [ userMovieReview, setUserMovieReview] = useState(null);
-    useEffect(() => {
-        const fetching = async () => {
-            try {
-                const data = await getUserMovieReview(movieId);
-                console.log(data);
-                setUserMovieReview(data);
-                setUserRating(data?.rating);
-                setUserLoggedIn(true);
-            } catch (e) {
-                setUserLoggedIn(false);
-            }
-        }
-        fetching();
-    }, [movieId]);
-     */
-
     return (
         <div className="movie-page">
             <div style={{
-                backgroundImage: `url(${movie?.backdropPath})`,
+                backgroundImage: !isMobile && `url(${movie?.backdropPath})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',
                 width: '100%',
             }}>
+                {isMobile &&
+                    <img src={movie?.backdropPath} alt={"Back"} className="movie-backdrop-mobile" />
+                }
                 <div className="movie-header" style={{
                     paddingLeft: '20px',
-                    backgroundImage: 'linear-gradient(to left, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 1))'
+                    backgroundImage: !isMobile && 'linear-gradient(to left, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 1))',
                 }}>
-                    <div className="movie-details">
+                    <div className="movie-details" style={{
+                        width: isMobile ? '100%' : '30%'
+                    }}>
                         <h1>{movie?.name}</h1>
                         <div className="movie-main-info">
                             {movie?.releaseDate?.length === 3 &&
@@ -116,7 +105,7 @@ const MoviePage = ({ moviePromise}) => {
                                                     <div className="movie-rating-container">
                                                         <text className="rating-number" onClick={(e) => {
                                                             e.preventDefault();
-                                                            setIsRatingMovie(!isRatingMovie);
+                                                            handleClickOpen();
                                                         }}>
                                                             {movie?.averageRating}
                                                         </text>
@@ -128,7 +117,7 @@ const MoviePage = ({ moviePromise}) => {
                                                     <div className="movie-rating-container">
                                                         <text className="rating-number" onClick={(e) => {
                                                             e.preventDefault();
-                                                            setIsRatingMovie(false);
+                                                            handleClose();
                                                         }}>
                                                             N/A
                                                         </text>
@@ -349,6 +338,9 @@ const ProductOptions = ({ id }) => {
     const [severity, setSeverity] = useState('info');
     const [isRented, setIsRented] = useState(false);
     const [isBought, setIsBought] = useState(false);
+
+    const { isMobile } = useScreenContext();
+
     useEffect(() => {
         const fetching = async () => {
             try {
@@ -374,7 +366,7 @@ const ProductOptions = ({ id }) => {
         setOpenAlert(false);
     };
     return (
-        <div>
+        <div className={isMobile && "product-options-container"}>
             <div className="product-options">
                 {(isRented || isBought) &&
                     <Button variant="outlined">

@@ -540,6 +540,8 @@ const CategoryFilter = ({ categoryName, selectedItems, setSelectedItems, setSear
     const isItemInFilter = isItemChecked(selectedItems);
     const changeItemCheckInFilter = changeItemCheckedValue(selectedItems, setSelectedItems);
 
+    const { isMobile } = useScreenContext();
+
     useEffectAfterPageRendered(() => {
         setSearchParams((prevSearchParams) => {
             const newSearchParams = new URLSearchParams(prevSearchParams);
@@ -551,7 +553,7 @@ const CategoryFilter = ({ categoryName, selectedItems, setSelectedItems, setSear
     return (
         <Box sx={{
             width: '100%',
-            height: '100%',
+            height: isMobile ? '100%' : '40vh',
             border: '1px solid #61dafb',
             display: "flex",
             flexDirection: "column",
