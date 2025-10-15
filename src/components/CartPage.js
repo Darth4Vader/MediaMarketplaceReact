@@ -5,7 +5,21 @@ import {useMutation, useQuery} from "react-query";
 import {useFetchRequests} from "../http/requests";
 import './CartPage.css';
 import {NotFoundErrorBoundary} from "./ApiErrorUtils";
-import {Box, Button, Checkbox, Fade, IconButton, MenuItem, Paper, Select, Skeleton, Typography} from "@mui/material";
+import {
+    AppBar,
+    Avatar,
+    Box,
+    Checkbox,
+    Fade, FormControl, Grid,
+    IconButton, InputLabel,
+    List,
+    ListItem, ListItemAvatar,
+    MenuItem,
+    Paper,
+    Select,
+    Skeleton, Toolbar,
+    Typography
+} from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
 import {Pagination, usePagination} from "./Pagination";
 import {Link, useNavigate, useNavigation, useSearchParams} from "react-router-dom";
@@ -14,6 +28,7 @@ import Divider from "@mui/material/Divider";
 import {useCurrencyContext} from "../CurrencyProvider";
 import GooglePayButton from "@google-pay/button-react";
 import {CustomSuspenseOnlyInFirstLoad} from "./CustomSuspense";
+import {HideOnScroll} from "./MyAppBar";
 
 export default function LoadCartPage() {
     return (
@@ -36,7 +51,7 @@ export default function LoadCartPage() {
 const defaultCurrency = {code: "USD", symbol: "$"};
 const defaultCountry = {code: "US", name: "United States"};
 
-const CartPage = () => {
+const CartPage = (props) => {
     console.log("Hellllllllll")
     const { getCurrentUserCart, updateProductInCart, purchaseCart } = useApi();
     const [cartProducts, setCartProducts] = useState([]);
@@ -194,38 +209,61 @@ const CartPage = () => {
     return (
         <Fragment>
             <CartPageWrapper paginationLoaded={paginationLoaded} cartProducts={cartProducts}>
-                <Box>
-                    <Select
-                        value={sortOption}
-                        onChange={(e) => {
-                            console.log("Fast", e.target.value);
-                            setSortOption(e.target.value);
-                        }}
+                <Box className="cart-page">
+                    <HideOnScroll {...props}>
+                        <AppBar
+                            position="sticky"
+                            sx={{
+                                zIndex: (theme) => theme.zIndex.drawer-1,
+                                top: "10vh",
+                                mb: 2,
+                            }}
+                        >
+                            <Toolbar variant="dense" sx={{
+                                justifyContent: "center"
+                            }}>
+                                <label>Sort By</label>
+                                <Select
+                                    style={{ marginLeft: '25px', width: '50%' }}
+                                    value={sortOption}
+                                    onChange={(e) => {
+                                        console.log("Fast", e.target.value);
+                                        setSortOption(e.target.value);
+                                    }}
 
-                    >
-                        <MenuItem value={"price,ASC"}>Price: Low to High</MenuItem>
-                        <MenuItem value={"price,DESC"}>Price: High to Low</MenuItem>
-                        <MenuItem value={"purchaseType,ASC"}>Purchase Type: Low to High</MenuItem>
-                        <MenuItem value={"purchaseType,DESC"}>Purchase Type: High to Low</MenuItem>
-                        <MenuItem value={"discount,ASC"}>Discount: Low to High</MenuItem>
-                        <MenuItem value={"discount,DESC"}>Discount: High to Low</MenuItem>
+                                >
+                                    <MenuItem value={"price,ASC"}>Price: Low to High</MenuItem>
+                                    <MenuItem value={"price,DESC"}>Price: High to Low</MenuItem>
+                                    <MenuItem value={"purchaseType,ASC"}>Purchase Type: Low to High</MenuItem>
+                                    <MenuItem value={"purchaseType,DESC"}>Purchase Type: High to Low</MenuItem>
+                                    <MenuItem value={"discount,ASC"}>Discount: Low to High</MenuItem>
+                                    <MenuItem value={"discount,DESC"}>Discount: High to Low</MenuItem>
 
-                    </Select>
-                    <ul style={{ listStyle: 'none', padding: 0 }}>
-                        {cartProducts.map((cartProduct, index) => (
-                            <li key={index}>
-                                <Divider/>
-                                <CartProductItem
-                                    cartProduct={cartProduct}
-                                    paginationLoaded={paginationLoaded}
-                                    setPaginationLoaded={setPaginationLoaded}
-                                    onRemove={() => removeProductFromCartAction(index, cartProduct.product.id)}
-                                    onPurchaseTypeChange={(type, setLoaded) => updateProductAction(index, cartProduct.product.id, type, null, setLoaded)}
-                                    onProductSelectionChange={(isSelected, setLoaded) => updateProductAction(index, cartProduct.product.id, null, isSelected, setLoaded)}
-                                />
-                            </li>
-                        ))}
-                    </ul>
+                                </Select>
+                            </Toolbar>
+                        </AppBar>
+                    </HideOnScroll>
+                    <Box sx={{
+                        width: { xs: '100%', md: '50%' }
+                    }}>
+                        <List style={{ listStyle: 'none', padding: 0 }}>
+                            {cartProducts.map((cartProduct, index) => (
+                                <Paper key={index} sx={{
+                                    background: !paginationLoaded ?  'transparent' : 'unidentified',
+                                    boxShadow: !paginationLoaded ? 'none' : 'unidentified',
+                                }}>
+                                    <CartProductItem
+                                        cartProduct={cartProduct}
+                                        paginationLoaded={paginationLoaded}
+                                        setPaginationLoaded={setPaginationLoaded}
+                                        onRemove={() => removeProductFromCartAction(index, cartProduct.product.id)}
+                                        onPurchaseTypeChange={(type, setLoaded) => updateProductAction(index, cartProduct.product.id, type, null, setLoaded)}
+                                        onProductSelectionChange={(isSelected, setLoaded) => updateProductAction(index, cartProduct.product.id, null, isSelected, setLoaded)}
+                                    />
+                                </Paper>
+                            ))}
+                        </List>
+                    </Box>
                     <div className="pagination">
                         <Pagination paginationResult={pagination} changePageAction={(e, newPage) => {
                             e.preventDefault();
@@ -313,44 +351,74 @@ const CartProductItem = ({ cartProduct, onRemove, onPurchaseTypeChange, onProduc
     if(!loaded || !paginationLoaded) return <CartProductItemSkeleton/>;
 
     return (
-        <Paper className="cart-product-main">
-            <div className="cart-product">
-                <div className="select-product-button-container">
-                    <Checkbox
-                        checked={(cartProduct?.isSelected) || false}
-                        onChange={(e) => onProductSelectionChange(e.target.checked, setLoaded)}
+        <ListItem
+            alignItems="flex-start"
+            divider
+            sx={{
+                paddingY: 2,
+                alignItems: 'center',
+            }}
+            secondaryAction={
+                <IconButton edge="end" onClick={onRemove}>
+                    <DeleteIcon />
+                </IconButton>
+            }
+        >
+            <Checkbox
+                edge="start"
+                checked={cartProduct?.isSelected || false}
+                onChange={(e) => onProductSelectionChange(e.target.checked, setLoaded)}
+            />
+            <Link to={"/movie/" + movie?.id} className="product-link">
+                <ListItemAvatar>
+                    <Avatar
+                        variant="square"
+                        src={movie?.posterPath}
+                        alt={movie?.name}
+                        sx={{ width: 100, height: 150 }}
                     />
-                </div>
-                <Link to={"/movie/" + movie?.id} className="product-link">
-                    <img src={movie?.posterPath} alt={movie?.name} className="product-poster"/>
-                </Link>
-                <div>
+                </ListItemAvatar>
+            </Link>
+            {/* Product Info + Select */}
+            <Grid container spacing={2} alignItems="center" sx={{
+                px: 2,
+            }}>
+                {/* Product Info */}
+                <Grid item xs>
                     <Link to={"/movie/" + movie?.id} className="product-link">
-                        <div className="product-name">{movie?.name}</div>
+                        <Typography variant="subtitle1" sx={{
+                            fontWeight: 'bold',
+                            transition: '-webkit-text-stroke 0.2s ease',
+                            WebkitTextStroke: '0px transparent',
+                            '&:hover': {
+                                WebkitTextStroke: '1px #555555',
+                            },
+                        }}>
+                            {movie.name}
+                        </Typography>
                     </Link>
-                    <div className="product-purchase-panel">
-                        Purchase Type:
+                    <Typography variant="body2" color="text.secondary">
+                        {cartProduct.purchaseType === 'buy' ? 'Buy for' : 'Rent for'}{' '}
+                        {cartProduct.price.amount} {cartProduct.price.currency.symbol}
+                    </Typography>
+                </Grid>
+
+                {/* Select */}
+                <Grid item>
+                    <FormControl size="small" sx={{ minWidth: 120 }}>
+                        <InputLabel>Type</InputLabel>
                         <Select
-                            id="purchase-option"
-                            value={cartProduct?.purchaseType || 'buy'}
+                            value={cartProduct.purchaseType || 'buy'}
+                            label="Type"
                             onChange={(e) => onPurchaseTypeChange(e.target.value, setLoaded)}
-                            style={{ marginLeft: '10px', width: '100px' }}
                         >
                             <MenuItem value="buy">Buy</MenuItem>
                             <MenuItem value="rent">Rent</MenuItem>
                         </Select>
-                    </div>
-                    <div style={{ fontSize: '14px', color: 'gray' }}>
-                        {cartProduct?.purchaseType === 'buy' ? 'Buy for:' : 'Rent for:'} {cartProduct?.price?.amount} {cartProduct?.price?.currency?.symbol}
-                    </div>
-                </div>
-            </div>
-            <div className="remove-product-button-container">
-                <IconButton aria-label="delete" size="large" className="remove-product-button" onClick={onRemove} >
-                    <DeleteIcon />
-                </IconButton>
-            </div>
-        </Paper>
+                    </FormControl>
+                </Grid>
+            </Grid>
+        </ListItem>
     );
 };
 

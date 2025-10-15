@@ -112,6 +112,10 @@ export function MyAppBar(props) {
             });
     };
 
+    useEffect(() => {
+        handleMobileDrawerClose();
+    }, [isMobile])
+
     return (
         <React.Fragment>
             <CssBaseline />
