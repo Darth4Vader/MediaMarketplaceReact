@@ -67,7 +67,7 @@ export function useApi() {
     }
 
     async function getMovie(id) {
-        return handleResponse(await requests.get(`/api/main/movies/${id}`));
+        return handleResponse(await requests.getWithAuth(`/api/main/movies/${id}`));
     }
 
     async function getActorsMovie(id) {
@@ -178,7 +178,7 @@ export function useApi() {
 
     async function searchActors(name, page=0, size=1) {
         return handleResponse(await requests.get(`/api/main/actors/search?name=${name}&page=${page}&size=${size}`))
-            .then(sleeper(3000));
+            //.then(sleeper(3000));
     }
 
     async function searchDirectors(name, page=0, size=1) {
@@ -189,7 +189,7 @@ export function useApi() {
     async function searchMovies(page=0, size=1, searchParams) {
         const query = searchParams.toString();
         return handleResponse(await requests.get(`/api/main/movies/search?page=${page}&size=${size}${query ? `&${query}` : ''}`))
-            .then(sleeper(3000));
+            //.then(sleeper(3000));
     }
 
     async function getGenres(genres) {
