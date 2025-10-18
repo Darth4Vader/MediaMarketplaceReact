@@ -36,7 +36,8 @@ export function useApi() {
         getPeople,
         getAllCurrencies,
         getSessionCurrency,
-        saveCurrencyInSession
+        saveCurrencyInSession,
+        getMovieRecommendationForCurrentUser,
     }
 
     async function handleResponseRejection(response) {
@@ -222,5 +223,9 @@ export function useApi() {
 
     async function saveCurrencyInSession(currencyCode) {
         return await requests.postWithAuth('/api/users/currency/current/', { currencyCode });
+    }
+
+    async function getMovieRecommendationForCurrentUser(topN=10) {
+        return await handleResponse(await requests.getWithAuth(`/api/main/recommendations/current-user?topN=${topN}`));
     }
 }

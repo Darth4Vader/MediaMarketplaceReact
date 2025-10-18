@@ -7,6 +7,10 @@
 .glow-background {
     transition: transform 0.3s ease;
     transform-style: preserve-3d;
+    height: 100%;
+
+    position: relative;   /* important for absolute :before */
+    display: inline-block; /* keep natural width */
 
     //background: unset !important;
     //background-color: var(--rg-color-background-object, #F3F3F7) !important;
